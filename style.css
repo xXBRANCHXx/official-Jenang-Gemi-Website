@@ -284,7 +284,7 @@ h2, h3, h4 { font-weight: 600; }
 }
 
 .reveal-v9 { opacity: 0; transform: translateY(24px); transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-.reveal-v9.active { opacity: 1; transform: none; }
+.reveal-v9.revealed { opacity: 1; transform: none; }
 
 .p-info-grid { display: grid; gap: 32px; align-items: start; }
 .flavor-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }

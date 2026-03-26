@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const revealCb = (entries, obs) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
-        e.target.classList.add('active');
+        e.target.classList.add('revealed');
         obs.unobserve(e.target);
       }
     });
@@ -160,13 +160,43 @@ document.addEventListener('DOMContentLoaded', () => {
   renderV9Cart();
 });
 
-/* Quiz Functions */
+/* Deep Interactive Quiz Functions */
+const quizQuestions = [
+  {
+    q: "Bagaimana sensasi yang paling sering Anda rasakan di lambung/dada?",
+    answers: [
+      { text: "Sensasi perih, panas, atau dada terbakar secara konsisten", score: { bubur: 3, jamu: 0 } },
+      { text: "Lebih sering kembung, begah, penuh gas, atau mual", score: { bubur: 1, jamu: 2 } },
+      { text: "Tidak ada keluhan berat, hanya ingin menjaga pencernaan", score: { bubur: 0, jamu: 3 } }
+    ]
+  },
+  {
+    q: "Berapa banyak waktu yang bisa Anda rutinkan setiap harinya?",
+    answers: [
+      { text: "Saya siap meluangkan waktu meracik/menyeduh air panas demi penyembuhan maksimal", score: { bubur: 3, jamu: 0 } },
+      { text: "Saya super sibuk, ingin nutrisi yang instan atau mudah di bawa ke kantor", score: { bubur: 0, jamu: 3 } }
+    ]
+  },
+  {
+    q: "Apa target jangka panjang Anda dari Jenang Gemi?",
+    answers: [
+      { text: "Membentuk lapisan/perisai kuat untuk melindungi lambung yang sering kambuh", score: { bubur: 4, jamu: 0 } },
+      { text: "Meningkatkan stamina, meredakan inflamasi ringan, & tubuh fit bebas gas", score: { bubur: 0, jamu: 3 } }
+    ]
+  }
+];
+
+let currQ = 0;
+let scores = { bubur: 0, jamu: 0 };
+
 function openQuiz() {
   document.getElementById('quizModal')?.classList.add('active');
   document.getElementById('btn-take-quiz').style.display = 'block';
   document.getElementById('quiz-caption').style.display = 'block';
   document.getElementById('quiz-q').style.display = 'none';
   document.getElementById('quiz-res').style.display = 'none';
+  currQ = 0;
+  scores = { bubur: 0, jamu: 0 };
 }
 
 function closeQuiz() {
@@ -177,17 +207,36 @@ function startQuiz() {
   document.getElementById('btn-take-quiz').style.display = 'none';
   document.getElementById('quiz-caption').style.display = 'none';
   document.getElementById('quiz-q').style.display = 'block';
+  renderQuestion();
 }
 
-function finishQuiz(type) {
+function renderQuestion() {
+  if (currQ >= quizQuestions.length) return finishQuiz();
+  const qData = quizQuestions[currQ];
+  let html = `<h3 style="margin-bottom:24px; color:var(--earth-900); font-weight:700; line-height:1.4;">${qData.q}</h3>`;
+  qData.answers.forEach(ans => {
+    html += `<button class="quiz-ans" onclick="answerQuestion(${ans.score.bubur}, ${ans.score.jamu})">${ans.text}</button>`;
+  });
+  document.getElementById('quiz-q').innerHTML = html;
+}
+
+function answerQuestion(bPts, jPts) {
+  scores.bubur += bPts;
+  scores.jamu += jPts;
+  currQ++;
+  renderQuestion();
+}
+
+function finishQuiz() {
   document.getElementById('quiz-q').style.display = 'none';
-  const resStr = document.getElementById('quiz-res');
-  resStr.style.display = 'block';
-  if (type === 'bubur') {
-    document.getElementById('r-text').innerText = 'Bubur Gemi Cocok Untuk Anda!';
-    document.getElementById('r-desc').innerText = 'Sifat penyejuk demulcent akan langsung meredakan panas lambung Anda. Formulasi hangat ini sangat ideal untuk kasus GERD aktif.';
+  document.getElementById('quiz-res').style.display = 'block';
+  if (scores.bubur > scores.jamu) {
+    document.getElementById('r-text').innerText = 'Bubur Gemi Adalah Formulasi Tepat!';
+    document.getElementById('r-desc').innerText = 'Prioritas lambung Anda adalah untuk dilapisi secara fisik. Sifat penyejuk demulcent dari Bubur Gemi (wajib diseduh panas) akan sangat efektif meredakan perih/panas lambung kronis Anda.';
+    document.getElementById('quiz-res-link').href = 'bubur.html';
   } else {
-    document.getElementById('r-text').innerText = 'Jamu Gemi Cocok Untuk Anda!';
-    document.getElementById('r-desc').innerText = 'Ekstra kunyit dan psyllium husk bekerja luar biasa untuk perawatan harian, mengatasi kembung, dan sangat mudah dibawa bepergian!';
+    document.getElementById('r-text').innerText = 'Jamu Gemi Solusi Sempurna Harian Anda!';
+    document.getElementById('r-desc').innerText = 'Berdasarkan rutinitas & masalah kembung/gas, Jamu Gemi adalah pilihan sempurna. Rutinitas instan, ditambah Kunyit & Psyllium Husk untuk anti-inflamasi harian terbaik.';
+    document.getElementById('quiz-res-link').href = 'jamu.html';
   }
 }

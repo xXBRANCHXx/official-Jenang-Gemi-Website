@@ -4,19 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jenang Gemi - Prebiotik Alami untuk Lambung Nyaman</title>
-    <meta name="description" content="Prebiotik alami berbahan pati umbi garut untuk membantu pencernaan lebih nyaman. Rasa enak, lembut di lambung, tanpa tambahan berlebihan.">
-    <link rel="stylesheet" href="style.css?v=114">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="description" content="Prebiotik alami berbahan pati umbi garut untuk membantu pencernaan lebih nyaman.">
+    <link rel="stylesheet" href="style.css?v=115">
 </head>
-<body class="vivid-v9">
-    <div class="blob-decor"></div>
-    <div class="blob-decor blob-2"></div>
-
+<body>
+    <!-- Navigation -->
     <nav class="nav-v9">
         <div class="container nav-wrap">
             <a href="index.html" class="logo">
-                <img src="Media/37.png" alt="Jenang Gemi Logo" width="160" height="42" style="width:auto;height:42px;object-fit:contain;">
+                <img src="Media/37.png" alt="Jenang Gemi" height="42">
             </a>
             <div class="nav-links">
                 <ul>
@@ -34,185 +30,86 @@
         </div>
     </nav>
 
+    <!-- Sidebar & Overlay -->
     <div class="sidebar-v9" id="sidebar-v9">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
-            <h2 style="font-size: 32px; font-weight: 800; font-family: 'Manrope';">Keranjang</h2>
-            <button class="close-v9" style="background: none; border: none;">&times;</button>
+            <h2 style="font-size: 32px;">Keranjang</h2>
+            <button class="close-v9" style="font-size: 32px;">&times;</button>
         </div>
         <div id="list-v9" style="flex: 1; overflow-y: auto;"></div>
-        <div style="padding-top: 24px; border-top: 2px solid var(--border);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
-                <span style="font-weight: 700; opacity: 0.6; text-transform: uppercase; font-size: 13px;">Estimasi Total</span>
-                <span id="total-v9" style="font-size: 32px; font-weight: 950; color: var(--green);">Rp 0</span>
+        <div style="padding-top: 24px; border-top: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 24px;">
+                <span style="font-weight: 700; opacity: 0.6;">Subtotal</span>
+                <span id="total-v9" style="font-size: 24px; font-weight: 800; color: var(--green);">Rp 0</span>
             </div>
             <button class="btn btn-primary checkout-v9" style="width: 100%;">Checkout via WhatsApp</button>
         </div>
     </div>
     <div class="global-overlay" id="global-overlay"></div>
 
+    <!-- Main Content -->
     <main>
+        <!-- Hero Section -->
         <section class="hero-v9 section">
-            <div class="container hero-grid">
+            <div class="container hero-grid" style="display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 80px;">
                 <div class="hero-text">
-                    <span class="eyebrow">Solusi Tuntas Pencernaan Anda</span>
-                    <h1>Kesehatan Gut Dimulai <br><span>Dari Alam.</span></h1>
-                    <p>Jenang Gemi adalah solusi all-in-one untuk kesehatan lambung yang diracik murni dari pati umbi garut. Redakan asam lambung, bentengi dinding usus, dan pulihkan mikrobioma Anda dengan kekuatan tersembunyi dari tradisi Indonesia.</p>
-                    <div style="display: flex; gap: 16px;">
-                        <button class="btn btn-primary" onclick="openQuiz()">Get Started</button>
-                        <a href="#info-library" class="btn btn-outline">Pelajari Lebih Lanjut &darr;</a>
+                    <span class="eyebrow">Solusi Alami Pencernaan</span>
+                    <h1>Kesehatan Gut <br><span>Dimulai Dari Alam.</span></h1>
+                    <p>Jenang Gemi adalah solusi all-in-one untuk kesehatan lambung yang diracik murni dari pati umbi garut premium. Pulihkan kenyamanan perut Anda dengan kekuatan tradisi Indonesia.</p>
+                    <div style="display: flex; gap: 16px; margin-top: 40px;">
+                        <button class="btn btn-primary" onclick="openQuiz()">Mulai Sekarang</button>
+                        <a href="#produk" class="btn btn-outline">Lihat Produk</a>
                     </div>
                 </div>
-                <div class="hero-visual">
-                    <img src="Media/Reseller Jenang Gemi Images (1).png" alt="Kemasan Jenang Gemi">
-                    <div class="badge-v8">ASLI <br>PATI GARUT</div>
+                <div class="hero-visual glass-card" style="position: relative; border-radius: var(--radius-xl); overflow: hidden;">
+                    <img src="Media/13.jpg" alt="Authentic Serving" style="width: 100%; height: 100%; object-fit: cover;">
+                    <div style="position: absolute; bottom: 32px; right: 32px; background: white; padding: 20px 32px; border-radius: 100px; font-weight: 800; font-size: 14px; box-shadow: var(--shadow);">
+                        100% PATI GARUT ASLI
+                    </div>
                 </div>
             </div>
         </section>
 
+        <!-- Philosophy Section -->
         <section class="section" style="background: white;">
             <div class="container">
-                <div style="text-align: center; margin-bottom: 60px;">
+                <div style="text-align: center; margin-bottom: 80px;">
                     <span class="eyebrow">Filosofi Kami</span>
-                    <h2 style="font-size: clamp(2rem, 4vw, 3rem);">Mewujudkan Masyarakat Sehat</h2>
+                    <h2 style="font-size: clamp(2.5rem, 5vw, 4rem);">Mewujudkan Masyarakat Sehat</h2>
                 </div>
                 <div class="features-grid">
-                    <div class="f-card glass-card">
-                        <img src="Media/1.jpg" alt="Visi Kami" style="width: 100%; border-radius: 20px; margin-bottom: 20px; aspect-ratio: 16/9; object-fit: cover;">
+                    <div class="f-card glass-card" data-expand="visi">
+                        <img src="Media/16.jpg" alt="Visi">
                         <h3>Visi Kami</h3>
-                        <p>Mewujudkan masyarakat sehat yang siap beraktivitas tanpa kendala pencernaan dan asam lambung.</p>
+                        <p>Mewujudkan masyarakat sehat yang siap beraktivitas tanpa kendala pencernaan kronis. (Klik untuk detail)</p>
                     </div>
-                    <div class="f-card glass-card">
-                        <img src="Media/2.jpg" alt="Misi Kami" style="width: 100%; border-radius: 20px; margin-bottom: 20px; aspect-ratio: 16/9; object-fit: cover;">
+                    <div class="f-card glass-card" data-expand="misi">
+                        <img src="Media/Reseller Jenang Gemi Images (1).png" alt="Misi">
                         <h3>Misi Kami</h3>
-                        <ul style="padding-left: 20px; color: var(--muted); font-size: 1rem; line-height: 1.6;">
-                            <li style="margin-bottom:8px;">Memberikan solusi alami untuk kesehatan lambung.</li>
-                            <li style="margin-bottom:8px;">Mendorong masyarakat menjalankan pola hidup sehat.</li>
-                            <li>Membangun sistem pencernaan yang kuat dan nyaman.</li>
-                        </ul>
+                        <p>Memberikan solusi alami terbaik dan mendorong pola hidup sehat harian. (Klik untuk detail)</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Dynamic Content: Complete Information Library -->
+        <!-- Science Section (Green) -->
         <section class="section bg-green" id="info-library">
             <div class="container">
-                <div style="max-width: 800px; margin: 0 auto; text-align: center; margin-bottom: 64px;">
-                    <span class="eyebrow">Mengapa Ini Berbeda?</span>
-                    <h2 style="font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 24px;">Lebih Dari Sekadar Serat Biasa</h2>
-                    <p style="font-size: 1.1rem; opacity: 0.9;">Tidak seperti serat makanan biasa yang terlalu keras untuk lambung, menyebabkan kembung, atau memperburuk gejala masalah pencernaan lain, Jenang Gemi dirancang agar sangat lembut. Pati Umbi Garut kami memberikan perlindungan tanpa efek samping.</p>
+                <div style="max-width: 800px; margin: 0 auto; text-align: center; margin-bottom: 80px;">
+                    <span class="eyebrow">The Science of Health</span>
+                    <h2 style="font-size: clamp(2.5rem, 5vw, 4rem);">Lebih Dari Sekadar Serat Biasa</h2>
+                    <p style="font-size: 1.2rem; opacity: 0.9;">Pati Umbi Garut kami memberikan perlindungan fisik instan sekaligus menutrisi ekosistem alami tubuh Anda dari dalam.</p>
                 </div>
                 <div class="features-grid">
-                    <div class="f-card glass-card">
-                        <img src="Media/3.jpg" alt="Mekanisme Gel" style="width: 100%; border-radius: 20px; margin-bottom: 20px; aspect-ratio: 16/9; object-fit: cover;">
-                        <h3>Mekanisme Lapisan Pelindung Gel</h3>
-                        <p>Untuk penderita GERD atau luka lambung, Pati Garut memberikan perisai fisik instan. Saat dimasak (seperti dalam Bubur Gemi), pati membentuk gel penyejuk demulcent yang melapisi esofagus dan dinding lambung.</p>
+                    <div class="f-card glass-card" data-expand="gel">
+                        <img src="Media/16.jpg" alt="Demulcent Gel">
+                        <h3>Mekanisme Pelindung Gel</h3>
+                        <p>Membentuk perisai fisik instan untuk GERD atau luka lambung dengan tekstur gel lembut.</p>
                     </div>
-                    <div class="f-card glass-card">
-                        <img src="Media/6.jpg" alt="Resistant Starch" style="width: 100%; border-radius: 20px; margin-bottom: 20px; aspect-ratio: 16/9; object-fit: cover;">
-                        <h3>Perlawanan Lanjutan (Resistant Starch)</h3>
-                        <p>Kekuatan utama Jenang Gemi ada pada Resistant Starch-nya yang mampu bertahan melewati asam lambung dan usus halus, lalu masuk langsung ke saluran pencernaan bagian bawah.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- The Microbiome Science Section -->
-        <section class="section" style="background: var(--white); overflow: hidden;">
-            <div class="container">
-                <div class="hero-grid" style="align-items: center; gap: 80px;">
-                    <div class="hero-visual" style="border-radius: var(--radius-xl); overflow: hidden; height: 500px; padding: 0;">
-                        <img src="Media/10.jpg" alt="Science of Health" style="width: 100%; height: 100%; object-fit: cover; max-height: none; filter: contrast(1.1);">
-                    </div>
-                    <div>
-                        <span class="eyebrow">The Science of Prebiotics</span>
-                        <h2 style="font-size: clamp(2.5rem, 4vw, 3.5rem); margin: 24px 0 32px; letter-spacing: -0.04em;">Nutrisi Bagi Pasukan Pertahanan Anda</h2>
-                        <p style="color: var(--muted); margin-bottom: 40px; font-size: 1.15rem; line-height: 1.7;">Sebagai resistant starch, ekstrak garut Jenang Gemi melewati usus halus untuk memelihara flora menguntungkan di usus besar. Ini adalah bahan bakar bagi pembela utama saluran pencernaan yang melindungi Anda setiap hari.</p>
-                        
-                        <div style="display: grid; gap: 24px;">
-                            <div style="display: flex; gap: 20px; align-items: flex-start;">
-                                <div style="width: 48px; height: 48px; min-width: 48px; border-radius: 12px; background: rgba(0, 210, 106, 0.1); color: var(--green); display: grid; place-items: center; font-size: 18px; font-weight: 800;">1</div>
-                                <div>
-                                    <h4 style="font-size: 18px; margin-bottom: 4px;">Bifidobacterium</h4>
-                                    <p style="font-size: 14px; color: var(--muted);">Mendukung fungsi imun dan perisai pertahanan tubuh secara komprehensif.</p>
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 20px; align-items: flex-start;">
-                                <div style="width: 48px; height: 48px; min-width: 48px; border-radius: 12px; background: rgba(0, 210, 106, 0.1); color: var(--green); display: grid; place-items: center; font-size: 18px; font-weight: 800;">2</div>
-                                <div>
-                                    <h4 style="font-size: 18px; margin-bottom: 4px;">Faecalibacterium prausnitzii</h4>
-                                    <p style="font-size: 14px; color: var(--muted);">Anti-inflamasi alami hasil pembentukan butyrate untuk kesehatan dinding usus.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- True Protection Section -->
-        <section class="section parallax-section" style="background-image: url('Media/11.jpg');">
-            <div class="parallax-overlay" style="background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);"></div>
-            <div class="container parallax-content">
-                <div style="max-width: 800px; margin: 0 auto; text-align: center; color: white;">
-                    <span class="eyebrow" style="color: #ffffff; opacity: 0.8;">Restorative Defense</span>
-                    <h2 style="font-size: clamp(2rem, 4vw, 3.5rem); margin: 24px 0 32px; color: white;">Membasmi Patogen Secara Alami</h2>
-                    <p style="font-size: 1.25rem; line-height: 1.8; margin-bottom: 24px;">Perlindungan sejati melibatkan proses perbaikan dan pertahanan. Resistant starch Jenang Gemi memicu produksi sel <strong>Butyrate</strong> untuk mempertebal dinding lambung & usus.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Two Formats Comparison Section -->
-        <section class="section bg-green">
-            <div class="container">
-                <div style="text-align: center; margin-bottom: 60px;">
-                    <span class="eyebrow">Format Konsumsi</span>
-                    <h2 style="font-size: clamp(2rem, 4vw, 3rem);">Dua Cara Membangun Rutinitas Sehat</h2>
-                </div>
-                <div class="features-grid">
-                    <div class="f-card glass-card">
-                        <img src="Media/12.jpg" alt="Bubur Gemi" style="width: 100%; border-radius: 20px; margin-bottom: 20px; aspect-ratio: 16/9; object-fit: cover;">
-                        <h3>Bubur Gemi</h3>
-                        <p style="margin-bottom: 16px; font-weight: 700;">Format hangat untuk kelegaan instan.</p>
-                        <p>Bubur gemi dirancang khusus untuk dimasak/diseduh dengan air hangat, sehingga membentuk tekstur <strong>demulcent gel</strong>. Gel ini akan melapisi tenggorokan dan dinding lambung Anda.</p>
-                    </div>
-                    <div class="f-card glass-card">
-                        <img src="Media/13.jpg" alt="Jamu Gemi" style="width: 100%; border-radius: 20px; margin-bottom: 20px; aspect-ratio: 16/9; object-fit: cover;">
-                        <h3>Jamu Gemi</h3>
-                        <h4 style="margin-bottom: 16px; font-weight: 700;">Kemudahan dibawa ke mana saja.</h4>
-                        <p>Dibuat untuk rutinitas sibuk Anda. Cukup tambahkan sachet ke dalam botol minum/gelas dan aduk.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Nutrition Info Section -->
-        <section class="section">
-            <div class="container">
-                <div style="text-align: center; margin-bottom: 60px;">
-                    <span class="eyebrow">Transparansi Kami</span>
-                    <h2 style="font-size: clamp(2rem, 4vw, 3rem);">Informasi Nilai Gizi</h2>
-                </div>
-                <div class="features-grid">
-                    <div class="f-card glass-card">
-                        <img src="Media/14.jpg" alt="Nutrisi Original" style="width: 100%; border-radius: 20px; margin-bottom: 20px; aspect-ratio: 16/9; object-fit: cover;">
-                        <h3>Original</h3>
-                        <p style="font-size: 13px; color:var(--muted); margin-bottom:16px;">Takaran Saji: 15g | 54 kkal</p>
-                        <ul style="list-style:none; font-size:14px;">
-                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,0.05); padding:8px 0;"><span>Lemak Total</span><span>0g</span></li>
-                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,0.05); padding:8px 0;"><span>Protein</span><span>0g</span></li>
-                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,0.05); padding:8px 0;"><span>Karbohidrat</span><span>13g (5%)</span></li>
-                        </ul>
-                    </div>
-                    <div class="f-card glass-card">
-                        <img src="Media/15.jpg" alt="Nutrisi Aren" style="width: 100%; border-radius: 20px; margin-bottom: 20px; aspect-ratio: 16/9; object-fit: cover;">
-                        <h3>Gula Aren</h3>
-                        <p style="font-size: 13px; color:var(--muted); margin-bottom:16px;">Takaran Saji: 20g | 73 kkal</p>
-                        <ul style="list-style:none; font-size:14px;">
-                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,0.05); padding:8px 0;"><span>Lemak Total</span><span>0g</span></li>
-                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,0.05); padding:8px 0;"><span>Protein</span><span>0g</span></li>
-                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,0.05); padding:8px 0;"><span>Karbohidrat</span><span>18g (6%)</span></li>
-                        </ul>
+                    <div class="f-card glass-card" data-expand="starch">
+                        <img src="Media/6.jpg" alt="Resistant Starch">
+                        <h3>Resistant Starch Power</h3>
+                        <p>Menutrisi flora menguntungkan di usus besar sebagai prebiotik yang sangat kuat.</p>
                     </div>
                 </div>
             </div>
@@ -222,15 +119,15 @@
         <section class="section" id="produk">
             <div class="container">
                 <div style="text-align: center; margin-bottom: 80px;">
-                    <span class="eyebrow">Mari Mulai Transisi Anda</span>
-                    <h2 style="font-size: clamp(2rem, 4vw, 3rem);">Tersedia Dalam Berbagai Paket Hemat</h2>
+                    <span class="eyebrow">Produk Kami</span>
+                    <h2 style="font-size: clamp(2.5rem, 5vw, 4rem);">Dua Cara Memulai Rutinitas Sehat</h2>
                 </div>
                 <div class="p-showcase">
                     <div class="p-card glass-card">
                         <img src="Media/Reseller Jenang Gemi Images (3).png" alt="Bubur Gemi">
                         <div class="p-card-content">
                             <h3>Bubur Gemi</h3>
-                            <p>Tekstur gel hangat pelapis asam lambung. Tersedia dalam varian Original, Vanilla, Gula Aren, dan Klepon.</p>
+                            <p style="color: var(--muted); margin-bottom: 32px;">Format hangat yang menenangkan untuk kelegaan lambung instan.</p>
                             <a href="bubur.html" class="btn btn-primary" style="width: 100%;">Pilih Varian Bubur &rarr;</a>
                         </div>
                     </div>
@@ -238,52 +135,77 @@
                         <img src="Media/Reseller Jenang Gemi Images (4).png" alt="Jamu Gemi">
                         <div class="p-card-content">
                             <h3>Jamu Gemi</h3>
-                            <p>Minuman segar kaya Kunyit dan Psyllium Husk untuk energi harian tanpa rasa berat di perut.</p>
+                            <p style="color: var(--muted); margin-bottom: 32px;">Kemudahan konsumsi di mana saja dengan tambahan rempah rimpang.</p>
                             <a href="jamu.html" class="btn btn-primary" style="width: 100%;">Pilih Paket Jamu &rarr;</a>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- Nutrition Section -->
+        <section class="section" style="background: #f0f4f2;">
+            <div class="container">
+                <div style="text-align: center; margin-bottom: 60px;">
+                    <span class="eyebrow">Transparansi Nutrisi</span>
+                    <h2>Kandungan Terbaik di Setiap Sajian</h2>
+                </div>
+                <div class="features-grid">
+                    <div class="f-card glass-card" data-expand="nutri-orig">
+                        <img src="Media/1.jpg" alt="Nutrisi Original">
+                        <h3>Varian Original</h3>
+                        <p>Pati Garut murni tanpa tambahan rasa. Klik untuk detail nutrisi.</p>
+                    </div>
+                    <div class="f-card glass-card" data-expand="nutri-vanilla">
+                        <img src="Media/10.jpg" alt="Nutrisi Vanilla">
+                        <h3>Varian Vanilla</h3>
+                        <p>Rasa vanilla lembut yang disukai semua usia. Klik untuk detail nutrisi.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Quiz Modal -->
-    <div class="quiz-modal" id="quizModal">
-        <div class="quiz-box">
-            <h2 style="font-size: 28px; margin-bottom: 16px; color: var(--earth-900);">Let's get you started</h2>
-            <p style="margin-bottom: 32px; color: var(--muted);" id="quiz-caption">Kami akan membantu menemukan format Jenang Gemi yang tepat untuk pencernaan Anda.</p>
-            <button class="btn btn-primary" onclick="startQuiz()" style="width:100%;" id="btn-take-quiz">Take quiz</button>
-            <div id="quiz-q" style="display:none; text-align:left;">
-                <h3 style="margin-bottom:24px; color:var(--earth-900);" id="q-text">Apa keluhan utama lambung Anda?</h3>
-                <button class="quiz-ans" onclick="finishQuiz('bubur')">Asam lambung sering naik & perih (GERD)</button>
-                <button class="quiz-ans" onclick="finishQuiz('jamu')">Sering kembung dan nyeri ulu hati</button>
-                <button class="quiz-ans" onclick="finishQuiz('jamu')">Hanya ingin menjaga daya tahan tubuh & usus</button>
-            </div>
-            <div id="quiz-res" style="display:none;">
-                <h3 style="margin-bottom:24px; color:var(--green);" id="r-text"></h3>
-                <p style="margin-bottom:24px; color:var(--muted);" id="r-desc"></p>
-                <a href="#produk" class="btn btn-primary" id="quiz-res-link" style="width:100%; margin-bottom:12px;" onclick="closeQuiz()">Lihat Produk Spesifik</a>
-            </div>
-            <button style="background:none;border:none;color:var(--muted);text-decoration:underline;margin-top:24px;cursor:pointer;" onclick="closeQuiz()" id="btn-close-quiz">Batal</button>
+    <!-- Modal System -->
+    <div class="modal-v9" id="expansion-modal">
+        <div class="modal-bg"></div>
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <div id="modal-body"></div>
         </div>
     </div>
 
-    <footer class="footer-v9" style="background: #ffffff; color: var(--text-dark); padding: 80px 0 40px; border-top: 1px solid var(--border);">
-        <div class="container">
-            <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 40px;">
-                <img src="Media/37.png" alt="Jenang Gemi" style="height: 36px; filter: grayscale(100%) opacity(0.6);">
-                <div style="display: flex; gap: 32px; font-weight: 500; font-size: 14px;">
-                    <a href="index.html" style="color: var(--muted); text-decoration: none;">Beranda</a>
-                    <a href="bubur.html" style="color: var(--muted); text-decoration: none;">Bubur Gemi</a>
-                    <a href="jamu.html" style="color: var(--muted); text-decoration: none;">Jamu Gemi</a>
-                </div>
+    <!-- Quiz Modal -->
+    <div class="quiz-modal" id="quizModal" style="position:fixed; inset:0; z-index:5000; display:none; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); align-items:center; justify-content:center;">
+        <div class="glass" style="padding: 56px; border-radius: var(--radius-lg); width: min(600px, 100%); text-align: center; position: relative; background: white;">
+            <h2 style="margin-bottom: 16px;">Mulai Perjalanan Sehat Anda</h2>
+            <p style="margin-bottom: 32px; color: var(--muted);" id="quiz-caption">Temukan format Jenang Gemi yang paling tepat untuk Anda.</p>
+            <button class="btn btn-primary" onclick="startQuiz()" style="width:100%;" id="btn-take-quiz">Ambil Quiz</button>
+            <div id="quiz-q" style="display:none; text-align:left;">
+                <h3 style="margin-bottom:24px;" id="q-text"></h3>
+                <div id="quiz-options"></div>
             </div>
-            <div style="margin-top: 60px; padding-top: 32px; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 13px;">
-                &copy; 2024 PT Zero Foods Indonesia. Seluruh hak cipta dilindungi.
+            <div id="quiz-res" style="display:none;">
+                <h3 style="margin-bottom:24px; color:var(--green);" id="r-text"></h3>
+                <p style="margin-bottom:24px;" id="r-desc"></p>
+                <a href="#produk" class="btn btn-primary" id="quiz-res-link" style="width:100%;" onclick="closeQuiz()">Lihat Produk</a>
             </div>
+            <button style="margin-top:24px; opacity:0.6;" onclick="closeQuiz()">Batal</button>
+        </div>
+    </div>
+
+    <footer class="section" style="background: white; border-top: 1px solid var(--border); padding: 80px 0;">
+        <div class="container" style="text-align: center;">
+            <img src="Media/37.png" alt="Jenang Gemi" height="32" style="opacity: 0.5; margin-bottom: 40px;">
+            <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 40px; font-weight: 600;">
+                <a href="bubur.html">Bubur Gemi</a>
+                <a href="jamu.html">Jamu Gemi</a>
+                <a href="index.html">Beranda</a>
+            </div>
+            <p style="color: var(--muted); font-size: 14px;">&copy; 2024 PT Zero Foods Indonesia. Seluruh hak cipta dilindungi.</p>
         </div>
     </footer>
 
-    <script src="main.js"></script>
+    <script src="main.js?v=115"></script>
 </body>
 </html>

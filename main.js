@@ -1,12 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
-  let cart = JSON.parse(localStorage.getItem('gemi_cart_v9')) || [];
+  // --- Cart System ---
+  let cart = JSON.parse(localStorage.getItem('gemi_cart_v10')) || [];
+  const sidebar = document.getElementById('sidebar-v9');
+  const overlay = document.getElementById('global-overlay');
+  const cartBtn = document.querySelector('.cart-v9-btn');
+  const closeBtn = document.querySelector('.close-v9');
 
   const updateV9Count = () => {
     const totalCount = cart.reduce((acc, it) => acc + it.quantity, 0);
-    document.querySelectorAll('.count-v9').forEach(el => {
-      el.textContent = totalCount;
-      el.style.display = totalCount > 0 ? 'flex' : 'none';
-    });
+    const countEl = document.querySelector('.count-v9');
+    if (countEl) countEl.innerText = totalCount;
   };
 
   const renderV9Cart = () => {
@@ -14,75 +17,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalEl = document.getElementById('total-v9');
     if (!list || !totalEl) return;
 
-    if (cart.length === 0) {
-      list.innerHTML = '<p style="text-align: center; color: #94A3B8; padding: 100px 0; font-weight: 800; font-family: Manrope;">Keranjang Kosong</p>';
-      totalEl.textContent = 'Rp 0';
-      return;
-    }
-
+    list.innerHTML = '';
     let subtotal = 0;
-    list.innerHTML = cart.map((item, i) => {
+
+    cart.forEach((item, index) => {
       subtotal += item.price * item.quantity;
-      return `
-        <div class="item-v9" style="display: flex; gap: 24px; padding-bottom: 24px; border-bottom: 2px solid #F1F5F9; margin-bottom: 24px;">
-          <img src="${item.image}" alt="${item.name}" style="width: 100px; height: 100px; border-radius: 20px; background: #FDFCF8; padding: 10px;">
-          <div style="flex: 1;">
-            <h4 style="font-family:'Manrope'; font-weight: 950; font-size: 16px;">${item.name}</h4>
-            <p style="font-size: 11px; font-weight: 700; color: #64748B; margin-top: 4px;">${item.flavor ? 'Rasa: ' + item.flavor + ' | ' : ''}${item.qtyLabel}</p>
-            <div style="font-weight: 950; color: var(--green); font-size: 15px; margin-top: 8px;">Rp ${item.price.toLocaleString('id-ID')}</div>
-            <button class="remove-v9" data-index="${i}" style="border:none; background:none; font-size:11px; color:#EF4444; font-weight:900; cursor:pointer; margin-top:12px;">Hapus Item</button>
+      const row = document.createElement('div');
+      row.style.cssText = 'padding: 20px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;';
+      row.innerHTML = `
+        <div style="flex: 1;">
+          <h4 style="font-size: 16px;">${item.name}</h4>
+          <p style="font-size: 13px; color: var(--muted);">${item.flavor ? `${item.flavor} | ` : ''}${item.qtyLabel}</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px; background: #f5f5f7; padding: 4px 12px; border-radius: 100px;">
+            <button onclick="changeQty(${index}, -1)" style="font-weight: 800;">-</button>
+            <span style="font-weight: 700;">${item.quantity}</span>
+            <button onclick="changeQty(${index}, 1)" style="font-weight: 800;">+</button>
           </div>
-          <div style="font-weight:900;font-size:14px;color:#64748B;">x${item.quantity}</div>
+          <span style="font-weight: 800; min-width: 80px; text-align: right;">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
         </div>
       `;
-    }).join('');
-
-    totalEl.textContent = `Rp ${subtotal.toLocaleString('id-ID')}`;
-    document.querySelectorAll('.remove-v9').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = Number(e.target.getAttribute('data-index'));
-        cart.splice(id, 1);
-        persistV9();
-      });
+      list.appendChild(row);
     });
+
+    totalEl.innerText = `Rp ${subtotal.toLocaleString('id-ID')}`;
+    localStorage.setItem('gemi_cart_v10', JSON.stringify(cart));
   };
 
-  const persistV9 = () => {
-    localStorage.setItem('gemi_cart_v9', JSON.stringify(cart));
-    updateV9Count();
+  window.changeQty = (index, delta) => {
+    cart[index].quantity += delta;
+    if (cart[index].quantity <= 0) cart.splice(index, 1);
     renderV9Cart();
+    updateV9Count();
   };
 
-  const addV9ToCart = (product) => {
-    const existing = cart.findIndex(it => it.name === product.name && it.qtyLabel === product.qtyLabel && it.flavor === product.flavor);
-    if (existing > -1) cart[existing].quantity += 1;
-    else cart.push({ ...product, quantity: 1 });
-    persistV9();
-    openSidebarV9();
+  const toggleSidebar = (show) => {
+    sidebar?.classList.toggle('active', show);
+    overlay?.classList.toggle('active', show);
+    document.body.style.overflow = show ? 'hidden' : '';
   };
 
-  const sidebar = document.getElementById('sidebar-v9');
-  const overlay = document.getElementById('global-overlay');
-  const cartBtn = document.querySelector('.cart-v9-btn');
-  const closeBtnX = document.querySelector('.close-v9');
-
-  const openSidebarV9 = () => {
-    if (!sidebar || !overlay) return;
-    sidebar.classList.add('active');
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closeSidebarV9 = () => {
-    if (!sidebar || !overlay) return;
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
-  };
-
-  cartBtn?.addEventListener('click', openSidebarV9);
-  closeBtnX?.addEventListener('click', closeSidebarV9);
-  overlay?.addEventListener('click', closeSidebarV9);
+  cartBtn?.addEventListener('click', () => toggleSidebar(true));
+  closeBtn?.addEventListener('click', () => toggleSidebar(false));
+  overlay?.addEventListener('click', () => toggleSidebar(false));
 
   document.querySelector('.checkout-v9')?.addEventListener('click', () => {
     if (cart.length === 0) return;
@@ -92,16 +70,68 @@ document.addEventListener('DOMContentLoaded', () => {
       subtotal += it.price * it.quantity;
       msg += `${i + 1}. *${it.name}* ${it.flavor ? `(Rasa: ${it.flavor}) ` : ''}(${it.qtyLabel})\n   Harga: Rp ${it.price.toLocaleString('id-ID')}\n   Jumlah: ${it.quantity}\n\n`;
     });
-    msg += `*Total Keseluruhan: Rp ${subtotal.toLocaleString('id-ID')}*\n\n(JANGAN DIHAPUS)`;
+    msg += `*Total Keseluruhan: Rp ${subtotal.toLocaleString('id-ID')}*`;
     window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`, '_blank');
   });
 
-  // Remove any redundant calls that might open sidebar on load
-  updateV9Count();
-  renderV9Cart();
+  // --- Modal Expansion Data ---
+  const expansionData = {
+    visi: {
+      title: "Visi Kami",
+      content: "Mewujudkan masyarakat sehat yang siap beraktivitas tanpa kendala pencernaan dan asam lambung. Kami percaya bahwa kesehatan fisik dimulai dari sistem pencernaan yang kuat dan seimbang."
+    },
+    misi: {
+      title: "Misi Kami",
+      content: "1. Memberikan solusi alami untuk kesehatan lambung melalui Pati Garut premium.<br>2. Mendorong masyarakat menjalankan pola hidup sehat harian.<br>3. Membangun sistem pencernaan yang kuat dan nyaman secara berkelanjutan."
+    },
+    gel: {
+      title: "Mekanisme Pelindung Gel",
+      content: "Untuk penderita GERD atau luka lambung, Pati Garut memberikan perisai fisik instan. Saat dimasak, pati membentuk gel penyejuk demulcent yang melapisi esofagus dan dinding lambung. Ini memberikan kelegaan instan dari sensasi terbakar tanpa menyebabkan gas berlebih."
+    },
+    starch: {
+      title: "Resistant Starch Power",
+      content: "Kekuatan utama Jenang Gemi ada pada Resistant Starch-nya yang mampu bertahan melewati asam lambung dan usus halus, lalu masuk langsung ke usus besar untuk berperan sebagai prebiotik kuat yang menutrisi ekosistem alami tubuh Anda."
+    },
+    'nutri-orig': {
+      title: "Nutrisi Varian Original",
+      content: "Takaran Saji: 15g | 54 kkal<br><br>Lemak Total: 0g<br>Protein: 0g<br>Karbohidrat: 13g (5%)<br>Gula: 0g<br><br>Komposisi: 100% Umbi garut ekstrak pilihan."
+    },
+    'nutri-vanilla': {
+      title: "Nutrisi Varian Vanilla",
+      content: "Takaran Saji: 20g | 75 kkal<br><br>Lemak Total: 0g<br>Protein: 0g<br>Karbohidrat: 19g (6%)<br>Gula: 9g<br><br>Komposisi: Umbi garut ekstrak, gula pasir, perisa sintetis vanilla."
+    }
+  };
 
-  // --- Flavor & Pack Selection ---
-  const flavorOpts = document.querySelectorAll('.flavor-opt, .opt-chip');
+  const modal = document.getElementById('expansion-modal');
+  const modalBody = document.getElementById('modal-body');
+
+  document.querySelectorAll('.glass-card[data-expand]').forEach(card => {
+    card.addEventListener('click', () => {
+      const key = card.getAttribute('data-expand');
+      const data = expansionData[key];
+      if (data) {
+        modalBody.innerHTML = `
+          <h2 style="font-size: 32px; margin-bottom: 24px;">${data.title}</h2>
+          <div style="font-size: 18px; line-height: 1.8; color: var(--text-main);">${data.content}</div>
+        `;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+  });
+
+  document.querySelector('.close-modal')?.addEventListener('click', () => {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  });
+
+  document.querySelector('.modal-bg')?.addEventListener('click', () => {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  });
+
+  // --- Flavor & Pack Selection (Product Pages) ---
+  const flavorOpts = document.querySelectorAll('.opt-chip');
   flavorOpts.forEach(opt => {
     opt.addEventListener('click', () => {
       flavorOpts.forEach(o => o.classList.remove('active'));
@@ -109,175 +139,107 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const packItems = document.querySelectorAll('.pack-item, .pack-row');
-  packItems.forEach(item => {
-    item.addEventListener('click', () => {
-      packItems.forEach(r => r.classList.remove('active'));
-      item.classList.add('active');
+  const packRows = document.querySelectorAll('.pack-row');
+  packRows.forEach(row => {
+    row.addEventListener('click', () => {
+      packRows.forEach(r => r.classList.remove('active'));
+      row.classList.add('active');
     });
   });
 
   document.querySelector('.p-add-v9')?.addEventListener('click', () => {
-    const pack = document.querySelector('.pack-item.active, .pack-row.active');
-    if (!pack) return alert('Silakan pilih paket.');
+    const activePack = document.querySelector('.pack-row.active');
+    const activeFlavor = document.querySelector('.opt-chip.active');
+    const pName = document.querySelector('h1').innerText;
     
-    const isBubur = document.querySelector('h1').textContent.toLowerCase().includes('bubur');
-    const flavorComp = document.querySelector('.flavor-opt.active, .opt-chip.active');
-    if (isBubur && !flavorComp) return alert('Silakan pilih rasa.');
+    const item = {
+      name: pName,
+      flavor: activeFlavor ? activeFlavor.innerText : '',
+      qtyLabel: activePack.querySelector('div:first-child').innerText,
+      price: parseInt(activePack.getAttribute('data-price')),
+      quantity: 1
+    };
 
-    const name = document.querySelector('h1').textContent.trim();
-    const qtyLabel = pack.querySelector('div:first-child')?.textContent?.trim() || pack.textContent.trim();
-    const price = parseInt(pack.getAttribute('data-price'));
-    const flavor = isBubur ? flavorComp?.getAttribute('data-flavor') : null;
-    const image = document.querySelector('main img')?.getAttribute('src') || 'Media/37.png';
+    const existing = cart.find(i => i.name === item.name && i.flavor === item.flavor && i.qtyLabel === item.qtyLabel);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push(item);
+    }
 
-    addV9ToCart({ name, qtyLabel, price, flavor, image });
+    renderV9Cart();
+    updateV9Count();
+    toggleSidebar(true);
   });
 
-  updateV9Count();
-  renderV9Cart();
-
-  // --- Card Expansion Logic ---
-  const overlayCard = document.createElement('div');
-  overlayCard.className = 'card-overlay';
-  document.body.appendChild(overlayCard);
-
-  const closeBtnExpanded = document.createElement('button');
-  closeBtnExpanded.className = 'close-expanded';
-  closeBtnExpanded.innerHTML = '&times;';
-  document.body.appendChild(closeBtnExpanded);
-
-  const glassCards = document.querySelectorAll('.glass-card');
-  glassCards.forEach(card => {
-    card.addEventListener('click', (e) => {
-      // Don't expand if clicking a link or button inside the card
-      if (e.target.closest('a') || e.target.closest('button')) return;
-      
-      if (card.classList.contains('expanded')) {
-        closeExpanded();
-      } else {
-        card.classList.add('expanded');
-        overlayCard.classList.add('active');
-        closeBtnExpanded.classList.add('active');
-        document.body.style.overflow = 'hidden';
-      }
-    });
-  });
-
-  const closeExpanded = () => {
-    glassCards.forEach(c => c.classList.remove('expanded'));
-    overlayCard.classList.remove('active');
-    closeBtnExpanded.classList.remove('active');
-    document.body.style.overflow = '';
-  };
-
-  overlayCard.addEventListener('click', closeExpanded);
-  closeBtnExpanded.addEventListener('click', closeExpanded);
-
-  /* Reveal Animation */
-  const revealEls = document.querySelectorAll('.section, .f-card, .p-tile, h1, .hero-visual, .p-card, .pack-row');
-  const revealOpts = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
-  const revealCb = (entries, obs) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('revealed');
-        obs.unobserve(e.target);
-      }
-    });
-  };
-  const revealObs = new IntersectionObserver(revealCb, revealOpts);
-  revealEls.forEach(el => {
-    el.classList.add('reveal-v9');
-    revealObs.observe(el);
-  });
-
-  /* Nav Background on scroll */
+  // --- Navigation Scroll Effect ---
   window.addEventListener('scroll', () => {
-    const nav = document.querySelector('.nav-v9');
-    if (window.scrollY > 50) nav?.classList.add('scrolled');
-    else nav?.classList.remove('scrolled');
+    document.querySelector('.nav-v9')?.classList.toggle('scrolled', window.scrollY > 50);
   });
+
   updateV9Count();
   renderV9Cart();
 });
 
-/* Deep Interactive Quiz Functions */
-const quizQuestions = [
+// --- Quiz Logic ---
+let currentStep = 0;
+const quizData = [
   {
-    q: "Bagaimana sensasi yang paling sering Anda rasakan di lambung/dada?",
-    answers: [
-      { text: "Sensasi perih, panas, atau dada terbakar secara konsisten", score: { bubur: 3, jamu: 0 } },
-      { text: "Lebih sering kembung, begah, penuh gas, atau mual", score: { bubur: 1, jamu: 2 } },
-      { text: "Tidak ada keluhan berat, hanya ingin menjaga pencernaan", score: { bubur: 0, jamu: 3 } }
-    ]
-  },
-  {
-    q: "Berapa banyak waktu yang bisa Anda rutinkan setiap harinya?",
-    answers: [
-      { text: "Saya siap meluangkan waktu meracik/menyeduh air panas demi penyembuhan maksimal", score: { bubur: 3, jamu: 0 } },
-      { text: "Saya super sibuk, ingin nutrisi yang instan atau mudah di bawa ke kantor", score: { bubur: 0, jamu: 3 } }
-    ]
-  },
-  {
-    q: "Apa target jangka panjang Anda dari Jenang Gemi?",
-    answers: [
-      { text: "Membentuk lapisan/perisai kuat untuk melindungi lambung yang sering kambuh", score: { bubur: 4, jamu: 0 } },
-      { text: "Meningkatkan stamina, meredakan inflamasi ringan, & tubuh fit bebas gas", score: { bubur: 0, jamu: 3 } }
+    q: "Apa keluhan utama lambung Anda?",
+    options: [
+      { t: "Asam lambung sering naik & perih (GERD)", res: "bubur" },
+      { t: "Sering kembung dan nyeri ulu hati", res: "jamu" },
+      { t: "Hanya ingin menjaga daya tahan tubuh", res: "jamu" }
     ]
   }
 ];
 
-let currQ = 0;
-let scores = { bubur: 0, jamu: 0 };
-
 function openQuiz() {
-  document.getElementById('quizModal')?.classList.add('active');
+  document.getElementById('quizModal').style.display = 'flex';
   document.getElementById('btn-take-quiz').style.display = 'block';
-  document.getElementById('quiz-caption').style.display = 'block';
   document.getElementById('quiz-q').style.display = 'none';
   document.getElementById('quiz-res').style.display = 'none';
-  currQ = 0;
-  scores = { bubur: 0, jamu: 0 };
 }
 
 function closeQuiz() {
-  document.getElementById('quizModal')?.classList.remove('active');
+  document.getElementById('quizModal').style.display = 'none';
 }
 
 function startQuiz() {
   document.getElementById('btn-take-quiz').style.display = 'none';
-  document.getElementById('quiz-caption').style.display = 'none';
   document.getElementById('quiz-q').style.display = 'block';
-  renderQuestion();
+  showStep();
 }
 
-function renderQuestion() {
-  if (currQ >= quizQuestions.length) return finishQuiz();
-  const qData = quizQuestions[currQ];
-  let html = `<h3 style="margin-bottom:24px; color:var(--earth-900); font-weight:700; line-height:1.4;">${qData.q}</h3>`;
-  qData.answers.forEach(ans => {
-    html += `<button class="quiz-ans" onclick="answerQuestion(${ans.score.bubur}, ${ans.score.jamu})">${ans.text}</button>`;
+function showStep() {
+  const step = quizData[currentStep];
+  document.getElementById('q-text').innerText = step.q;
+  const opts = document.getElementById('quiz-options');
+  opts.innerHTML = '';
+  step.options.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'btn btn-outline';
+    b.style.cssText = 'width: 100%; margin-bottom: 12px; text-align: left; padding: 16px 24px;';
+    b.innerText = o.t;
+    b.onclick = () => finishQuiz(o.res);
+    opts.appendChild(b);
   });
-  document.getElementById('quiz-q').innerHTML = html;
 }
 
-function answerQuestion(bPts, jPts) {
-  scores.bubur += bPts;
-  scores.jamu += jPts;
-  currQ++;
-  renderQuestion();
-}
-
-function finishQuiz() {
+function finishQuiz(res) {
   document.getElementById('quiz-q').style.display = 'none';
   document.getElementById('quiz-res').style.display = 'block';
-  if (scores.bubur > scores.jamu) {
-    document.getElementById('r-text').innerText = 'Bubur Gemi Adalah Formulasi Tepat!';
-    document.getElementById('r-desc').innerText = 'Prioritas lambung Anda adalah untuk dilapisi secara fisik. Sifat penyejuk demulcent dari Bubur Gemi (wajib diseduh panas) akan sangat efektif meredakan perih/panas lambung kronis Anda.';
-    document.getElementById('quiz-res-link').href = 'bubur.html';
+  const rText = document.getElementById('r-text');
+  const rDesc = document.getElementById('r-desc');
+  const rLink = document.getElementById('quiz-res-link');
+
+  if (res === 'bubur') {
+    rText.innerText = "Bubur Gemi Adalah Solusi Anda";
+    rDesc.innerText = "Tekstur gel hangat dari Bubur Gemi sangat efektif untuk melapisi lambung yang perih dan meredakan gejala GERD seketika.";
+    rLink.href = "bubur.html";
   } else {
-    document.getElementById('r-text').innerText = 'Jamu Gemi Solusi Sempurna Harian Anda!';
-    document.getElementById('r-desc').innerText = 'Berdasarkan rutinitas & masalah kembung/gas, Jamu Gemi adalah pilihan sempurna. Rutinitas instan, ditambah Kunyit & Psyllium Husk untuk anti-inflamasi harian terbaik.';
-    document.getElementById('quiz-res-link').href = 'jamu.html';
+    rText.innerText = "Jamu Gemi Pilihan Tepat";
+    rDesc.innerText = "Jamu Gemi dengan tambahan Kunyit dan Psyllium Husk membantu meredakan kembung harian dan menjaga kesehatan usus Anda.";
+    rLink.href = "jamu.html";
   }
 }

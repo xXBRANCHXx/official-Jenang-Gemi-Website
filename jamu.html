@@ -1,24 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jenang Gemi Jamu - Stamina & Pencernaan Sehat</title>
-    <link rel="stylesheet" href="style.css?v=113">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="style.css?v=115">
 </head>
-
-<body class="p-page-v9">
-    <div class="blob-decor"></div>
-    <div class="blob-decor blob-2" style="bottom: 0; left: 0; top: auto; right: auto;"></div>
-
-    <nav class="nav-v9 scrolled">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+<body>
+    <nav class="nav-v9">
+        <div class="container nav-wrap">
             <a href="index.html" class="logo">
-                <img src="Media/37.png" alt="Jenang Gemi Logo" width="160" height="42"
-                    style="width:auto;height:42px;object-fit:contain;">
+                <img src="Media/37.png" alt="Jenang Gemi" height="42">
             </a>
             <div class="nav-links">
                 <ul>
@@ -28,12 +20,8 @@
                 </ul>
             </div>
             <div class="nav-actions">
-                <button class="cart-v9-btn" aria-label="Keranjang">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z" />
-                        <line x1="3" y1="6" x2="21" y2="6" />
-                        <path d="M16 10a4 4 0 01-8 0" />
-                    </svg>
+                <button class="cart-v9-btn">
+                    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
                     <span class="count-v9">0</span>
                 </button>
             </div>
@@ -42,30 +30,30 @@
 
     <div class="sidebar-v9" id="sidebar-v9">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
-            <h2 style="font-size: 32px; font-weight: 800; font-family: 'Manrope';">Keranjang</h2>
-            <button class="close-v9" style="background: none; border: none;">&times;</button>
+            <h2 style="font-size: 32px;">Keranjang</h2>
+            <button class="close-v9" style="font-size: 32px;">&times;</button>
         </div>
         <div id="list-v9" style="flex: 1; overflow-y: auto;"></div>
-        <div style="padding-top: 32px; border-top: 3px solid var(--border);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
-                <span style="font-weight: 700; opacity: 0.6; text-transform: uppercase; font-size: 13px;">Estimasi
-                    Total</span>
-                <span id="total-v9" style="font-size: 32px; font-weight: 950; color: var(--green);">Rp 0</span>
+        <div style="padding-top: 24px; border-top: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 24px;">
+                <span style="font-weight: 700; opacity: 0.6;">Subtotal</span>
+                <span id="total-v9" style="font-size: 24px; font-weight: 800; color: var(--green);">Rp 0</span>
             </div>
             <button class="btn btn-primary checkout-v9" style="width: 100%;">Checkout via WhatsApp</button>
         </div>
     </div>
     <div class="global-overlay" id="global-overlay"></div>
 
-    <main class="section" style="padding-top: 140px;">
+    <main class="section" style="padding-top: 160px;">
         <div class="container p-info-grid">
-            <div class="hero-visual glass-card" style="text-align: center; padding: 40px;">
-                <img src="Media/31.png" alt="Jenang Gemi Jamu" style="width: 100%; max-width: 500px; margin: 0 auto;">
+            <div class="hero-visual glass-card" style="text-align: center; padding: 40px; border-radius: var(--radius-xl);">
+                <img src="Media/Reseller Jenang Gemi Images (4).png" alt="Jenang Gemi Jamu" style="width: 100%; max-width: 500px; margin: 0 auto;">
             </div>
-            <div class="p-details glass-card" style="padding: 40px;">
+            <div class="p-details glass-card" style="padding: 56px;">
                 <span class="eyebrow">Tradisi Khas Indonesia</span>
-                <h1 style="margin-bottom: 24px; font-size: clamp(3rem, 5vw, 4.5rem);">Jenang Gemi <br>Jamu</h1>
-                <p style="font-size: 1.2rem; margin-bottom: 40px; color: var(--muted); line-height:1.6;">Kombinasi harmonis antara Pati Umbi Garut pilihan, Kunyit, Kayu manis, dan Gula Aren alami berkualitas tinggi. Dirancang khusus untuk menjaga stamina harian dan kenyamanan pencernaan secara tradisional.</p>
+                <h1 style="margin-bottom: 24px; font-size: clamp(3rem, 5vw, 4rem);">Jenang Gemi <br>Jamu</h1>
+                <p style="font-size: 1.2rem; margin-bottom: 40px; color: var(--muted); line-height:1.7;">Kombinasi harmonis Pati Umbi Garut, Kunyit, dan Psyllium Husk. Praktis untuk rutinitas harian yang menjaga stamina dan kenyamanan perut Anda.</p>
+
                 <div style="margin-bottom: 48px;">
                     <h4 style="font-size:12px; margin-bottom:20px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase;">Pilih Paket Sachet:</h4>
                     <div class="pack-row active" data-price="120000">
@@ -81,27 +69,19 @@
                         <div class="pack-val">Rp 398.000</div>
                     </div>
                 </div>
+
                 <button class="btn btn-primary p-add-v9" style="width: 100%;">Tambah ke Keranjang &rarr;</button>
             </div>
         </div>
     </main>
 
-    <footer class="footer-v9" style="background: #ffffff; color: var(--text-dark); padding: 80px 0 40px; border-top: 1px solid var(--border);">
-        <div class="container">
-            <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 40px;">
-                <img src="Media/37.png" alt="Jenang Gemi" style="height: 36px; filter: grayscale(100%) opacity(0.6);">
-                <div style="display: flex; gap: 32px; font-weight: 500; font-size: 14px;">
-                    <a href="index.html" style="color: var(--muted); text-decoration: none;">Beranda</a>
-                    <a href="bubur.html" style="color: var(--muted); text-decoration: none;">Bubur Gemi</a>
-                    <a href="jamu.html" style="color: var(--muted); text-decoration: none;">Jamu Gemi</a>
-                </div>
-            </div>
-            <div style="margin-top: 60px; padding-top: 32px; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 13px;">
-                &copy; 2024 PT Zero Foods Indonesia. Seluruh hak cipta dilindungi.
-            </div>
+    <footer class="section" style="background: white; border-top: 1px solid var(--border); padding: 80px 0;">
+        <div class="container" style="text-align: center;">
+            <img src="Media/37.png" alt="Jenang Gemi" height="32" style="opacity: 0.5; margin-bottom: 40px;">
+            <p style="color: var(--muted); font-size: 14px;">&copy; 2024 PT Zero Foods Indonesia. Seluruh hak cipta dilindungi.</p>
         </div>
     </footer>
-    <script src="main.js"></script>
-</body>
 
+    <script src="main.js?v=115"></script>
+</body>
 </html>

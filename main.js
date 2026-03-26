@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!list) return;
     
     if (cart.length === 0) {
-      list.innerHTML = '<p style="text-align: center; color: #94A3B8; padding: 100px 0; font-weight: 800; font-family: Outfit;">Keranjang Kosong</p>';
+      list.innerHTML = '<p style="text-align: center; color: #94A3B8; padding: 100px 0; font-weight: 800; font-family: Manrope;">Keranjang Kosong</p>';
       totalEl.textContent = 'Rp 0';
       return;
     }
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="item-v9" style="display: flex; gap: 24px; padding-bottom: 24px; border-bottom: 2px solid #F1F5F9; margin-bottom: 24px;">
           <img src="${item.image}" alt="${item.name}" style="width: 100px; height: 100px; border-radius: 20px; background: #FDFCF8; padding: 10px;">
           <div style="flex: 1;">
-            <h4 style="font-family:'Outfit'; font-weight: 950; font-size: 16px;">${item.name}</h4>
+            <h4 style="font-family:'Manrope'; font-weight: 950; font-size: 16px;">${item.name}</h4>
             <p style="font-size: 11px; font-weight: 700; color: #64748B; margin-top: 4px;">${item.flavor ? 'Rasa: ' + item.flavor + ' | ' : ''}${item.qtyLabel}</p>
             <div style="font-weight: 950; color: var(--green); font-size: 15px; margin-top: 8px;">Rp ${item.price.toLocaleString('id-ID')}</div>
             <button class="remove-v9" data-index="${i}" style="border:none; background:none; font-size:11px; color:#EF4444; font-weight:900; cursor:pointer; margin-top:12px;">Hapus Item</button>
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Flavor & Pack Selection ---
-  const flavorOpts = document.querySelectorAll('.flavor-opt');
+  const flavorOpts = document.querySelectorAll('.flavor-opt, .opt-chip');
   flavorOpts.forEach(opt => {
     opt.addEventListener('click', () => {
       flavorOpts.forEach(o => o.classList.remove('active'));
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const packItems = document.querySelectorAll('.pack-item');
+  const packItems = document.querySelectorAll('.pack-item, .pack-row');
   packItems.forEach(item => {
     item.addEventListener('click', () => {
       packItems.forEach(r => r.classList.remove('active'));
@@ -117,15 +117,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.querySelector('.p-add-v9')?.addEventListener('click', () => {
-    const pack = document.querySelector('.pack-item.active');
+    const pack = document.querySelector('.pack-item.active, .pack-row.active');
     if (!pack) return alert('Silakan pilih paket.');
     
     const isBubur = document.querySelector('h1').textContent.toLowerCase().includes('bubur');
-    const flavorComp = document.querySelector('.flavor-opt.active');
+    const flavorComp = document.querySelector('.flavor-opt.active, .opt-chip.active');
     if (isBubur && !flavorComp) return alert('Silakan pilih rasa.');
 
     const name = document.querySelector('h1').textContent.trim();
-    const qtyLabel = pack.querySelector('div:first-child').textContent;
+    const qtyLabel = pack.querySelector('div:first-child')?.textContent?.trim() || pack.textContent.trim();
     const price = parseInt(pack.getAttribute('data-price'));
     const flavor = isBubur ? flavorComp.getAttribute('data-flavor') : null;
     const image = document.querySelector('main img').getAttribute('src');

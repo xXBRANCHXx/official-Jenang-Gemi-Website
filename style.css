@@ -66,10 +66,12 @@ h2, h3, h4 { font-weight: 600; }
   -webkit-backdrop-filter: blur(32px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
+.nav-v9 .container { flex-wrap: wrap !important; }
 .logo img { height: 44px; width: auto; object-fit: contain; }
 
-.nav-links { display: none; }
-.nav-links ul { list-style: none; display: flex; gap: 32px; }
+.nav-links { display: block; width: 100%; order: 3; margin-top: 16px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+.nav-links::-webkit-scrollbar { display: none; }
+.nav-links ul { list-style: none; display: flex; gap: 24px; }
 .nav-links a {
   text-decoration: none;
   color: var(--muted);
@@ -171,7 +173,7 @@ h2, h3, h4 { font-weight: 600; }
   z-index: 1;
 }
 
-.features-grid, .f-grid { display: grid; gap: 32px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.features-grid, .f-grid { display: grid; gap: 32px; }
 .f-card {
   background: var(--white);
   border: 1px solid var(--border);
@@ -271,14 +273,32 @@ h2, h3, h4 { font-weight: 600; }
 .quiz-box {
   background: var(--white); width: 90%; max-width: 540px; padding: 56px; border-radius: 36px;
   text-align: center; box-shadow: 0 24px 80px rgba(0,0,0,0.1);
+  max-height: 90vh; overflow-y: auto;
 }
 .quiz-ans {
   display: block; width: 100%; border: 1px solid var(--border); padding: 20px; border-radius: 16px; margin-bottom: 16px; cursor: pointer; text-align: left; font-weight: 500; font-size: 16px; background: white; transition: var(--trans);
 }
 .quiz-ans:hover { border-color: var(--green); background: rgba(0, 210, 106, 0.04); transform: scale(1.02); }
 
+@media (max-width: 899px) {
+  .section { padding: 80px 0; }
+  .hero-v9 { padding-top: 160px; padding-bottom: 60px; }
+  .hero-text h1 { font-size: 2.2rem; }
+  .features-grid, .f-grid, .p-showcase, .product-showcase { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .f-card, .p-card, .p-tile-content { padding: 16px; border-radius: 20px; }
+  .f-card h3, .p-card h3 { font-size: 16px; margin-bottom: 8px; }
+  .f-card p, .p-card p { font-size: 12px; }
+  .p-card img, .p-tile img { aspect-ratio: 1/1; }
+  .btn { padding: 10px 16px; font-size: 12px; width: 100%; }
+  .quiz-box { padding: 24px; border-radius: 20px; }
+  .quiz-ans { padding: 12px; font-size: 13px; margin-bottom: 8px; }
+  .quiz-box h2 { font-size: 22px; }
+  .pack-row, .flavor-opt, .opt-chip { padding: 10px; font-size: 12px; flex-direction: column; text-align: center; justify-content: center; gap: 4px; }
+  .hero-visual img { max-height: none; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.06)); }
+}
+
 @media (min-width: 900px) {
-  .nav-links { display: block; }
+  .nav-links { width: auto; order: initial; margin-top: 0; overflow: visible; padding-bottom: 0; }
   .hero-grid { grid-template-columns: 1.1fr 0.9fr; }
   .p-showcase, .product-showcase, .features-grid, .f-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

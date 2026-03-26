@@ -298,29 +298,24 @@
             <div id="quiz-res" style="display:none;">
                 <h3 style="margin-bottom:24px; color:var(--green);" id="r-text"></h3>
                 <p style="margin-bottom:24px; color:var(--muted);" id="r-desc"></p>
-                <a href="#produk" class="btn btn-primary" style="width:100%; margin-bottom:12px;" onclick="closeQuiz()">Lihat Produk Spesifik</a>
+                <a href="#produk" class="btn btn-primary" id="quiz-res-link" style="width:100%; margin-bottom:12px;" onclick="closeQuiz()">Lihat Produk Spesifik</a>
             </div>
             <button style="background:none;border:none;color:var(--muted);text-decoration:underline;margin-top:24px;cursor:pointer;" onclick="closeQuiz()" id="btn-close-quiz">Batal</button>
         </div>
     </div>
 
-    <footer class="footer-v9 parallax-section" style="background-image: url('Media/10.jpg'); border-top: none;">
-        <div class="parallax-overlay" style="background: rgba(0, 210, 106, 0.85);"></div>
-        <div class="container parallax-content">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 80px;">
-                <div>
-                    <img src="Media/37.png" alt="Jenang Gemi" height="40">
-                    <p style="opacity: 0.8; max-width: 450px;">Kami meracik prebiotik alami dari bahan lokal Indonesia untuk membantu pencernaan terasa stabil, nyaman, dan tetap enak dinikmati setiap hari.</p>
-                </div>
-                <div style="text-align: right;">
-                    <h4 style="font-family:'Manrope'; text-transform:uppercase; margin-bottom:24px; color:#ffffff; font-size:12px; letter-spacing:0.1em;">Navigasi</h4>
-                    <p><a href="index.html" style="color:white; text-decoration:none;">Beranda</a></p>
-                    <p style="margin-top:12px;"><a href="bubur.html" style="color:white; text-decoration:none;">Bubur Gemi</a></p>
-                    <p style="margin-top:12px;"><a href="jamu.html" style="color:white; text-decoration:none;">Jamu Gemi</a></p>
+    <footer class="footer-v9" style="background: #ffffff; color: var(--text-dark); padding: 80px 0 40px; border-top: 1px solid var(--border);">
+        <div class="container">
+            <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 40px;">
+                <img src="Media/37.png" alt="Jenang Gemi" style="height: 36px; filter: grayscale(100%) opacity(0.6);">
+                <div style="display: flex; gap: 32px; font-weight: 500; font-size: 14px;">
+                    <a href="index.html" style="color: var(--muted); text-decoration: none;">Beranda</a>
+                    <a href="bubur.html" style="color: var(--muted); text-decoration: none;">Bubur Gemi</a>
+                    <a href="jamu.html" style="color: var(--muted); text-decoration: none;">Jamu Gemi</a>
                 </div>
             </div>
-            <div style="margin-top:80px; padding-top:40px; border-top:1px solid rgba(255,255,255,0.2); text-align:center;">
-                <p style="font-size:12px; opacity:0.6;">&copy; 2024 PT Zero Foods Indonesia. Seluruh hak cipta dilindungi.</p>
+            <div style="margin-top: 60px; padding-top: 32px; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 13px;">
+                &copy; 2024 PT Zero Foods Indonesia. Seluruh hak cipta dilindungi.
             </div>
         </div>
     </footer>

@@ -133,6 +133,43 @@ document.addEventListener('DOMContentLoaded', () => {
   updateV9Count();
   renderV9Cart();
 
+  // --- Card Expansion Logic ---
+  const overlayCard = document.createElement('div');
+  overlayCard.className = 'card-overlay';
+  document.body.appendChild(overlayCard);
+
+  const closeBtnExpanded = document.createElement('button');
+  closeBtnExpanded.className = 'close-expanded';
+  closeBtnExpanded.innerHTML = '&times;';
+  document.body.appendChild(closeBtnExpanded);
+
+  const glassCards = document.querySelectorAll('.glass-card');
+  glassCards.forEach(card => {
+    card.addEventListener('click', (e) => {
+      // Don't expand if clicking a link or button inside the card
+      if (e.target.closest('a') || e.target.closest('button')) return;
+      
+      if (card.classList.contains('expanded')) {
+        closeExpanded();
+      } else {
+        card.classList.add('expanded');
+        overlayCard.classList.add('active');
+        closeBtnExpanded.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+  });
+
+  const closeExpanded = () => {
+    glassCards.forEach(c => c.classList.remove('expanded'));
+    overlayCard.classList.remove('active');
+    closeBtnExpanded.classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  overlayCard.addEventListener('click', closeExpanded);
+  closeBtnExpanded.addEventListener('click', closeExpanded);
+
   /* Reveal Animation */
   const revealEls = document.querySelectorAll('.section, .f-card, .p-tile, h1, .hero-visual, .p-card, .pack-row');
   const revealOpts = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jenang Gemi Bubur - Solusi Alami Maag & GERD</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body class="p-page-v9">
+    <div class="blob-decor"></div>
+    <div class="blob-decor blob-2" style="bottom: 0; left: 0; top: auto; right: auto;"></div>
+
+    <!-- Navigation -->
+    <nav class="nav-v9 scrolled">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <a href="index.html" class="logo">
+                <img src="Media/37.png" alt="Jenang Gemi Logo">
+            </a>
+            <div class="nav-links">
+                <ul>
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="bubur.html" class="active">Bubur Gemi</a></li>
+                    <li><a href="jamu.html">Jamu Gemi</a></li>
+                </ul>
+            </div>
+            <div class="nav-actions">
+                <button class="cart-v9-btn" aria-label="Keranjang">
+                    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                    <span class="count-v9">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar-v9" id="sidebar-v9">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+            <h2 style="font-size: 32px; font-weight: 800; font-family: 'Outfit';">Keranjang</h2>
+            <button class="close-v9" style="background: none; border: none;">&times;</button>
+        </div>
+        <div id="list-v9" style="flex: 1; overflow-y: auto;"></div>
+        <div style="padding-top: 32px; border-top: 3px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                <span style="font-weight: 700; opacity: 0.6; text-transform: uppercase; font-size: 13px;">Estimasi Total</span>
+                <span id="total-v9" style="font-size: 32px; font-weight: 950; color: var(--green);">Rp 0</span>
+            </div>
+            <button class="btn btn-primary checkout-v9" style="width: 100%;">Checkout via WhatsApp</button>
+        </div>
+    </div>
+    <div class="global-overlay" id="global-overlay"></div>
+
+    <main style="padding: 160px 0 100px;">
+        <div class="container p-info-grid">
+            <!-- Gallery Visual -->
+            <div class="hero-visual" style="text-align: center; border-radius: 40px; overflow: hidden; background: #FFFDF7; padding: 60px;">
+                <img src="Media/Reseller Jenang Gemi Images (3).png" alt="Jenang Gemi Bubur" style="width: 100%; max-width: 600px;">
+            </div>
+
+            <!-- Content V8 -->
+            <div class="p-details">
+                <span class="eyebrow" style="color: var(--green); font-weight: 800; text-transform: uppercase;">Pati Umbi Garut Premium</span>
+                <h1 style="margin-bottom: 24px; font-size: 56px;">Jenang Gemi <br>Bubur</h1>
+                <p style="font-size: 18px; margin-bottom: 40px; opacity: 0.8;">Formula istimewa dari Pati Umbi Garut pilihan yang dirancang untuk melapisi dinding lambung secara lembut. Membantu meredakan kembung, perih, dan keluhan pencernaan lainnya harian.</p>
+
+                <!-- Flavor Selection -->
+                <div style="margin-bottom: 48px;">
+                    <h4 style="font-family:'Outfit'; text-transform:uppercase; font-size:12px; margin-bottom:24px; color:var(--text-muted); letter-spacing:0.1em;">Pilih Varian Rasa:</h4>
+                    <div class="flavor-grid">
+                        <div class="opt-chip active" data-flavor="Original">Original</div>
+                        <div class="opt-chip best-seller" data-flavor="Gula Aren">Gula Aren</div>
+                        <div class="opt-chip" data-flavor="Vanilla">Vanilla</div>
+                        <div class="opt-chip" data-flavor="Klepon">Klepon</div>
+                    </div>
+                </div>
+
+                <!-- Pack Selection -->
+                <div style="margin-bottom: 48px;">
+                    <h4 style="font-family:'Outfit'; text-transform:uppercase; font-size:12px; margin-bottom:24px; color:var(--text-muted); letter-spacing:0.1em;">Pilih Paket Sachet:</h4>
+                    <div class="pack-row active" data-price="120000">
+                        <div style="font-weight: 700;">Starter Box (15 Sachet)</div>
+                        <div class="pack-val">Rp 120.000</div>
+                    </div>
+                    <div class="pack-row" data-price="199000">
+                        <div style="font-weight: 700;">Value Box (30 Sachet)</div>
+                        <div class="pack-val">Rp 199.000</div>
+                    </div>
+                    <div class="pack-row" data-price="398000">
+                        <div style="font-weight: 700;">Family Pack (60 Sachet)</div>
+                        <div class="pack-val">Rp 398.000</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary p-add-v9" style="width: 100%;">Tambah ke Keranjang</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer-v9">
+        <div class="container" style="text-align:center;">
+             <p style="font-size:12px; opacity:0.3;">&copy; 2024 PT Zero Foods Indonesia. Seluruh hak cipta dilindungi.</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>

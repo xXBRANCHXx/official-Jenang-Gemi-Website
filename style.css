@@ -30,6 +30,9 @@ body {
   background: #ffffff;
   overflow-x: hidden;
 }
+h1, h2, h3, h4 { line-height: 1.15; }
+.container { width: min(1180px, 100% - 2.4rem); margin: 0 auto; }
+.section { padding: 96px 0; }
 
 h1, h2, h3, h4 { font-family: 'Manrope', sans-serif; line-height: 1.15; }
 h1 { font-weight: 800; }
@@ -276,6 +279,8 @@ h2, h3, h4 { font-weight: 700; }
   flex-direction: column;
   transition: var(--trans);
 }
+.sidebar-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.sidebar-head h2 { font-size: 1.7rem; }
 .sidebar-v9.active { right: 0; }
 .close-v9 { font-size: 2rem; color: var(--muted); cursor: pointer; }
 .global-overlay {

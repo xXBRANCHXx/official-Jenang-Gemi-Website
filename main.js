@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // --- Cart Core ---
   let cart = JSON.parse(localStorage.getItem('gemi_cart_v9')) || [];
-  
+
   const updateV9Count = () => {
     const totalCount = cart.reduce((acc, it) => acc + it.quantity, 0);
     document.querySelectorAll('.count-v9').forEach(el => {
@@ -13,9 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderV9Cart = () => {
     const list = document.getElementById('list-v9');
     const totalEl = document.getElementById('total-v9');
-    
-    if (!list) return;
-    
+    if (!list || !totalEl) return;
+
     if (cart.length === 0) {
       list.innerHTML = '<p style="text-align: center; color: #94A3B8; padding: 100px 0; font-weight: 800; font-family: Manrope;">Keranjang Kosong</p>';
       totalEl.textContent = 'Rp 0';
@@ -34,16 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="font-weight: 950; color: var(--green); font-size: 15px; margin-top: 8px;">Rp ${item.price.toLocaleString('id-ID')}</div>
             <button class="remove-v9" data-index="${i}" style="border:none; background:none; font-size:11px; color:#EF4444; font-weight:900; cursor:pointer; margin-top:12px;">Hapus Item</button>
           </div>
-          <div style="font-weight: 900; font-size: 14px; color: #64748B;">x${item.quantity}</div>
+          <div style="font-weight:900;font-size:14px;color:#64748B;">x${item.quantity}</div>
         </div>
       `;
     }).join('');
 
     totalEl.textContent = `Rp ${subtotal.toLocaleString('id-ID')}`;
-    
     document.querySelectorAll('.remove-v9').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const id = e.target.getAttribute('data-index');
+        const id = Number(e.target.getAttribute('data-index'));
         cart.splice(id, 1);
         persistV9();
       });
@@ -64,19 +61,20 @@ document.addEventListener('DOMContentLoaded', () => {
     openSidebarV9();
   };
 
-  // --- Sidebar Interaction ---
   const sidebar = document.getElementById('sidebar-v9');
   const overlay = document.getElementById('global-overlay');
   const cartBtn = document.querySelector('.cart-v9-btn');
   const closeBtnX = document.querySelector('.close-v9');
 
   const openSidebarV9 = () => {
+    if (!sidebar || !overlay) return;
     sidebar.classList.add('active');
     overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
   };
 
   const closeSidebarV9 = () => {
+    if (!sidebar || !overlay) return;
     sidebar.classList.remove('active');
     overlay.classList.remove('active');
     document.body.style.overflow = '';
@@ -86,16 +84,15 @@ document.addEventListener('DOMContentLoaded', () => {
   closeBtnX?.addEventListener('click', closeSidebarV9);
   overlay?.addEventListener('click', closeSidebarV9);
 
-  // --- WhatsApp (Clean, No Emojis) ---
   document.querySelector('.checkout-v9')?.addEventListener('click', () => {
     if (cart.length === 0) return;
-    let msg = "Halo Admin Jenang Gemi, pemesanan baru saya:\n\n";
+    let msg = 'Halo Admin Jenang Gemi, pemesanan baru saya:\n\n';
     let subtotal = 0;
     cart.forEach((it, i) => {
       subtotal += it.price * it.quantity;
-      msg += (i + 1) + ". *" + it.name + "* " + (it.flavor ? "(Rasa: " + it.flavor + ") " : "") + "(" + it.qtyLabel + ")\n   Harga: Rp " + it.price.toLocaleString('id-ID') + "\n   Jumlah: " + it.quantity + "\n\n";
+      msg += `${i + 1}. *${it.name}* ${it.flavor ? `(Rasa: ${it.flavor}) ` : ''}(${it.qtyLabel})\n   Harga: Rp ${it.price.toLocaleString('id-ID')}\n   Jumlah: ${it.quantity}\n\n`;
     });
-    msg += "*Total Keseluruhan: Rp " + subtotal.toLocaleString('id-ID') + "*\n\n(JANGAN DIHAPUS)";
+    msg += `*Total Keseluruhan: Rp ${subtotal.toLocaleString('id-ID')}*\n\n(JANGAN DIHAPUS)`;
     window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`, '_blank');
   });
 
@@ -127,8 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = document.querySelector('h1').textContent.trim();
     const qtyLabel = pack.querySelector('div:first-child')?.textContent?.trim() || pack.textContent.trim();
     const price = parseInt(pack.getAttribute('data-price'));
-    const flavor = isBubur ? flavorComp.getAttribute('data-flavor') : null;
-    const image = document.querySelector('main img').getAttribute('src');
+    const flavor = isBubur ? flavorComp?.getAttribute('data-flavor') : null;
+    const image = document.querySelector('main img')?.getAttribute('src') || 'Media/37.png';
 
     addV9ToCart({ name, qtyLabel, price, flavor, image });
   });
@@ -159,6 +156,77 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.scrollY > 50) nav?.classList.add('scrolled');
     else nav?.classList.remove('scrolled');
   });
+
+  const quizSteps = [
+    {
+      title: 'Seberapa siap kamu masak rutin di rumah?',
+      options: [
+        { label: 'Aku siap masak rutin', score: 'bubur' },
+        { label: 'Pengennya yang tinggal seduh', score: 'jamu' }
+      ]
+    },
+    {
+      title: 'Kamu prioritasnya apa sekarang?',
+      options: [
+        { label: 'Hasil paling optimal', score: 'bubur' },
+        { label: 'Paling praktis dan konsisten', score: 'jamu' }
+      ]
+    }
+  ];
+
+  let quizIndex = 0;
+  const quizScore = { bubur: 0, jamu: 0 };
+  const quizModal = document.getElementById('quiz-modal');
+  const quizTitle = document.getElementById('quiz-title');
+  const quizOptions = document.getElementById('quiz-options');
+  const quizResult = document.getElementById('quiz-result');
+
+  const renderQuizStep = () => {
+    const step = quizSteps[quizIndex];
+    if (!step || !quizTitle || !quizOptions) return;
+    quizTitle.textContent = step.title;
+    quizOptions.innerHTML = step.options.map(opt => `<button class="btn btn-outline quiz-option" data-score="${opt.score}">${opt.label}</button>`).join('');
+    quizOptions.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const score = btn.getAttribute('data-score');
+        quizScore[score] += 1;
+        quizIndex += 1;
+        if (quizIndex >= quizSteps.length) {
+          const pick = quizScore.bubur >= quizScore.jamu ? 'bubur' : 'jamu';
+          if (pick === 'bubur') {
+            quizTitle.textContent = 'Rekomendasi: Bubur Gemi';
+            quizOptions.innerHTML = '<a class="btn btn-primary" href="bubur.html">Lihat Bubur Gemi</a>';
+            quizResult.textContent = 'Kamu cocok dengan Bubur Gemi: butuh hasil terbaik dan siap meluangkan waktu memasak di rumah.';
+          } else {
+            quizTitle.textContent = 'Rekomendasi: Jamu Gemi';
+            quizOptions.innerHTML = '<a class="btn btn-primary" href="jamu.html">Lihat Jamu Gemi</a>';
+            quizResult.textContent = 'Kamu cocok dengan Jamu Gemi: lebih praktis untuk konsumsi harian, dengan benefit tetap kuat.';
+          }
+          return;
+        }
+        renderQuizStep();
+      });
+    });
+  };
+
+  const openQuiz = () => {
+    if (!quizModal) return;
+    quizIndex = 0;
+    quizScore.bubur = 0;
+    quizScore.jamu = 0;
+    quizResult.textContent = '';
+    renderQuizStep();
+    quizModal.classList.add('active');
+  };
+
+  document.getElementById('start-quiz')?.addEventListener('click', openQuiz);
+  document.getElementById('quiz-close')?.addEventListener('click', () => quizModal?.classList.remove('active'));
+  quizModal?.addEventListener('click', (e) => {
+    if (e.target === quizModal) quizModal.classList.remove('active');
+  });
+
+  updateV9Count();
+  renderV9Cart();
 });
 
 /* Quiz Functions */

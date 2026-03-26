@@ -63,13 +63,36 @@
                     <h1>Kesehatan Gut Dimulai <br><span>Dari Alam.</span></h1>
                     <p>Jenang Gemi adalah solusi all-in-one untuk kesehatan lambung yang diracik murni dari pati umbi garut. Redakan asam lambung, bentengi dinding usus, dan pulihkan mikrobioma Anda dengan kekuatan tersembunyi dari tradisi Indonesia.</p>
                     <div style="display: flex; gap: 16px;">
-                        <a href="#produk" class="btn btn-primary">Lihat Produk</a>
+                        <button class="btn btn-primary" onclick="openQuiz()">Get Started</button>
                         <a href="#info-library" class="btn btn-outline" style="background: white;">Pelajari Lebih Lanjut &darr;</a>
                     </div>
                 </div>
                 <div class="hero-visual">
                     <img src="Media/Reseller Jenang Gemi Images (3).png" alt="Kemasan Jenang Gemi">
                     <div class="badge-v8">ASLI <br>PATI GARUT</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" style="background: white; padding: 6rem 0;">
+            <div class="container">
+                <div style="text-align: center; margin-bottom: 60px;">
+                    <span class="eyebrow" style="color: var(--green);">Filosofi Kami</span>
+                    <h2 style="font-size: 40px; color: var(--earth-900);">Mewujudkan Masyarakat Sehat</h2>
+                </div>
+                <div class="features-grid">
+                    <div class="f-card" style="box-shadow: var(--shadow);">
+                        <h3 style="color: var(--green); font-size: 24px;">Visi Kami</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.6;">Mewujudkan masyarakat sehat yang siap beraktivitas tanpa kendala pencernaan dan asam lambung.</p>
+                    </div>
+                    <div class="f-card" style="box-shadow: var(--shadow);">
+                        <h3 style="color: var(--green); font-size: 24px;">Misi Kami</h3>
+                        <ul style="padding-left: 20px; color: var(--muted); font-size: 1.05rem; line-height: 1.6;">
+                            <li style="margin-bottom:8px;">Memberikan solusi alami untuk kesehatan lambung.</li>
+                            <li style="margin-bottom:8px;">Mendorong masyarakat menjalankan pola hidup sehat.</li>
+                            <li>Membangun sistem pencernaan yang kuat dan nyaman.</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </section>
@@ -147,7 +170,7 @@
         </section>
 
         <!-- Two Formats Comparison Section -->
-        <section class="section" style="background: var(--sage-50); padding: 6rem 0;">
+        <section class="section" style="background: white; padding: 6rem 0;">
             <div class="container">
                 <div style="text-align: center; margin-bottom: 60px;">
                     <span class="eyebrow" style="color: var(--green);">Format Konsumsi</span>
@@ -164,6 +187,63 @@
                         <h3 style="color: var(--green); font-size: 28px;">Jamu Gemi</h3>
                         <h4 style="margin-bottom: 16px; font-weight: 700;">Kemudahan dibawa ke mana saja.</h4>
                         <p>Dibuat untuk rutinitas sibuk Anda. Cukup tambahkan sachet ke dalam botol minum/gelas dan aduk. Karena <strong>tidak dimasak</strong>, gel penyejuk seketika tidak terbentuk secara intens, sehingga ditambahkan rempah rimpang Kunyit dan Psyllium Husk untuk membantu memberikan anti-inflamasi dan kelegaan saat dikonsumsi dalam keadaan cair.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nutrition Info Section -->
+        <section class="section" style="background: white; padding: 6rem 0;">
+            <div class="container">
+                <div style="text-align: center; margin-bottom: 60px;">
+                    <span class="eyebrow" style="color: var(--green);">Transparansi Kami</span>
+                    <h2 style="font-size: 36px; color: var(--earth-900);">Informasi Nilai Gizi</h2>
+                    <p style="color: var(--muted); max-width: 600px; margin: 16px auto 0;">Fakta murni dari setiap varian rasa Jenang Gemi kami. Tanpa gluten, memprioritaskan kekuatan saripati alami.</p>
+                </div>
+                <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+                    <div class="f-card" style="border-top: 5px solid var(--green);">
+                        <h3 style="font-size: 20px; font-weight:800;">Original</h3>
+                        <p style="font-size: 13px; color:var(--muted); margin-bottom:16px;">Takaran Saji: 15g | 54 kkal</p>
+                        <ul style="list-style:none; font-size:14px; color:var(--text-dark);">
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Lemak Total</span><span>0g</span></li>
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Protein</span><span>0g</span></li>
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Karbohidrat</span><span>13g (5%)</span></li>
+                            <li style="display:flex; justify-content:space-between; padding:8px 0;"><span>Gula</span><span>0g</span></li>
+                        </ul>
+                        <p style="font-size: 11px; color:var(--muted); margin-top:24px;">Komposisi: Umbi garut ekstrak.</p>
+                    </div>
+                    <div class="f-card" style="border-top: 5px solid var(--green);">
+                        <h3 style="font-size: 20px; font-weight:800;">Gula Aren</h3>
+                        <p style="font-size: 13px; color:var(--muted); margin-bottom:16px;">Takaran Saji: 20g | 73 kkal</p>
+                        <ul style="list-style:none; font-size:14px; color:var(--text-dark);">
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Lemak Total</span><span>0g</span></li>
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Protein</span><span>0g</span></li>
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Karbohidrat</span><span>18g (6%)</span></li>
+                            <li style="display:flex; justify-content:space-between; padding:8px 0;"><span>Gula</span><span>9g</span></li>
+                        </ul>
+                        <p style="font-size: 11px; color:var(--muted); margin-top:24px;">Komposisi: Umbi garut ekstrak, gula aren.</p>
+                    </div>
+                    <div class="f-card" style="border-top: 5px solid var(--green);">
+                        <h3 style="font-size: 20px; font-weight:800;">Vanilla</h3>
+                        <p style="font-size: 13px; color:var(--muted); margin-bottom:16px;">Takaran Saji: 20g | 75 kkal</p>
+                        <ul style="list-style:none; font-size:14px; color:var(--text-dark);">
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Lemak Total</span><span>0g</span></li>
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Protein</span><span>0g</span></li>
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Karbohidrat</span><span>19g (6%)</span></li>
+                            <li style="display:flex; justify-content:space-between; padding:8px 0;"><span>Gula</span><span>9g</span></li>
+                        </ul>
+                        <p style="font-size: 11px; color:var(--muted); margin-top:24px;">Komposisi: Umbi garut ekstrak, gula pasir, perisa sintetis.</p>
+                    </div>
+                    <div class="f-card" style="border-top: 5px solid var(--green);">
+                        <h3 style="font-size: 20px; font-weight:800;">Klepon</h3>
+                        <p style="font-size: 13px; color:var(--muted); margin-bottom:16px;">Takaran Saji: 20g | 75 kkal</p>
+                        <ul style="list-style:none; font-size:14px; color:var(--text-dark);">
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Lemak Total</span><span>0g</span></li>
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Protein</span><span>0g</span></li>
+                            <li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;"><span>Karbohidrat</span><span>19g (6%)</span></li>
+                            <li style="display:flex; justify-content:space-between; padding:8px 0;"><span>Gula</span><span>9g</span></li>
+                        </ul>
+                        <p style="font-size: 11px; color:var(--muted); margin-top:24px;">Komposisi: Umbi garut ekstrak, aren, perisa sintetis, Cl.19140.</p>
                     </div>
                 </div>
             </div>
@@ -207,6 +287,27 @@
             </div>
         </section>
     </main>
+
+    <!-- Quiz Modal -->
+    <div class="quiz-modal" id="quizModal">
+        <div class="quiz-box">
+            <h2 style="font-size: 28px; margin-bottom: 16px; color: var(--earth-900);">Let's get you started</h2>
+            <p style="margin-bottom: 32px; color: var(--muted);" id="quiz-caption">Kami akan membantu menemukan format Jenang Gemi yang tepat untuk pencernaan Anda.</p>
+            <button class="btn btn-primary" onclick="startQuiz()" style="width:100%;" id="btn-take-quiz">Take quiz</button>
+            <div id="quiz-q" style="display:none; text-align:left;">
+                <h3 style="margin-bottom:24px; color:var(--earth-900);" id="q-text">Apa keluhan utama lambung Anda?</h3>
+                <button class="quiz-ans" onclick="finishQuiz('bubur')">Asam lambung sering naik & perih (GERD)</button>
+                <button class="quiz-ans" onclick="finishQuiz('jamu')">Sering kembung dan nyeri ulu hati</button>
+                <button class="quiz-ans" onclick="finishQuiz('jamu')">Hanya ingin menjaga daya tahan tubuh & usus</button>
+            </div>
+            <div id="quiz-res" style="display:none;">
+                <h3 style="margin-bottom:24px; color:var(--green);" id="r-text"></h3>
+                <p style="margin-bottom:24px; color:var(--muted);" id="r-desc"></p>
+                <a href="#produk" class="btn btn-primary" style="width:100%; margin-bottom:12px;" onclick="closeQuiz()">Lihat Produk Spesifik</a>
+            </div>
+            <button style="background:none;border:none;color:var(--muted);text-decoration:underline;margin-top:24px;cursor:pointer;" onclick="closeQuiz()" id="btn-close-quiz">Batal</button>
+        </div>
+    </div>
 
     <footer class="footer-v9 parallax-section" style="background-image: url('Media/10.jpg'); border-top: none;">
         <div class="parallax-overlay" style="background: rgba(0, 210, 106, 0.85);"></div>

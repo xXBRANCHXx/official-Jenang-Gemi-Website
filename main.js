@@ -136,21 +136,59 @@ document.addEventListener('DOMContentLoaded', () => {
   updateV9Count();
   renderV9Cart();
 
-  // Scroll Behavior
-  const revealV9 = (entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) entry.target.classList.add('active');
+  /* Reveal Animation */
+  const revealEls = document.querySelectorAll('.section, .f-card, .p-tile, h1, .hero-visual, .p-card, .pack-row');
+  const revealOpts = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+  const revealCb = (entries, obs) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('active');
+        obs.unobserve(e.target);
+      }
     });
   };
-  const obs = new IntersectionObserver(revealV9, { threshold: 0.1 });
-  document.querySelectorAll('.section, .f-card, .p-tile, h1, .hero-visual').forEach(el => {
+  const revealObs = new IntersectionObserver(revealCb, revealOpts);
+  revealEls.forEach(el => {
     el.classList.add('reveal-v9');
-    obs.observe(el);
+    revealObs.observe(el);
   });
 
+  /* Nav Background on scroll */
   window.addEventListener('scroll', () => {
     const nav = document.querySelector('.nav-v9');
-    if (window.scrollY > 50) nav.classList.add('scrolled');
-    else nav.classList.remove('scrolled');
+    if (window.scrollY > 50) nav?.classList.add('scrolled');
+    else nav?.classList.remove('scrolled');
   });
 });
+
+/* Quiz Functions */
+function openQuiz() {
+  document.getElementById('quizModal')?.classList.add('active');
+  document.getElementById('btn-take-quiz').style.display = 'block';
+  document.getElementById('quiz-caption').style.display = 'block';
+  document.getElementById('quiz-q').style.display = 'none';
+  document.getElementById('quiz-res').style.display = 'none';
+}
+
+function closeQuiz() {
+  document.getElementById('quizModal')?.classList.remove('active');
+}
+
+function startQuiz() {
+  document.getElementById('btn-take-quiz').style.display = 'none';
+  document.getElementById('quiz-caption').style.display = 'none';
+  document.getElementById('quiz-q').style.display = 'block';
+}
+
+function finishQuiz(type) {
+  document.getElementById('quiz-q').style.display = 'none';
+  const resStr = document.getElementById('quiz-res');
+  resStr.style.display = 'block';
+  if (type === 'bubur') {
+    document.getElementById('r-text').innerText = 'Bubur Gemi Cocok Untuk Anda!';
+    document.getElementById('r-desc').innerText = 'Sifat penyejuk demulcent akan langsung meredakan panas lambung Anda. Formulasi hangat ini sangat ideal untuk kasus GERD aktif.';
+  } else {
+    document.getElementById('r-text').innerText = 'Jamu Gemi Cocok Untuk Anda!';
+    document.getElementById('r-desc').innerText = 'Ekstra kunyit dan psyllium husk bekerja luar biasa untuk perawatan harian, mengatasi kembung, dan sangat mudah dibawa bepergian!';
+  }
+}

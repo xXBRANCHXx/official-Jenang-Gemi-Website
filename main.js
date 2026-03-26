@@ -96,6 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`, '_blank');
   });
 
+  // Remove any redundant calls that might open sidebar on load
+  updateV9Count();
+  renderV9Cart();
+
   // --- Flavor & Pack Selection ---
   const flavorOpts = document.querySelectorAll('.flavor-opt, .opt-chip');
   flavorOpts.forEach(opt => {

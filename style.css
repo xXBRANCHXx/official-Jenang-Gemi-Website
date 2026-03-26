@@ -122,7 +122,6 @@ h2, h3, h4 { font-weight: 600; }
   display: flex;
   align-items: center;
 }
-.hero-v9 .container { width: 100%; }
 .hero-grid {
   display: grid;
   gap: 60px;
@@ -295,7 +294,7 @@ h2, h3, h4 { font-weight: 600; }
 @media (max-width: 899px) {
   .container { width: 100%; padding: 0 16px; margin: 0 auto; box-sizing: border-box; }
   .section { padding: 60px 0; }
-  .hero-v9 { padding-top: 120px; padding-bottom: 40px; min-height: 100svh; display: flex; align-items: center; }
+  .hero-v9 { padding-top: 190px; padding-bottom: 50px; min-height: 100svh; display: flex; align-items: center; }
   .hero-text h1 { font-size: 2.4rem; letter-spacing: -0.05em; }
   .features-grid, .f-grid, .p-showcase, .product-showcase { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .f-card, .p-card, .p-tile-content { padding: 16px; border-radius: 20px; word-wrap: break-word; hyphens: auto; }

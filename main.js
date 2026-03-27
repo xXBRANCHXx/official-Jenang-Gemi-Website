@@ -567,6 +567,31 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.nav-v9')?.classList.toggle('scrolled', window.scrollY > 50);
   });
 
+  // --- Science Section Parallax ---
+  const scienceSection = document.querySelector('.science-section');
+  if (scienceSection) {
+    let scienceTicking = false;
+
+    const updateScienceParallax = () => {
+      const rect = scienceSection.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || 1;
+      const progress = (viewportHeight - rect.top) / (viewportHeight + rect.height);
+      const shift = (progress - 0.5) * 70;
+      scienceSection.style.setProperty('--science-shift', `${shift}px`);
+      scienceTicking = false;
+    };
+
+    const requestScienceParallax = () => {
+      if (scienceTicking) return;
+      scienceTicking = true;
+      window.requestAnimationFrame(updateScienceParallax);
+    };
+
+    requestScienceParallax();
+    window.addEventListener('scroll', requestScienceParallax, { passive: true });
+    window.addEventListener('resize', requestScienceParallax);
+  }
+
   updateV9Count();
   renderV9Cart();
 });

@@ -324,8 +324,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     font-size: 1.3rem;
   }
   .science-section::before {
-    background-attachment: scroll;
-    transform: scale(1.04);
+    transform: translateY(var(--science-shift, 0px)) scale(1.04);
     filter: blur(10px) saturate(0.98);
   }
   .vision-image-wrap {
@@ -362,9 +361,9 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   background:
     linear-gradient(rgba(74, 154, 55, 0.84), rgba(74, 154, 55, 0.84)),
     url("Media/Our vision image.png") center center / cover no-repeat;
-  background-attachment: fixed;
-  transform: scale(1.08);
+  transform: translateY(var(--science-shift, 0px)) scale(1.08);
   filter: blur(12px) saturate(0.95);
+  will-change: transform;
 }
 .science-section::after {
   z-index: -1;

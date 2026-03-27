@@ -476,11 +476,19 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     'nutri-orig': {
       title: "Nutrisi Varian Original",
-      content: "Takaran Saji: 15g | 54 kkal<br><br>Lemak Total: 0g<br>Protein: 0g<br>Karbohidrat: 13g (5%)<br>Gula: 0g<br><br>Komposisi: 100% Umbi garut ekstrak pilihan."
+      content: "Takaran Saji: 15g | 54 kkal<br><br>Lemak Total: 0g<br>Protein: 0g<br>Karbohidrat: 13g (5%)<br>Gula: 0g (0%)<br><br>Komposisi: Umbi garut ekstrak."
+    },
+    'nutri-aren': {
+      title: "Nutrisi Varian Gula Aren",
+      content: "Takaran Saji: 20g | 73 kkal<br><br>Lemak Total: 0g<br>Protein: 0g<br>Karbohidrat: 18g (6%)<br>Gula: 9g (18%)<br><br>Komposisi: Umbi garut ekstrak, gula aren."
     },
     'nutri-vanilla': {
       title: "Nutrisi Varian Vanilla",
-      content: "Takaran Saji: 20g | 75 kkal<br><br>Lemak Total: 0g<br>Protein: 0g<br>Karbohidrat: 19g (6%)<br>Gula: 9g<br><br>Komposisi: Umbi garut ekstrak, gula pasir, perisa sintetis vanilla."
+      content: "Takaran Saji: 20g | 75 kkal<br><br>Lemak Total: 0g<br>Protein: 0g<br>Karbohidrat: 19g (6%)<br>Gula: 9g (18%)<br><br>Komposisi: Umbi garut ekstrak, gula pasir, perisa sintetis."
+    },
+    'nutri-klepon': {
+      title: "Nutrisi Varian Klepon",
+      content: "Takaran Saji: 20g | 75 kkal<br><br>Lemak Total: 0g<br>Protein: 0g<br>Karbohidrat: 19g (6%)<br>Gula: 9g (18%)<br><br>Komposisi: Umbi garut ekstrak, gula aren, perisa sintetis, pewarna sintetis (Tartrazine CI No. 19140)."
     }
   };
 

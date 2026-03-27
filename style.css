@@ -124,32 +124,31 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .p-info-grid { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 40px; align-items: center; }
 .hero-visual {
   position: relative;
-  padding: 34px 20px 20px;
+  padding: 12px 0 8px;
   border-radius: 0;
   overflow: visible;
-  background:
-    radial-gradient(circle at 50% 35%, rgba(99, 191, 71, 0.14), transparent 42%),
-    radial-gradient(circle at 50% 75%, rgba(255, 224, 178, 0.35), transparent 34%);
+  background: transparent;
 }
 .hero-visual img {
   display: block;
   width: 100%;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 34px 44px rgba(42, 62, 31, 0.10));
+  filter: none;
 }
 .hero-stamp {
   position: absolute;
-  right: 14px;
-  bottom: 24px;
-  padding: 18px 28px;
+  right: 0;
+  bottom: 18px;
+  padding: 14px 22px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.84);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.94);
   font-weight: 800;
-  font-size: 14px;
-  box-shadow: 0 12px 34px rgba(42, 62, 31, 0.10);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--text-dark);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: none;
 }
 .vision-split { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 36px; align-items: center; }
 .vision-copy {
@@ -287,7 +286,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .hero-text h1 { font-size: 3.2rem; }
   .p-info-grid, .prep-grid { grid-template-columns: 1fr; }
   .hero-visual {
-    padding: 18px 0 24px;
+    padding: 0 0 20px;
   }
   .hero-stamp {
     left: 50%;
@@ -296,7 +295,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     transform: translateX(-50%);
     width: max-content;
     max-width: calc(100% - 24px);
-    padding: 14px 20px;
+    padding: 12px 18px;
     font-size: 12px;
   }
   

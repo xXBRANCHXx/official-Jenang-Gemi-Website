@@ -286,18 +286,25 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 
 @media (max-width: 768px) {
-  .container { padding: 0; }
-  .section { padding: 100px 0; }
+  .container { padding: 0 20px; }
+  .section { padding: 88px 0; }
+  body { background: #f7f8f5; }
   
-  .nav-wrap { padding: 0 20px; flex-wrap: wrap; }
-  .nav-links { width: 100%; order: 3; margin-top: 16px; overflow-x: auto; padding: 8px 0; scrollbar-width: none; }
+  .nav-v9 { padding: 16px 0; }
+  .nav-wrap { padding: 0; flex-wrap: wrap; row-gap: 12px; }
+  .logo img { max-width: min(260px, 52vw); }
+  .nav-links { width: 100%; order: 3; margin-top: 4px; overflow-x: auto; padding: 4px 0 2px; scrollbar-width: none; }
   .nav-links::-webkit-scrollbar { display: none; }
-  .nav-links ul { gap: 24px; width: max-content; }
+  .nav-links ul { gap: 18px; width: max-content; padding-bottom: 2px; }
+  .nav-links a { font-size: 14px; }
+  .cart-v9-btn { width: 48px; height: 48px; }
   
-  .hero-v9 { text-align: center; padding: 140px 24px 80px; }
-  .hero-grid, .vision-split, .science-grid { grid-template-columns: 1fr; gap: 40px; }
-  .hero-text h1 { font-size: 3.2rem; }
-  .p-info-grid, .prep-grid { grid-template-columns: 1fr; }
+  .hero-v9 { text-align: center; padding: 132px 0 72px; }
+  .hero-grid, .vision-split, .science-grid { grid-template-columns: 1fr; gap: 28px; }
+  .hero-text h1 { font-size: clamp(2.8rem, 11vw, 3.5rem); }
+  .hero-text p { font-size: 1rem; }
+  .hero-text > div { flex-direction: column; margin-top: 28px !important; }
+  .p-info-grid, .prep-grid { grid-template-columns: 1fr; gap: 24px; }
   .hero-visual {
     padding: 0 0 20px;
   }
@@ -312,15 +319,20 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     font-size: 12px;
   }
   
-  /* Mobile edge-to-edge grids */
-  .features-grid, .p-showcase { gap: 1px; background: var(--border); }
-  .glass-card { border-radius: 0; border: none; box-shadow: none; }
-  .f-card, .p-card-content { padding: 32px 20px; background: white; }
+  .features-grid, .p-showcase { grid-template-columns: 1fr; gap: 18px; background: none; }
+  .glass-card {
+    border-radius: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 16px 44px rgba(15, 37, 20, 0.08);
+  }
+  .f-card, .p-card-content { padding: 26px 22px; background: white; }
   .f-card img { border-radius: 12px; }
   .f-card h3, .p-card h3 { font-size: 18px; line-height: 1.2; }
   .f-card p, .p-card p { font-size: 14px; color: var(--muted); line-height: 1.4; }
+  .p-card img { aspect-ratio: 4 / 3; }
   
-  .btn { width: calc(100% - 40px); margin: 0 20px; }
+  .btn { width: 100%; margin: 0; }
+  .sidebar-v9 { padding: 28px 22px; width: 100%; }
   .prep-section .container { padding: 0 20px; }
   .prep-card {
     border-radius: 24px;
@@ -347,6 +359,64 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   }
   .vision-image-wrap img {
     border-radius: 18px;
+  }
+  .testimonial-section .container,
+  .science-section .container {
+    padding: 0 20px;
+  }
+  .testimonial-carousel {
+    padding: 18px;
+  }
+  .testimonial-lightbox-panel {
+    width: 100%;
+  }
+  .testimonial-back-btn {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  main.section {
+    padding-top: 132px !important;
+    padding-bottom: 48px !important;
+  }
+  .p-info-grid > .hero-visual,
+  .p-info-grid > .p-details {
+    padding: 0 !important;
+  }
+  .p-info-grid > .hero-visual img {
+    max-width: 100% !important;
+  }
+  .p-details h1 {
+    font-size: clamp(2.4rem, 10vw, 3.2rem) !important;
+  }
+  .p-details p {
+    font-size: 1rem !important;
+    margin-bottom: 28px !important;
+  }
+  .flavor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .opt-chip {
+    padding: 16px 14px;
+    border-radius: 16px;
+    font-size: 14px;
+  }
+  .pack-row {
+    padding: 18px 16px;
+    border-radius: 18px;
+    gap: 12px;
+    align-items: center;
+  }
+  .pack-val {
+    white-space: nowrap;
+    font-size: 14px;
+  }
+  footer .container > div[style*="justify-content: center"] {
+    flex-wrap: wrap;
+    gap: 16px !important;
+  }
+  footer.section {
+    padding: 56px 0 !important;
   }
 }
 

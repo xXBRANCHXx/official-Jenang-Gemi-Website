@@ -204,6 +204,17 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: none;
 }
+.hero-copy-block p {
+  font-size: 1.12rem;
+}
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 40px;
+}
+.nutrition-grid {
+  align-items: stretch;
+}
 .vision-split { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 36px; align-items: center; }
 .vision-copy {
   display: flex;
@@ -387,17 +398,34 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .hero-grid, .vision-split, .science-grid { grid-template-columns: 1fr; gap: 28px; }
   .hero-text {
     text-align: left;
-    order: 2;
+    order: 1;
+    display: contents;
+  }
+  .hero-heading-block {
+    position: relative;
+    z-index: 2;
+    margin-bottom: -108px;
+    padding: 0 8px;
+    text-align: left;
   }
   .hero-text h1 { font-size: clamp(2.8rem, 11vw, 3.5rem); }
-  .hero-text p { font-size: 1rem; }
-  .hero-text > div { flex-direction: column; margin-top: 28px !important; }
+  .hero-copy-block {
+    order: 3;
+  }
+  .hero-copy-block p { font-size: 1rem; }
+  .hero-actions {
+    order: 4;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 20px !important;
+  }
   .p-info-grid, .prep-grid { grid-template-columns: 1fr; gap: 24px; }
   .homepage-hero-visual {
-    order: 1;
+    order: 2;
     width: calc(100% + 28px);
     margin: 0 -14px 6px;
-    padding: 0;
+    padding: 96px 0 20px;
   }
   .homepage-hero-stamp {
     left: 50%;
@@ -411,6 +439,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   }
   
   .features-grid, .p-showcase { grid-template-columns: 1fr; gap: 18px; background: none; }
+  .nutrition-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
   .glass-card {
     border-radius: 24px;
     border: 1px solid rgba(0, 0, 0, 0.06);
@@ -420,6 +449,20 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .f-card img { border-radius: 12px; }
   .f-card h3, .p-card h3 { font-size: 18px; line-height: 1.2; }
   .f-card p, .p-card p { font-size: 14px; color: var(--muted); line-height: 1.4; }
+  .nutrition-grid .f-card {
+    padding: 16px 16px 18px;
+    gap: 12px;
+  }
+  .nutrition-grid .f-card img {
+    aspect-ratio: 1 / 1;
+  }
+  .nutrition-grid .f-card h3 {
+    font-size: 16px;
+  }
+  .nutrition-grid .f-card p {
+    font-size: 12px;
+    line-height: 1.45;
+  }
   .p-card img { aspect-ratio: 4 / 3; }
   
   .btn { width: 100%; margin: 0; }

@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 export default defineConfig({
   server: {
@@ -6,5 +7,14 @@ export default defineConfig({
     open: true,
     strictPort: true
   },
-  root: './'
+  root: './',
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        bubur: resolve(__dirname, 'bubur.html'),
+        jamu: resolve(__dirname, 'jamu.html')
+      }
+    }
+  }
 });

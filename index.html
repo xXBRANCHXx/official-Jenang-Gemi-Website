@@ -164,6 +164,50 @@
                 </div>
             </div>
         </section>
+
+        <section class="section testimonial-section" id="testimonials">
+            <div class="container">
+                <div class="testimonial-heading">
+                    <span class="eyebrow">Cerita Pelanggan</span>
+                    <h2>Testimoni Asli Dari Pengguna Jenang Gemi</h2>
+                    <p>Klik salah satu testimoni untuk melihat layar penuh, zoom, dan geser ke testimoni berikutnya.</p>
+                </div>
+                <div class="testimonial-duo" id="testimonial-duo">
+                    <article class="testimonial-carousel glass-card" data-carousel="0">
+                        <div class="testimonial-carousel-header">
+                            <div>
+                                <p class="testimonial-kicker">Carousel 1</p>
+                                <h3>Pengalaman Pelanggan</h3>
+                            </div>
+                            <div class="testimonial-controls">
+                                <button class="testimonial-arrow" type="button" data-action="prev" aria-label="Testimoni sebelumnya">&larr;</button>
+                                <button class="testimonial-arrow" type="button" data-action="next" aria-label="Testimoni berikutnya">&rarr;</button>
+                            </div>
+                        </div>
+                        <div class="testimonial-viewport">
+                            <div class="testimonial-track"></div>
+                        </div>
+                        <div class="testimonial-dots" aria-label="Navigasi testimonial"></div>
+                    </article>
+                    <article class="testimonial-carousel glass-card" data-carousel="1">
+                        <div class="testimonial-carousel-header">
+                            <div>
+                                <p class="testimonial-kicker">Carousel 2</p>
+                                <h3>Hasil yang Dirasakan</h3>
+                            </div>
+                            <div class="testimonial-controls">
+                                <button class="testimonial-arrow" type="button" data-action="prev" aria-label="Testimoni sebelumnya">&larr;</button>
+                                <button class="testimonial-arrow" type="button" data-action="next" aria-label="Testimoni berikutnya">&rarr;</button>
+                            </div>
+                        </div>
+                        <div class="testimonial-viewport">
+                            <div class="testimonial-track"></div>
+                        </div>
+                        <div class="testimonial-dots" aria-label="Navigasi testimonial"></div>
+                    </article>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Modal System -->
@@ -194,6 +238,20 @@
         </div>
     </div>
 
+    <div class="testimonial-lightbox" id="testimonial-lightbox" aria-hidden="true">
+        <div class="testimonial-lightbox-backdrop" data-close-lightbox="true"></div>
+        <div class="testimonial-lightbox-panel">
+            <button class="testimonial-back-btn" type="button" id="testimonial-back-btn" aria-label="Kembali dari layar penuh">&larr; Kembali</button>
+            <div class="testimonial-lightbox-stage" id="testimonial-lightbox-stage">
+                <div class="testimonial-lightbox-track" id="testimonial-lightbox-track"></div>
+            </div>
+            <div class="testimonial-lightbox-caption">
+                <p id="testimonial-lightbox-counter">1 / 1</p>
+                <p>Geser untuk berpindah, ketuk dua kali untuk zoom, atau cubit untuk memperbesar.</p>
+            </div>
+        </div>
+    </div>
+
     <footer class="section" style="background: white; border-top: 1px solid var(--border); padding: 80px 0;">
         <div class="container" style="text-align: center;">
             <img src="Media/37.png" alt="Jenang Gemi" height="32" style="opacity: 0.5; margin-bottom: 40px;">
@@ -206,6 +264,6 @@
         </div>
     </footer>
 
-    <script src="main.js?v=115"></script>
+    <script src="main.js?v=116"></script>
 </body>
 </html>

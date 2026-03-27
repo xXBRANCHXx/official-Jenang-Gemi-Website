@@ -74,6 +74,301 @@ document.addEventListener('DOMContentLoaded', () => {
     window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`, '_blank');
   });
 
+  // --- Testimonials ---
+  const testimonialSources = Array.from({ length: 19 }, (_, index) => ({
+    src: `Media/Testimonials/Testimonial ${index + 1}.png`,
+    alt: `Testimoni pelanggan Jenang Gemi ${index + 1}`,
+    label: `Testimonial ${index + 1}`
+  }));
+
+  const testimonialGroups = [
+    testimonialSources.filter((_, index) => index % 2 === 0),
+    testimonialSources.filter((_, index) => index % 2 === 1)
+  ];
+
+  const carouselStates = testimonialGroups.map(() => ({ index: 0 }));
+  const carouselEls = document.querySelectorAll('.testimonial-carousel');
+  const lightbox = document.getElementById('testimonial-lightbox');
+  const lightboxTrack = document.getElementById('testimonial-lightbox-track');
+  const lightboxStage = document.getElementById('testimonial-lightbox-stage');
+  const lightboxCounter = document.getElementById('testimonial-lightbox-counter');
+  const lightboxBackBtn = document.getElementById('testimonial-back-btn');
+
+  const lightboxState = {
+    groupIndex: 0,
+    itemIndex: 0,
+    scale: 1,
+    translateX: 0,
+    translateY: 0,
+    startTranslateX: 0,
+    startTranslateY: 0,
+    swipeDeltaX: 0,
+    swipeActive: false,
+    panActive: false,
+    pinchActive: false,
+    startX: 0,
+    startY: 0,
+    touchMoved: false,
+    lastTapTime: 0,
+    pinchStartDistance: 0,
+    pinchStartScale: 1
+  };
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  const getPanLimits = () => {
+    const activeSlide = lightboxTrack?.children[lightboxState.itemIndex];
+    const media = activeSlide?.querySelector('.testimonial-lightbox-media');
+    if (!media || lightboxState.scale <= 1) return { x: 0, y: 0 };
+
+    const maxX = Math.max(0, ((media.clientWidth * lightboxState.scale) - media.clientWidth) / 2);
+    const maxY = Math.max(0, ((media.clientHeight * lightboxState.scale) - media.clientHeight) / 2);
+    return { x: maxX, y: maxY };
+  };
+
+  const applyZoom = () => {
+    lightboxTrack?.querySelectorAll('.testimonial-lightbox-media img').forEach((img, index) => {
+      if (index === lightboxState.itemIndex) {
+        img.style.transform = `translate(${lightboxState.translateX}px, ${lightboxState.translateY}px) scale(${lightboxState.scale})`;
+      } else {
+        img.style.transform = 'translate(0px, 0px) scale(1)';
+      }
+    });
+  };
+
+  const resetZoom = () => {
+    lightboxState.scale = 1;
+    lightboxState.translateX = 0;
+    lightboxState.translateY = 0;
+    lightboxState.startTranslateX = 0;
+    lightboxState.startTranslateY = 0;
+    applyZoom();
+  };
+
+  const updateLightboxPosition = (dragOffset = 0) => {
+    if (!lightboxTrack) return;
+    lightboxTrack.style.transition = dragOffset === 0 ? 'transform 0.35s ease' : 'none';
+    lightboxTrack.style.transform = `translateX(calc(${-lightboxState.itemIndex * 100}% + ${dragOffset}px))`;
+    if (lightboxCounter) {
+      lightboxCounter.textContent = `${lightboxState.itemIndex + 1} / ${testimonialGroups[lightboxState.groupIndex].length}`;
+    }
+  };
+
+  const renderLightbox = () => {
+    if (!lightboxTrack) return;
+    const items = testimonialGroups[lightboxState.groupIndex];
+    lightboxTrack.innerHTML = items.map((item) => `
+      <div class="testimonial-lightbox-slide">
+        <div class="testimonial-lightbox-media">
+          <img src="${item.src}" alt="${item.alt}">
+        </div>
+      </div>
+    `).join('');
+
+    applyZoom();
+    updateLightboxPosition();
+  };
+
+  const setCarouselIndex = (groupIndex, nextIndex) => {
+    const items = testimonialGroups[groupIndex];
+    const normalizedIndex = (nextIndex + items.length) % items.length;
+    carouselStates[groupIndex].index = normalizedIndex;
+
+    const carouselEl = carouselEls[groupIndex];
+    const track = carouselEl?.querySelector('.testimonial-track');
+    const dots = carouselEl?.querySelectorAll('.testimonial-dot');
+    if (track) track.style.transform = `translateX(-${normalizedIndex * 100}%)`;
+    dots?.forEach((dot, index) => dot.classList.toggle('active', index === normalizedIndex));
+  };
+
+  const openLightbox = (groupIndex, itemIndex) => {
+    lightboxState.groupIndex = groupIndex;
+    lightboxState.itemIndex = itemIndex;
+    renderLightbox();
+    resetZoom();
+    lightbox?.classList.add('active');
+    lightbox?.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeLightbox = () => {
+    lightbox?.classList.remove('active');
+    lightbox?.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    resetZoom();
+  };
+
+  const changeLightboxItem = (direction) => {
+    const items = testimonialGroups[lightboxState.groupIndex];
+    lightboxState.itemIndex = (lightboxState.itemIndex + direction + items.length) % items.length;
+    resetZoom();
+    updateLightboxPosition();
+  };
+
+  carouselEls.forEach((carouselEl, groupIndex) => {
+    const track = carouselEl.querySelector('.testimonial-track');
+    const dots = carouselEl.querySelector('.testimonial-dots');
+    const items = testimonialGroups[groupIndex];
+
+    if (track) {
+      track.innerHTML = items.map((item, itemIndex) => `
+        <div class="testimonial-slide">
+          <button class="testimonial-media-card" type="button" data-open-lightbox="${itemIndex}">
+            <img src="${item.src}" alt="${item.alt}">
+            <span class="testimonial-slide-label">${item.label} • Klik untuk fullscreen</span>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    if (dots) {
+      dots.innerHTML = items.map((_, itemIndex) => `
+        <button class="testimonial-dot${itemIndex === 0 ? ' active' : ''}" type="button" aria-label="Lihat testimonial ${itemIndex + 1}"></button>
+      `).join('');
+    }
+
+    carouselEl.querySelector('[data-action="prev"]')?.addEventListener('click', () => {
+      setCarouselIndex(groupIndex, carouselStates[groupIndex].index - 1);
+    });
+
+    carouselEl.querySelector('[data-action="next"]')?.addEventListener('click', () => {
+      setCarouselIndex(groupIndex, carouselStates[groupIndex].index + 1);
+    });
+
+    carouselEl.querySelectorAll('.testimonial-dot').forEach((dot, itemIndex) => {
+      dot.addEventListener('click', () => setCarouselIndex(groupIndex, itemIndex));
+    });
+
+    carouselEl.querySelectorAll('[data-open-lightbox]').forEach((buttonEl) => {
+      buttonEl.addEventListener('click', () => {
+        openLightbox(groupIndex, Number(buttonEl.getAttribute('data-open-lightbox')));
+      });
+    });
+
+    setCarouselIndex(groupIndex, 0);
+  });
+
+  lightboxBackBtn?.addEventListener('click', closeLightbox);
+  lightbox?.querySelector('[data-close-lightbox="true"]')?.addEventListener('click', closeLightbox);
+  lightbox?.addEventListener('click', (event) => {
+    if (event.target === lightbox) closeLightbox();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (!lightbox?.classList.contains('active')) return;
+    if (event.key === 'Escape') closeLightbox();
+    if (event.key === 'ArrowLeft') changeLightboxItem(-1);
+    if (event.key === 'ArrowRight') changeLightboxItem(1);
+  });
+
+  lightboxTrack?.addEventListener('dblclick', () => {
+    if (lightboxState.scale > 1) {
+      resetZoom();
+      return;
+    }
+    lightboxState.scale = 2.5;
+    applyZoom();
+  });
+
+  lightboxStage?.addEventListener('touchstart', (event) => {
+    if (!lightbox?.classList.contains('active')) return;
+
+    if (event.touches.length === 2) {
+      lightboxState.pinchActive = true;
+      lightboxState.panActive = false;
+      lightboxState.swipeActive = false;
+      const [touchA, touchB] = event.touches;
+      lightboxState.pinchStartDistance = Math.hypot(touchB.clientX - touchA.clientX, touchB.clientY - touchA.clientY);
+      lightboxState.pinchStartScale = lightboxState.scale;
+      return;
+    }
+
+    const touch = event.touches[0];
+    lightboxState.startX = touch.clientX;
+    lightboxState.startY = touch.clientY;
+    lightboxState.touchMoved = false;
+    lightboxState.swipeDeltaX = 0;
+    lightboxState.startTranslateX = lightboxState.translateX;
+    lightboxState.startTranslateY = lightboxState.translateY;
+    lightboxState.panActive = lightboxState.scale > 1;
+    lightboxState.swipeActive = lightboxState.scale === 1;
+  }, { passive: true });
+
+  lightboxStage?.addEventListener('touchmove', (event) => {
+    if (!lightbox?.classList.contains('active')) return;
+
+    if (lightboxState.pinchActive && event.touches.length === 2) {
+      const [touchA, touchB] = event.touches;
+      const distance = Math.hypot(touchB.clientX - touchA.clientX, touchB.clientY - touchA.clientY);
+      const nextScale = clamp((distance / lightboxState.pinchStartDistance) * lightboxState.pinchStartScale, 1, 4);
+      lightboxState.scale = nextScale;
+      const limits = getPanLimits();
+      lightboxState.translateX = clamp(lightboxState.translateX, -limits.x, limits.x);
+      lightboxState.translateY = clamp(lightboxState.translateY, -limits.y, limits.y);
+      applyZoom();
+      event.preventDefault();
+      return;
+    }
+
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - lightboxState.startX;
+    const deltaY = touch.clientY - lightboxState.startY;
+    if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+      lightboxState.touchMoved = true;
+    }
+
+    if (lightboxState.panActive) {
+      const limits = getPanLimits();
+      lightboxState.translateX = clamp(lightboxState.startTranslateX + deltaX, -limits.x, limits.x);
+      lightboxState.translateY = clamp(lightboxState.startTranslateY + deltaY, -limits.y, limits.y);
+      applyZoom();
+      event.preventDefault();
+      return;
+    }
+
+    if (lightboxState.swipeActive) {
+      lightboxState.swipeDeltaX = deltaX;
+      updateLightboxPosition(deltaX);
+      event.preventDefault();
+    }
+  }, { passive: false });
+
+  lightboxStage?.addEventListener('touchend', (event) => {
+    if (!lightbox?.classList.contains('active')) return;
+
+    if (lightboxState.pinchActive && event.touches.length < 2) {
+      lightboxState.pinchActive = false;
+      if (lightboxState.scale <= 1.02) resetZoom();
+    }
+
+    if (!lightboxState.pinchActive && lightboxState.panActive) {
+      if (lightboxState.scale <= 1.02) resetZoom();
+      lightboxState.panActive = false;
+    }
+
+    if (lightboxState.swipeActive) {
+      const threshold = Math.min(120, (lightboxStage?.clientWidth || 0) * 0.16);
+      if (Math.abs(lightboxState.swipeDeltaX) > threshold) {
+        changeLightboxItem(lightboxState.swipeDeltaX > 0 ? -1 : 1);
+      } else {
+        updateLightboxPosition();
+      }
+      lightboxState.swipeActive = false;
+      lightboxState.swipeDeltaX = 0;
+    }
+
+    const now = Date.now();
+    if (event.touches.length === 0 && !lightboxState.touchMoved && now - lightboxState.lastTapTime < 280) {
+      if (lightboxState.scale > 1) {
+        resetZoom();
+      } else {
+        lightboxState.scale = 2.5;
+        applyZoom();
+      }
+    }
+    lightboxState.lastTapTime = lightboxState.touchMoved ? 0 : now;
+  });
+
   // --- Modal Expansion Data ---
   const expansionData = {
     visi: {

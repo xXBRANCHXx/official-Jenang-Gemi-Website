@@ -102,11 +102,23 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Testimonials ---
-  const testimonialSources = Array.from({ length: 19 }, (_, index) => ({
-    src: `Media/Testimonials/Testimonial ${index + 1}.png`,
-    alt: `Testimoni pelanggan Jenang Gemi ${index + 1}`,
-    label: `Testimonial ${index + 1}`
-  }));
+  const testimonialImageModules = import.meta.glob('./Media/Testimonials/*.png', {
+    eager: true,
+    import: 'default'
+  });
+
+  const testimonialSources = Object.entries(testimonialImageModules)
+    .map(([path, src]) => {
+      const match = path.match(/Testimonial (\d+)\.png$/);
+      const number = match ? Number(match[1]) : 0;
+      return {
+        src,
+        number,
+        alt: `Testimoni pelanggan Jenang Gemi ${number}`,
+        label: `Testimonial ${number}`
+      };
+    })
+    .sort((a, b) => a.number - b.number);
 
   const testimonialGroups = [
     testimonialSources.filter((_, index) => index % 2 === 0),

@@ -361,7 +361,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   background:
     linear-gradient(rgba(74, 154, 55, 0.84), rgba(74, 154, 55, 0.84)),
     url("Media/Our vision image.png") center center / cover no-repeat;
-  transform: translateY(var(--science-shift, 0px)) scale(1.08);
+  transform: translate3d(0, var(--science-shift, 0px), 0) scale(var(--science-scale, 1.08));
   filter: blur(12px) saturate(0.95);
   will-change: transform;
 }

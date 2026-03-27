@@ -570,21 +570,42 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Science Section Parallax ---
   const scienceSection = document.querySelector('.science-section');
   if (scienceSection) {
-    let scienceTicking = false;
+    let scienceTargetShift = 0;
+    let scienceCurrentShift = 0;
+    let scienceTargetScale = 1.08;
+    let scienceCurrentScale = 1.08;
+    let scienceAnimationFrame = null;
 
-    const updateScienceParallax = () => {
+    const measureScienceParallax = () => {
       const rect = scienceSection.getBoundingClientRect();
       const viewportHeight = window.innerHeight || 1;
       const progress = (viewportHeight - rect.top) / (viewportHeight + rect.height);
-      const shift = (progress - 0.5) * 70;
-      scienceSection.style.setProperty('--science-shift', `${shift}px`);
-      scienceTicking = false;
+      const clampedProgress = Math.max(0, Math.min(1, progress));
+      scienceTargetShift = (clampedProgress - 0.5) * 140;
+      scienceTargetScale = 1.1 + (clampedProgress * 0.08);
+    };
+
+    const animateScienceParallax = () => {
+      scienceCurrentShift += (scienceTargetShift - scienceCurrentShift) * 0.08;
+      scienceCurrentScale += (scienceTargetScale - scienceCurrentScale) * 0.08;
+
+      scienceSection.style.setProperty('--science-shift', `${scienceCurrentShift.toFixed(2)}px`);
+      scienceSection.style.setProperty('--science-scale', scienceCurrentScale.toFixed(4));
+
+      const shiftSettled = Math.abs(scienceTargetShift - scienceCurrentShift) < 0.12;
+      const scaleSettled = Math.abs(scienceTargetScale - scienceCurrentScale) < 0.0015;
+
+      if (!shiftSettled || !scaleSettled) {
+        scienceAnimationFrame = window.requestAnimationFrame(animateScienceParallax);
+      } else {
+        scienceAnimationFrame = null;
+      }
     };
 
     const requestScienceParallax = () => {
-      if (scienceTicking) return;
-      scienceTicking = true;
-      window.requestAnimationFrame(updateScienceParallax);
+      measureScienceParallax();
+      if (scienceAnimationFrame !== null) return;
+      scienceAnimationFrame = window.requestAnimationFrame(animateScienceParallax);
     };
 
     requestScienceParallax();

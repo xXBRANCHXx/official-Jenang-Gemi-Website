@@ -227,25 +227,11 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .testimonial-carousel-header h3 {
   font-size: clamp(1.4rem, 2vw, 1.9rem);
 }
-.testimonial-controls {
-  display: flex;
-  gap: 10px;
-}
-.testimonial-arrow {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
-  color: var(--text-dark);
-  font-size: 20px;
-  font-weight: 800;
-  transition: var(--trans);
-}
-.testimonial-arrow:hover {
-  background: var(--green);
-  color: #fff;
-  border-color: var(--green);
+.testimonial-meta {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
 }
 .testimonial-viewport {
   overflow: hidden;
@@ -350,7 +336,9 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .testimonial-lightbox-stage {
   overflow: hidden;
   border-radius: 36px;
+  cursor: grab;
 }
+.testimonial-lightbox-stage.is-panning { cursor: grabbing; }
 .testimonial-lightbox-track {
   display: flex;
   align-items: center;
@@ -415,9 +403,8 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     align-items: flex-start;
     flex-direction: column;
   }
-  .testimonial-controls {
-    width: 100%;
-    justify-content: flex-end;
+  .testimonial-meta {
+    font-size: 13px;
   }
   .testimonial-media-card {
     border-radius: 18px;

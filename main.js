@@ -87,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   const carouselStates = testimonialGroups.map(() => ({ index: 0 }));
+  const carouselTimers = [];
   const carouselEls = document.querySelectorAll('.testimonial-carousel');
   const lightbox = document.getElementById('testimonial-lightbox');
   const lightboxTrack = document.getElementById('testimonial-lightbox-track');
@@ -106,12 +107,15 @@ document.addEventListener('DOMContentLoaded', () => {
     swipeActive: false,
     panActive: false,
     pinchActive: false,
+    pointerActive: false,
     startX: 0,
     startY: 0,
     touchMoved: false,
     lastTapTime: 0,
     pinchStartDistance: 0,
-    pinchStartScale: 1
+    pinchStartScale: 1,
+    wheelAccumX: 0,
+    wheelResetTimer: null
   };
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -142,6 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
     lightboxState.translateY = 0;
     lightboxState.startTranslateX = 0;
     lightboxState.startTranslateY = 0;
+    lightboxState.pointerActive = false;
+    lightboxStage?.classList.remove('is-panning');
     applyZoom();
   };
 
@@ -179,6 +185,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const dots = carouselEl?.querySelectorAll('.testimonial-dot');
     if (track) track.style.transform = `translateX(-${normalizedIndex * 100}%)`;
     dots?.forEach((dot, index) => dot.classList.toggle('active', index === normalizedIndex));
+  };
+
+  const startCarouselAutoRotate = (groupIndex) => {
+    window.clearInterval(carouselTimers[groupIndex]);
+    carouselTimers[groupIndex] = window.setInterval(() => {
+      setCarouselIndex(groupIndex, carouselStates[groupIndex].index + 1);
+    }, 3400 + (groupIndex * 600));
   };
 
   const openLightbox = (groupIndex, itemIndex) => {
@@ -227,16 +240,11 @@ document.addEventListener('DOMContentLoaded', () => {
       `).join('');
     }
 
-    carouselEl.querySelector('[data-action="prev"]')?.addEventListener('click', () => {
-      setCarouselIndex(groupIndex, carouselStates[groupIndex].index - 1);
-    });
-
-    carouselEl.querySelector('[data-action="next"]')?.addEventListener('click', () => {
-      setCarouselIndex(groupIndex, carouselStates[groupIndex].index + 1);
-    });
-
     carouselEl.querySelectorAll('.testimonial-dot').forEach((dot, itemIndex) => {
-      dot.addEventListener('click', () => setCarouselIndex(groupIndex, itemIndex));
+      dot.addEventListener('click', () => {
+        setCarouselIndex(groupIndex, itemIndex);
+        startCarouselAutoRotate(groupIndex);
+      });
     });
 
     carouselEl.querySelectorAll('[data-open-lightbox]').forEach((buttonEl) => {
@@ -245,7 +253,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    carouselEl.addEventListener('mouseenter', () => window.clearInterval(carouselTimers[groupIndex]));
+    carouselEl.addEventListener('mouseleave', () => startCarouselAutoRotate(groupIndex));
+    carouselEl.addEventListener('focusin', () => window.clearInterval(carouselTimers[groupIndex]));
+    carouselEl.addEventListener('focusout', () => startCarouselAutoRotate(groupIndex));
+
     setCarouselIndex(groupIndex, 0);
+    startCarouselAutoRotate(groupIndex);
   });
 
   lightboxBackBtn?.addEventListener('click', closeLightbox);
@@ -269,6 +283,63 @@ document.addEventListener('DOMContentLoaded', () => {
     lightboxState.scale = 2.5;
     applyZoom();
   });
+
+  lightboxStage?.addEventListener('pointerdown', (event) => {
+    if (!lightbox?.classList.contains('active') || lightboxState.scale <= 1) return;
+    lightboxState.pointerActive = true;
+    lightboxState.startX = event.clientX;
+    lightboxState.startY = event.clientY;
+    lightboxState.startTranslateX = lightboxState.translateX;
+    lightboxState.startTranslateY = lightboxState.translateY;
+    lightboxStage.classList.add('is-panning');
+  });
+
+  lightboxStage?.addEventListener('pointermove', (event) => {
+    if (!lightboxState.pointerActive || lightboxState.scale <= 1) return;
+    const deltaX = event.clientX - lightboxState.startX;
+    const deltaY = event.clientY - lightboxState.startY;
+    const limits = getPanLimits();
+    lightboxState.translateX = clamp(lightboxState.startTranslateX + deltaX, -limits.x, limits.x);
+    lightboxState.translateY = clamp(lightboxState.startTranslateY + deltaY, -limits.y, limits.y);
+    applyZoom();
+  });
+
+  const stopPointerPan = () => {
+    lightboxState.pointerActive = false;
+    lightboxStage?.classList.remove('is-panning');
+  };
+
+  lightboxStage?.addEventListener('pointerup', stopPointerPan);
+  lightboxStage?.addEventListener('pointercancel', stopPointerPan);
+  lightboxStage?.addEventListener('pointerleave', stopPointerPan);
+
+  lightboxStage?.addEventListener('wheel', (event) => {
+    if (!lightbox?.classList.contains('active')) return;
+
+    if (lightboxState.scale > 1) {
+      const limits = getPanLimits();
+      lightboxState.translateX = clamp(lightboxState.translateX - event.deltaX, -limits.x, limits.x);
+      lightboxState.translateY = clamp(lightboxState.translateY - event.deltaY, -limits.y, limits.y);
+      applyZoom();
+      event.preventDefault();
+      return;
+    }
+
+    if (Math.abs(event.deltaX) < Math.abs(event.deltaY) || Math.abs(event.deltaX) < 20) return;
+
+    lightboxState.wheelAccumX += event.deltaX;
+    window.clearTimeout(lightboxState.wheelResetTimer);
+    lightboxState.wheelResetTimer = window.setTimeout(() => {
+      lightboxState.wheelAccumX = 0;
+    }, 180);
+
+    if (Math.abs(lightboxState.wheelAccumX) > 90) {
+      changeLightboxItem(lightboxState.wheelAccumX > 0 ? 1 : -1);
+      lightboxState.wheelAccumX = 0;
+      window.clearTimeout(lightboxState.wheelResetTimer);
+    }
+    event.preventDefault();
+  }, { passive: false });
 
   lightboxStage?.addEventListener('touchstart', (event) => {
     if (!lightbox?.classList.contains('active')) return;

@@ -5,6 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.getElementById('global-overlay');
   const cartBtn = document.querySelector('.cart-v9-btn');
   const closeBtn = document.querySelector('.close-v9');
+  const nav = document.querySelector('.nav-v9');
+  const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+
+  const toggleMobileNav = (show) => {
+    nav?.classList.toggle('menu-open', show);
+    mobileNavToggle?.setAttribute('aria-expanded', show ? 'true' : 'false');
+  };
 
   const updateV9Count = () => {
     const totalCount = cart.reduce((acc, it) => acc + it.quantity, 0);
@@ -60,7 +68,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   cartBtn?.addEventListener('click', () => toggleSidebar(true));
   closeBtn?.addEventListener('click', () => toggleSidebar(false));
-  overlay?.addEventListener('click', () => toggleSidebar(false));
+  overlay?.addEventListener('click', () => {
+    toggleSidebar(false);
+    toggleMobileNav(false);
+  });
+
+  mobileNavToggle?.addEventListener('click', () => {
+    toggleMobileNav(!nav?.classList.contains('menu-open'));
+  });
+
+  navLinks?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => toggleMobileNav(false));
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!nav?.classList.contains('menu-open')) return;
+    const target = event.target;
+    if (target instanceof Node && !nav.contains(target)) {
+      toggleMobileNav(false);
+    }
+  });
 
   document.querySelector('.checkout-v9')?.addEventListener('click', () => {
     if (cart.length === 0) return;

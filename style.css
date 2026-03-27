@@ -488,62 +488,60 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   }
   .hero-grid, .vision-split, .science-grid {
     grid-template-columns: 1fr !important;
-    gap: 28px;
+    gap: 22px;
   }
   .hero-text {
     text-align: left;
-    order: 2;
+    order: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
   }
   .hero-heading-desktop {
-    display: none;
+    display: block;
   }
   .hero-heading-mobile {
-    position: absolute;
-    top: 18px;
-    left: 0;
-    right: 0;
-    display: block;
-    z-index: 2;
-    padding: 0 20px;
-    text-align: left;
+    display: none;
   }
-  .hero-heading-mobile .eyebrow {
-    color: rgba(255, 255, 255, 0.94);
-    margin-bottom: 12px;
+  .hero-heading-block .eyebrow {
+    margin-bottom: 14px;
   }
-  .hero-heading-mobile h1,
-  .hero-heading-mobile h1 span {
-    color: #fff;
-    text-shadow: 0 12px 30px rgba(8, 22, 10, 0.28);
-    font-size: clamp(2.8rem, 11vw, 3.6rem);
+  .hero-heading-block h1 {
+    font-size: clamp(2.7rem, 10.5vw, 3.65rem);
+    line-height: 0.98;
   }
   .hero-copy-block {
-    order: 1;
-    padding: 24px 22px;
-    border-radius: 26px;
-    background: rgba(255, 255, 255, 0.78);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: 0 18px 50px rgba(18, 44, 21, 0.08);
+    order: 2;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
   }
   .hero-copy-block p {
     font-size: 1rem;
-    line-height: 1.8;
+    line-height: 1.75;
   }
   .hero-actions {
     order: 3;
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 12px;
-    margin-top: 18px !important;
+    margin-top: 6px !important;
+    align-items: center;
   }
   .p-info-grid, .prep-grid { grid-template-columns: 1fr; gap: 24px; }
   .homepage-hero-visual {
-    order: 1;
+    order: 2;
     width: 100%;
     margin: 0;
-    padding: 22px 0 36px;
-    min-height: 400px;
+    padding: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
   }
   .homepage-hero-visual::before {
     inset: 0;
@@ -552,18 +550,16 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
       linear-gradient(180deg, rgba(83, 158, 56, 0.94), rgba(125, 199, 90, 0.82));
   }
   .homepage-hero-visual img {
-    padding-top: 104px;
-    max-width: 94%;
+    padding-top: 0;
+    max-width: 100%;
     margin: 0 auto;
   }
   .homepage-hero-stamp {
-    left: 50%;
-    right: auto;
-    bottom: 8px;
-    transform: translateX(-50%);
-    width: max-content;
-    max-width: calc(100% - 40px);
-    padding: 13px 18px;
+    position: static;
+    transform: none;
+    width: auto;
+    max-width: 100%;
+    padding: 10px 16px;
     font-size: 12px;
   }
   
@@ -594,9 +590,14 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   }
   .p-card img { aspect-ratio: 4 / 3; }
   
-  .btn { width: 100%; margin: 0; }
+  .btn {
+    width: auto;
+    margin: 0;
+    padding: 14px 24px;
+    font-size: 15px;
+  }
   .hero-actions .btn {
-    width: 100%;
+    width: auto;
     min-width: 0;
   }
   .sidebar-v9 { padding: 28px 22px; width: 100%; }
@@ -718,22 +719,17 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     padding-top: 108px;
     padding-bottom: 32px;
   }
-  .hero-heading-mobile {
-    padding: 0 18px;
-  }
-  .hero-heading-mobile h1,
-  .hero-heading-mobile h1 span {
-    font-size: clamp(2.4rem, 10.8vw, 3.2rem);
+  .hero-heading-block h1 {
+    font-size: clamp(2.35rem, 10.6vw, 3.05rem);
   }
   .homepage-hero-visual {
-    min-height: 360px;
+    gap: 12px;
   }
   .homepage-hero-visual img {
-    padding-top: 112px;
     max-width: 100%;
   }
   .hero-copy-block {
-    padding: 22px 18px;
+    padding: 0;
   }
   .f-card,
   .p-card-content,
@@ -741,6 +737,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .testimonial-carousel {
     padding-left: 18px;
     padding-right: 18px;
+  }
+  .btn {
+    padding: 13px 20px;
+    font-size: 14px;
   }
   .testimonial-slide-label {
     font-size: 12px;

@@ -678,69 +678,209 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateV9Count();
   renderV9Cart();
+
+  window.addQuizRecommendationToCart = (recommendationKey) => {
+    const productMap = {
+      bubur: {
+        name: 'Jenang Gemi Bubur',
+        flavor: 'Original',
+        qtyLabel: '15 Sachets',
+        price: 120000
+      },
+      jamu: {
+        name: 'Jenang Gemi Jamu',
+        flavor: 'Gula Aren',
+        qtyLabel: '15 Sachets',
+        price: 120000
+      }
+    };
+
+    const item = productMap[recommendationKey];
+    if (!item) return;
+
+    const existing = cart.find((entry) => (
+      entry.name === item.name &&
+      entry.flavor === item.flavor &&
+      entry.qtyLabel === item.qtyLabel
+    ));
+
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push({ ...item, quantity: 1 });
+    }
+
+    renderV9Cart();
+    updateV9Count();
+    toggleSidebar(true);
+  };
+
+  const quizModal = document.getElementById('quizModal');
+  quizModal?.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (target.classList.contains('quiz-backdrop')) {
+      closeQuiz();
+    }
+  });
 });
 
 // --- Quiz Logic ---
-let currentStep = 0;
+const quizRecommendations = {
+  bubur: {
+    key: 'bubur',
+    title: 'Jenang Gemi Bubur paling cocok untuk Anda',
+    description: 'Pilihan ini paling pas jika Anda sedang mencari rasa nyaman yang lebih cepat terasa dan punya waktu sarapan di rumah untuk menyiapkannya.',
+    fit: 'Bubur Gemi memberi pengalaman yang lebih menenangkan untuk lambung, tetapi memang paling cocok bila Anda sempat masak sebentar dan punya alat untuk menyiapkannya.',
+    pack: 'Starter pack 15 sachets rasa Original, cocok untuk mulai mencoba rutinitas pagi Anda.',
+    link: 'bubur.html',
+    addLabel: 'Tambah Bubur Starter Pack'
+  },
+  jamu: {
+    key: 'jamu',
+    title: 'Jenang Gemi Jamu paling cocok untuk Anda',
+    description: 'Pilihan ini paling pas jika rutinitas Anda padat dan Anda butuh format yang lebih cepat, praktis, dan mudah dikonsumsi setiap hari.',
+    fit: 'Jamu Gemi unggul di kepraktisan. Efek nyamannya tidak se-instan Bubur, tetapi jauh lebih mudah dijalani secara konsisten saat pagi Anda sibuk.',
+    pack: 'Starter pack 15 sachets rasa Gula Aren, paling praktis untuk mulai konsumsi harian.',
+    link: 'jamu.html',
+    addLabel: 'Tambah Jamu Starter Pack'
+  }
+};
+
 const quizData = [
   {
-    q: "Apa keluhan utama lambung Anda?",
+    q: "Saat lambung sedang sensitif, apa yang paling Anda butuhkan?",
+    helper: "Prioritas ini membantu kami menentukan format yang paling relevan untuk Anda.",
     options: [
-      { t: "Asam lambung sering naik & perih (GERD)", res: "bubur" },
-      { t: "Sering kembung dan nyeri ulu hati", res: "jamu" },
-      { t: "Hanya ingin menjaga daya tahan tubuh", res: "jamu" }
+      { t: "Saya ingin efek nyaman yang terasa lebih cepat", scores: { bubur: 2 } },
+      { t: "Saya ingin yang praktis untuk dijalani setiap hari", scores: { jamu: 2 } },
+      { t: "Saya butuh keseimbangan antara nyaman dan praktis", scores: { bubur: 1, jamu: 1 } }
+    ]
+  },
+  {
+    q: "Rutinitas pagi Anda biasanya seperti apa?",
+    helper: "Bubur lebih cocok jika Anda sempat sarapan di rumah, sedangkan Jamu unggul saat jadwal padat.",
+    options: [
+      { t: "Saya biasanya ada di rumah saat sarapan", scores: { bubur: 2 } },
+      { t: "Pagi saya sering buru-buru atau harus cepat pergi", scores: { jamu: 2 } },
+      { t: "Tergantung hari, kadang sempat kadang tidak", scores: { bubur: 1, jamu: 1 } }
+    ]
+  },
+  {
+    q: "Soal menyiapkan produk, mana yang paling realistis untuk Anda?",
+    helper: "Jawaban ini jadi pembeda utama antara Bubur yang perlu dimasak dan Jamu yang lebih instan.",
+    options: [
+      { t: "Saya tidak masalah masak sebentar asal hasilnya lebih maksimal", scores: { bubur: 2 } },
+      { t: "Saya maunya cepat, tinggal konsumsi lalu lanjut aktivitas", scores: { jamu: 2 } },
+      { t: "Kalau terlalu ribet, kemungkinan saya tidak konsisten", scores: { jamu: 2 } }
     ]
   }
 ];
+let currentStep = 0;
+let quizScores = { bubur: 0, jamu: 0 };
+let quizAnswers = [];
+
+function resetQuizState() {
+  currentStep = 0;
+  quizScores = { bubur: 0, jamu: 0 };
+  quizAnswers = [];
+}
 
 function openQuiz() {
-  document.getElementById('quizModal').style.display = 'flex';
+  resetQuizState();
+  const modal = document.getElementById('quizModal');
+  modal?.classList.add('active');
+  modal?.setAttribute('aria-hidden', 'false');
   document.getElementById('btn-take-quiz').style.display = 'block';
+  document.getElementById('quiz-intro').style.display = 'block';
   document.getElementById('quiz-q').style.display = 'none';
   document.getElementById('quiz-res').style.display = 'none';
+  document.body.style.overflow = 'hidden';
 }
 
 function closeQuiz() {
-  document.getElementById('quizModal').style.display = 'none';
+  const modal = document.getElementById('quizModal');
+  modal?.classList.remove('active');
+  modal?.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
 }
 
 function startQuiz() {
+  resetQuizState();
   document.getElementById('btn-take-quiz').style.display = 'none';
+  document.getElementById('quiz-intro').style.display = 'none';
   document.getElementById('quiz-q').style.display = 'block';
   showStep();
 }
 
 function showStep() {
   const step = quizData[currentStep];
+  document.getElementById('quiz-step-label').innerText = `Pertanyaan ${currentStep + 1} dari ${quizData.length}`;
+  document.getElementById('quiz-progress-fill').style.width = `${((currentStep + 1) / quizData.length) * 100}%`;
   document.getElementById('q-text').innerText = step.q;
+  document.getElementById('q-helper').innerText = step.helper;
   const opts = document.getElementById('quiz-options');
   opts.innerHTML = '';
   step.options.forEach(o => {
     const b = document.createElement('button');
-    b.className = 'btn btn-outline';
-    b.style.cssText = 'width: 100%; margin-bottom: 12px; text-align: left; padding: 16px 24px;';
+    b.className = 'btn quiz-option-btn';
     b.innerText = o.t;
-    b.onclick = () => finishQuiz(o.res);
+    b.onclick = () => handleQuizAnswer(o);
     opts.appendChild(b);
   });
 }
 
-function finishQuiz(res) {
+function handleQuizAnswer(option) {
+  quizAnswers.push(option.t);
+  Object.entries(option.scores).forEach(([key, value]) => {
+    quizScores[key] += value;
+  });
+
+  if (currentStep < quizData.length - 1) {
+    currentStep += 1;
+    showStep();
+    return;
+  }
+
+  finishQuiz();
+}
+
+function getQuizRecommendation() {
+  if (quizScores.bubur === quizScores.jamu) {
+    const prefersPractical = quizAnswers.some((answer) => (
+      answer.includes('praktis') ||
+      answer.includes('buru-buru') ||
+      answer.includes('tinggal konsumsi') ||
+      answer.includes('tidak konsisten')
+    ));
+
+    return prefersPractical ? quizRecommendations.jamu : quizRecommendations.bubur;
+  }
+
+  return quizScores.bubur > quizScores.jamu ? quizRecommendations.bubur : quizRecommendations.jamu;
+}
+
+function finishQuiz() {
   document.getElementById('quiz-q').style.display = 'none';
   document.getElementById('quiz-res').style.display = 'block';
+  const recommendation = getQuizRecommendation();
   const rText = document.getElementById('r-text');
   const rDesc = document.getElementById('r-desc');
+  const rFit = document.getElementById('r-fit');
+  const rPack = document.getElementById('r-pack');
   const rLink = document.getElementById('quiz-res-link');
+  const addBtn = document.getElementById('quiz-add-cart');
 
-  if (res === 'bubur') {
-    rText.innerText = "Bubur Gemi Adalah Solusi Anda";
-    rDesc.innerText = "Tekstur gel hangat dari Bubur Gemi sangat efektif untuk melapisi lambung yang perih dan meredakan gejala GERD seketika.";
-    rLink.href = "bubur.html";
-  } else {
-    rText.innerText = "Jamu Gemi Pilihan Tepat";
-    rDesc.innerText = "Jamu Gemi dengan tambahan Kunyit dan Psyllium Husk membantu meredakan kembung harian dan menjaga kesehatan usus Anda.";
-    rLink.href = "jamu.html";
-  }
+  rText.innerText = recommendation.title;
+  rDesc.innerText = recommendation.description;
+  rFit.innerText = recommendation.fit;
+  rPack.innerText = recommendation.pack;
+  rLink.href = recommendation.link;
+  addBtn.innerText = recommendation.addLabel;
+  addBtn.onclick = () => {
+    window.addQuizRecommendationToCart?.(recommendation.key);
+    closeQuiz();
+  };
 }
 
 window.openQuiz = openQuiz;

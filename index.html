@@ -236,21 +236,59 @@
     </div>
 
     <!-- Quiz Modal -->
-    <div class="quiz-modal" id="quizModal" style="position:fixed; inset:0; z-index:5000; display:none; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); align-items:center; justify-content:center;">
-        <div class="glass" style="padding: 56px; border-radius: var(--radius-lg); width: min(600px, 100%); text-align: center; position: relative; background: white;">
-            <h2 style="margin-bottom: 16px;">Mulai Perjalanan Sehat Anda</h2>
-            <p style="margin-bottom: 32px; color: var(--muted);" id="quiz-caption">Temukan format Jenang Gemi yang paling tepat untuk Anda.</p>
-            <button class="btn btn-primary" onclick="startQuiz()" style="width:100%;" id="btn-take-quiz">Ambil Quiz</button>
-            <div id="quiz-q" style="display:none; text-align:left;">
-                <h3 style="margin-bottom:24px;" id="q-text"></h3>
-                <div id="quiz-options"></div>
+    <div class="quiz-modal" id="quizModal" aria-hidden="true">
+        <div class="quiz-backdrop"></div>
+        <div class="quiz-panel glass">
+            <button class="quiz-close" type="button" aria-label="Tutup quiz" onclick="closeQuiz()">&times;</button>
+
+            <div class="quiz-stage quiz-intro-stage" id="quiz-intro">
+                <span class="eyebrow">Quiz Jenang Gemi</span>
+                <h2>Let's get you started.</h2>
+                <p id="quiz-caption">Jawab 3 pertanyaan singkat untuk mengetahui apakah Jenang Gemi Bubur atau Jamu lebih cocok untuk kebutuhan dan rutinitas Anda.</p>
+                <div class="quiz-intro-points">
+                    <div class="quiz-intro-point">
+                        <strong>Bubur Gemi</strong>
+                        <p>Lebih cocok jika Anda ingin efek yang lebih terasa dan punya waktu menyiapkan sarapan di rumah.</p>
+                    </div>
+                    <div class="quiz-intro-point">
+                        <strong>Jamu Gemi</strong>
+                        <p>Lebih cocok jika Anda butuh solusi cepat, praktis, dan mudah diminum saat aktivitas padat.</p>
+                    </div>
+                </div>
+                <button class="btn btn-primary quiz-start-btn" onclick="startQuiz()" id="btn-take-quiz">Mulai Quiz</button>
             </div>
-            <div id="quiz-res" style="display:none;">
-                <h3 style="margin-bottom:24px; color:var(--green);" id="r-text"></h3>
-                <p style="margin-bottom:24px;" id="r-desc"></p>
-                <a href="#produk" class="btn btn-primary" id="quiz-res-link" style="width:100%;" onclick="closeQuiz()">Lihat Produk</a>
+
+            <div class="quiz-stage" id="quiz-q" style="display:none;">
+                <div class="quiz-progress">
+                    <span id="quiz-step-label">Pertanyaan 1 dari 3</span>
+                    <div class="quiz-progress-bar">
+                        <span id="quiz-progress-fill"></span>
+                    </div>
+                </div>
+                <h3 id="q-text"></h3>
+                <p class="quiz-helper" id="q-helper">Pilih jawaban yang paling sesuai dengan kebiasaan Anda.</p>
+                <div class="quiz-options" id="quiz-options"></div>
             </div>
-            <button style="margin-top:24px; opacity:0.6;" onclick="closeQuiz()">Batal</button>
+
+            <div class="quiz-stage" id="quiz-res" style="display:none;">
+                <span class="eyebrow">Rekomendasi Anda</span>
+                <h3 id="r-text"></h3>
+                <p class="quiz-result-desc" id="r-desc"></p>
+                <div class="quiz-result-card">
+                    <div>
+                        <span class="quiz-result-label">Kenapa ini paling cocok</span>
+                        <p id="r-fit"></p>
+                    </div>
+                    <div>
+                        <span class="quiz-result-label">Starter pack yang disarankan</span>
+                        <p id="r-pack"></p>
+                    </div>
+                </div>
+                <div class="quiz-result-actions">
+                    <button class="btn btn-primary" type="button" id="quiz-add-cart">Tambah Starter Pack</button>
+                    <a href="#produk" class="btn btn-outline" id="quiz-res-link" onclick="closeQuiz()">Lihat Produk Lain</a>
+                </div>
+            </div>
         </div>
     </div>
 

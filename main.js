@@ -115,7 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
     pinchStartDistance: 0,
     pinchStartScale: 1,
     wheelAccumX: 0,
-    wheelResetTimer: null
+    wheelResetTimer: null,
+    wheelGestureLocked: false
   };
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -327,16 +328,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (Math.abs(event.deltaX) < Math.abs(event.deltaY) || Math.abs(event.deltaX) < 20) return;
 
+    if (lightboxState.wheelGestureLocked) {
+      window.clearTimeout(lightboxState.wheelResetTimer);
+      lightboxState.wheelResetTimer = window.setTimeout(() => {
+        lightboxState.wheelAccumX = 0;
+        lightboxState.wheelGestureLocked = false;
+      }, 220);
+      event.preventDefault();
+      return;
+    }
+
     lightboxState.wheelAccumX += event.deltaX;
     window.clearTimeout(lightboxState.wheelResetTimer);
     lightboxState.wheelResetTimer = window.setTimeout(() => {
       lightboxState.wheelAccumX = 0;
+      lightboxState.wheelGestureLocked = false;
     }, 180);
 
     if (Math.abs(lightboxState.wheelAccumX) > 90) {
       changeLightboxItem(lightboxState.wheelAccumX > 0 ? 1 : -1);
       lightboxState.wheelAccumX = 0;
+      lightboxState.wheelGestureLocked = true;
       window.clearTimeout(lightboxState.wheelResetTimer);
+      lightboxState.wheelResetTimer = window.setTimeout(() => {
+        lightboxState.wheelGestureLocked = false;
+      }, 260);
     }
     event.preventDefault();
   }, { passive: false });

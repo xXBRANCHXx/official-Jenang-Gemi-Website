@@ -613,6 +613,42 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', requestScienceParallax);
   }
 
+  // --- Scroll Reveal Animations ---
+  const revealTargets = [
+    ...document.querySelectorAll('.hero-text, .hero-visual'),
+    ...document.querySelectorAll('.vision-copy, .vision-image-wrap'),
+    ...document.querySelectorAll('.science-card'),
+    ...document.querySelectorAll('#produk .p-card'),
+    ...document.querySelectorAll('[data-expand]'),
+    ...document.querySelectorAll('.testimonial-carousel'),
+    ...document.querySelectorAll('.prep-card'),
+    ...document.querySelectorAll('footer .container'),
+    ...document.querySelectorAll('.p-info-grid > .hero-visual, .p-details')
+  ];
+
+  const uniqueRevealTargets = [...new Set(revealTargets)].filter(Boolean);
+  uniqueRevealTargets.forEach((element, index) => {
+    element.classList.add('reveal-on-scroll');
+    element.style.setProperty('--reveal-delay', `${(index % 4) * 90}ms`);
+  });
+
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      });
+    }, {
+      threshold: 0.14,
+      rootMargin: '0px 0px -8% 0px'
+    });
+
+    uniqueRevealTargets.forEach((element) => revealObserver.observe(element));
+  } else {
+    uniqueRevealTargets.forEach((element) => element.classList.add('is-visible'));
+  }
+
   updateV9Count();
   renderV9Cart();
 });

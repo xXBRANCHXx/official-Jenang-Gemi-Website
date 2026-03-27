@@ -312,6 +312,65 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   object-fit: cover;
 }
 
+.breadcrumb-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+.breadcrumb-nav a {
+  color: var(--text-dark);
+}
+
+.faq-section {
+  background:
+    radial-gradient(circle at top right, rgba(99, 191, 71, 0.12), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #f4f8ef 100%);
+}
+.faq-header {
+  max-width: 760px;
+  margin: 0 auto 52px;
+  text-align: center;
+}
+.faq-header p {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.faq-card {
+  padding: 30px;
+  cursor: default;
+  box-shadow: 0 24px 80px rgba(10, 37, 28, 0.08);
+}
+.faq-card:hover {
+  transform: none;
+}
+.faq-card h3 {
+  font-size: 1.45rem;
+  margin-bottom: 14px;
+}
+.faq-card p {
+  color: var(--text-main);
+  line-height: 1.8;
+}
+.faq-card a {
+  color: var(--green-dark);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
 .prep-section {
   background: linear-gradient(180deg, #ffffff 0%, #f4f8ef 100%);
 }
@@ -563,7 +622,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     font-size: 12px;
   }
   
-  .features-grid, .p-showcase { grid-template-columns: 1fr; gap: 18px; background: none; }
+  .features-grid, .p-showcase, .faq-grid { grid-template-columns: 1fr; gap: 18px; background: none; }
   .nutrition-grid { grid-template-columns: 1fr; gap: 14px; }
   .glass-card {
     border-radius: 24px;
@@ -601,6 +660,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     min-width: 0;
   }
   .sidebar-v9 { padding: 28px 22px; width: 100%; }
+  .breadcrumb-nav {
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
   .prep-section .container { padding: 0 20px; }
   .prep-card {
     border-radius: 24px;
@@ -745,7 +808,8 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .f-card,
   .p-card-content,
   .science-card,
-  .testimonial-carousel {
+  .testimonial-carousel,
+  .faq-card {
     padding-left: 18px;
     padding-right: 18px;
   }

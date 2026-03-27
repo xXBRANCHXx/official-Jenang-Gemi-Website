@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
+Host: https://jenanggemi.com
 Sitemap: https://jenanggemi.com/sitemap.xml

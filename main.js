@@ -742,3 +742,7 @@ function finishQuiz(res) {
     rLink.href = "jamu.html";
   }
 }
+
+window.openQuiz = openQuiz;
+window.closeQuiz = closeQuiz;
+window.startQuiz = startQuiz;

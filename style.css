@@ -343,6 +343,11 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   color: var(--muted);
   font-size: 1.05rem;
 }
+.faq-page-link-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+}
 .faq-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -369,6 +374,210 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+}
+
+.faq-page-main {
+  min-height: 100svh;
+}
+.faq-page-hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: 148px 0 76px;
+  overflow: hidden;
+}
+.faq-page-hero::before,
+.faq-page-hero::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.faq-page-hero::before {
+  width: 560px;
+  height: 560px;
+  top: -140px;
+  right: -120px;
+  background: radial-gradient(circle, rgba(99, 191, 71, 0.20) 0%, rgba(99, 191, 71, 0) 70%);
+}
+.faq-page-hero::after {
+  width: 420px;
+  height: 420px;
+  left: -130px;
+  bottom: -120px;
+  background: radial-gradient(circle, rgba(255, 205, 110, 0.22) 0%, rgba(255, 205, 110, 0) 70%);
+}
+.faq-page-hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  gap: 32px;
+}
+.faq-page-hero-copy {
+  max-width: 680px;
+}
+.faq-page-hero-copy h1 {
+  font-size: clamp(3.4rem, 7vw, 6rem);
+  margin-bottom: 22px;
+}
+.faq-page-hero-copy p {
+  font-size: 1.1rem;
+  line-height: 1.9;
+  color: var(--text-main);
+  max-width: 58ch;
+}
+.faq-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 34px;
+}
+.faq-page-hero-panel {
+  display: grid;
+  gap: 18px;
+}
+.faq-spotlight-card {
+  padding: 34px;
+  border-radius: 34px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 28px 90px rgba(15, 39, 19, 0.10);
+}
+.faq-spotlight-primary {
+  transform: translateX(-18px);
+}
+.faq-spotlight-secondary {
+  transform: translateX(18px);
+  background: linear-gradient(180deg, rgba(99, 191, 71, 0.12), rgba(255, 255, 255, 0.96));
+}
+.faq-spotlight-label,
+.faq-compare-kicker,
+.faq-page-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--green-dark);
+}
+.faq-spotlight-card h2 {
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  margin-bottom: 12px;
+}
+.faq-spotlight-card p {
+  color: var(--text-main);
+  line-height: 1.75;
+}
+.faq-page-heading {
+  max-width: 780px;
+  margin: 0 auto 54px;
+  text-align: center;
+}
+.faq-page-heading p {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 1.03rem;
+}
+.faq-page-compare {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(241, 247, 235, 0.95));
+}
+.faq-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.faq-compare-card {
+  padding: 34px;
+  cursor: default;
+}
+.faq-compare-card:hover {
+  transform: none;
+}
+.faq-compare-card h3 {
+  font-size: 2rem;
+  margin-bottom: 18px;
+}
+.faq-checklist {
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+.faq-checklist li {
+  position: relative;
+  padding-left: 34px;
+  color: var(--text-main);
+  line-height: 1.75;
+}
+.faq-checklist li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, var(--green) 0 42%, rgba(99, 191, 71, 0.25) 43% 100%);
+}
+.faq-page-list-section {
+  background:
+    radial-gradient(circle at top left, rgba(99, 191, 71, 0.10), transparent 28%),
+    linear-gradient(180deg, #f8fbf4 0%, #ffffff 100%);
+}
+.faq-page-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+.faq-page-item {
+  padding: 30px;
+  cursor: default;
+  box-shadow: 0 24px 80px rgba(14, 38, 20, 0.08);
+}
+.faq-page-item:hover {
+  transform: none;
+}
+.faq-page-item h3 {
+  font-size: 1.45rem;
+  margin-bottom: 14px;
+}
+.faq-page-item p {
+  color: var(--text-main);
+  line-height: 1.8;
+}
+.faq-page-item a {
+  color: var(--green-dark);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.faq-page-number {
+  min-width: 48px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(99, 191, 71, 0.12);
+}
+.faq-page-cta {
+  background: transparent;
+  padding-top: 0;
+}
+.faq-cta-card {
+  padding: clamp(36px, 5vw, 54px);
+  text-align: center;
+  cursor: default;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(239, 247, 233, 0.95));
+}
+.faq-cta-card:hover {
+  transform: none;
+}
+.faq-cta-card p {
+  max-width: 62ch;
+  margin: 18px auto 0;
+  color: var(--text-main);
+  line-height: 1.8;
 }
 
 .prep-section {
@@ -545,7 +754,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     right: -100px;
     bottom: 80px;
   }
-  .hero-grid, .vision-split, .science-grid {
+  .hero-grid, .vision-split, .science-grid, .faq-page-hero-grid, .faq-compare-grid, .faq-page-list {
     grid-template-columns: 1fr !important;
     gap: 22px;
   }
@@ -624,6 +833,50 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   
   .features-grid, .p-showcase, .faq-grid { grid-template-columns: 1fr; gap: 18px; background: none; }
   .nutrition-grid { grid-template-columns: 1fr; gap: 14px; }
+  .faq-page-hero {
+    min-height: 100svh;
+    padding: 118px 0 48px;
+    align-items: stretch;
+  }
+  .faq-page-hero-copy h1 {
+    font-size: clamp(2.7rem, 11vw, 4rem);
+  }
+  .faq-page-hero-copy p,
+  .faq-page-item p,
+  .faq-spotlight-card p,
+  .faq-checklist li,
+  .faq-cta-card p {
+    font-size: 0.98rem;
+    line-height: 1.75;
+  }
+  .faq-page-hero-panel {
+    gap: 14px;
+  }
+  .faq-spotlight-card,
+  .faq-compare-card,
+  .faq-page-item,
+  .faq-cta-card {
+    padding: 24px 22px;
+  }
+  .faq-spotlight-primary,
+  .faq-spotlight-secondary {
+    transform: none;
+  }
+  .faq-compare-card h3 {
+    font-size: 1.55rem;
+  }
+  .faq-page-item h3 {
+    font-size: 1.28rem;
+  }
+  .faq-hero-actions {
+    gap: 12px;
+  }
+  .faq-hero-actions .btn {
+    width: 100%;
+  }
+  .faq-page-heading {
+    margin-bottom: 34px;
+  }
   .glass-card {
     border-radius: 24px;
     border: 1px solid rgba(0, 0, 0, 0.06);

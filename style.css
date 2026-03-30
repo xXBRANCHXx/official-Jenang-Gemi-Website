@@ -1614,7 +1614,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   font-weight: 800;
 }
 .quiz-start-btn {
-  width: 100%;
+  flex: 1 1 220px;
 }
 .quiz-progress {
   margin-bottom: 24px;
@@ -1687,6 +1687,17 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 .quiz-result-actions .btn {
   flex: 1 1 220px;
+}
+
+@media (max-width: 640px) {
+  .quiz-panel {
+    padding: 48px 22px 28px;
+  }
+
+  .quiz-result-actions .btn,
+  .quiz-start-btn {
+    flex-basis: 100%;
+  }
 }
 
 @media (max-width: 768px) {

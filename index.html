@@ -359,23 +359,26 @@
             <div class="quiz-stage quiz-intro-stage" id="quiz-intro">
                 <span class="eyebrow">Quiz Jenang Gemi</span>
                 <h2>Let's get you started.</h2>
-                <p id="quiz-caption">Jawab 3 pertanyaan singkat untuk mengetahui apakah Jenang Gemi Bubur atau Jamu lebih cocok untuk kebutuhan dan rutinitas Anda.</p>
+                <p id="quiz-caption">Jawab beberapa pertanyaan singkat tentang kebutuhan lambung, ritme pagi, dan format yang paling realistis untuk Anda. Hasilnya akan mengarahkan Anda ke produk Jenang Gemi yang paling masuk akal untuk dipakai rutin.</p>
                 <div class="quiz-intro-points">
                     <div class="quiz-intro-point">
                         <strong>Bubur Gemi</strong>
-                        <p>Lebih cocok jika Anda ingin efek yang lebih terasa dan punya waktu menyiapkan sarapan di rumah.</p>
+                        <p>Cocok bila Anda ingin sensasi hangat yang lebih menenangkan, tertarik pada saripati garut murni, dan masih sempat memasak sebentar di rumah.</p>
                     </div>
                     <div class="quiz-intro-point">
                         <strong>Jamu Gemi</strong>
-                        <p>Lebih cocok jika Anda butuh solusi cepat, praktis, dan mudah diminum saat aktivitas padat.</p>
+                        <p>Cocok bila Anda butuh format yang lebih cepat disiapkan, mudah dijalani konsisten, dan menyukai tambahan kunyit serta psyllium.</p>
                     </div>
                 </div>
-                <button class="btn btn-primary quiz-start-btn" onclick="startQuiz()" id="btn-take-quiz">Mulai Quiz</button>
+                <div class="quiz-result-actions">
+                    <button class="btn btn-primary quiz-start-btn" onclick="startQuiz()" id="btn-take-quiz">Mulai Quiz</button>
+                    <button class="btn btn-outline" type="button" onclick="closeQuiz()">Batal</button>
+                </div>
             </div>
 
             <div class="quiz-stage" id="quiz-q" style="display:none;">
                 <div class="quiz-progress">
-                    <span id="quiz-step-label">Pertanyaan 1 dari 3</span>
+                    <span id="quiz-step-label">Pertanyaan 1 dari 4</span>
                     <div class="quiz-progress-bar">
                         <span id="quiz-progress-fill"></span>
                     </div>
@@ -395,13 +398,18 @@
                         <p id="r-fit"></p>
                     </div>
                     <div>
+                        <span class="quiz-result-label">Yang kami pertimbangkan</span>
+                        <p id="r-reasons"></p>
+                    </div>
+                    <div>
                         <span class="quiz-result-label">Starter pack yang disarankan</span>
                         <p id="r-pack"></p>
                     </div>
                 </div>
                 <div class="quiz-result-actions">
                     <button class="btn btn-primary" type="button" id="quiz-add-cart">Tambah Starter Pack</button>
-                    <a href="#produk" class="btn btn-outline" id="quiz-res-link" onclick="closeQuiz()">Lihat Produk Lain</a>
+                    <button class="btn btn-outline" type="button" onclick="retakeQuiz()">Ulangi Quiz</button>
+                    <button class="btn btn-outline" type="button" onclick="closeQuiz()">Tutup Quiz</button>
                 </div>
             </div>
         </div>

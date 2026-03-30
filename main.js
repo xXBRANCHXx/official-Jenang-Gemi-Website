@@ -742,55 +742,127 @@ const quizRecommendations = {
   bubur: {
     key: 'bubur',
     title: 'Jenang Gemi Bubur paling cocok untuk Anda',
-    description: 'Pilihan ini paling pas jika Anda sedang mencari rasa nyaman yang lebih cepat terasa dan punya waktu sarapan di rumah untuk menyiapkannya.',
-    fit: 'Bubur Gemi memberi pengalaman yang lebih menenangkan untuk lambung, tetapi memang paling cocok bila Anda sempat masak sebentar dan punya alat untuk menyiapkannya.',
-    pack: 'Starter pack 15 sachets rasa Original, cocok untuk mulai mencoba rutinitas pagi Anda.',
-    link: 'bubur.html',
+    description: 'Pilihan ini paling pas bila Anda mencari format hangat yang dimasak hingga menjadi gel lembut untuk membantu menenangkan lambung dengan rasa nyaman yang lebih cepat terasa.',
+    fit: 'Dari jawaban Anda, Bubur lebih masuk akal karena Anda masih punya ruang untuk menyiapkan produk di rumah dan lebih memprioritaskan sensasi hangat serta lapisan lembut dari saripati garut yang dimasak.',
+    pack: 'Starter pack 15 sachets rasa Original, pilihan paling sederhana untuk mencoba efek Bubur dalam rutinitas pagi Anda.',
     addLabel: 'Tambah Bubur Starter Pack'
   },
   jamu: {
     key: 'jamu',
     title: 'Jenang Gemi Jamu paling cocok untuk Anda',
-    description: 'Pilihan ini paling pas jika rutinitas Anda padat dan Anda butuh format yang lebih cepat, praktis, dan mudah dikonsumsi setiap hari.',
-    fit: 'Jamu Gemi unggul di kepraktisan. Efek nyamannya tidak se-instan Bubur, tetapi jauh lebih mudah dijalani secara konsisten saat pagi Anda sibuk.',
-    pack: 'Starter pack 15 sachets rasa Gula Aren, paling praktis untuk mulai konsumsi harian.',
-    link: 'jamu.html',
+    description: 'Pilihan ini paling pas bila Anda butuh format instan yang mudah dicampur, lebih realistis dijalani setiap hari, dan tetap memberi manfaat arrowroot plus tambahan kunyit dan psyllium.',
+    fit: 'Dari jawaban Anda, Jamu lebih cocok karena kebutuhan utamanya adalah kepraktisan, konsistensi, dan format yang tetap mudah diminum saat aktivitas sedang padat.',
+    pack: 'Starter pack 15 sachets rasa Gula Aren, titik mulai paling praktis untuk membangun kebiasaan konsumsi harian.',
     addLabel: 'Tambah Jamu Starter Pack'
   }
 };
 
 const quizData = [
   {
-    q: "Saat lambung sedang sensitif, apa yang paling Anda butuhkan?",
-    helper: "Prioritas ini membantu kami menentukan format yang paling relevan untuk Anda.",
+    q: 'Saat lambung sedang sensitif, apa kebutuhan utama Anda sekarang?',
+    helper: 'Jawaban ini membantu kami membedakan apakah Anda lebih cocok ke sensasi hangat Bubur atau ke format praktis Jamu.',
     options: [
-      { t: "Saya ingin efek nyaman yang terasa lebih cepat", scores: { bubur: 2 } },
-      { t: "Saya ingin yang praktis untuk dijalani setiap hari", scores: { jamu: 2 } },
-      { t: "Saya butuh keseimbangan antara nyaman dan praktis", scores: { bubur: 1, jamu: 1 } }
+      {
+        t: 'Saya ingin rasa nyaman yang lebih cepat terasa',
+        scores: { bubur: 3, jamu: 1 },
+        traits: ['prioritizes immediate soothing relief', 'leans toward a warmer format']
+      },
+      {
+        t: 'Saya ingin format yang paling mudah dijalani setiap hari',
+        scores: { bubur: 0, jamu: 3 },
+        traits: ['needs a practical daily routine', 'wants the simplest format to stay consistent']
+      },
+      {
+        t: 'Saya ingin yang tetap nyaman, tetapi jangan terlalu merepotkan',
+        scores: { bubur: 1, jamu: 2 },
+        traits: ['needs a balance between comfort and convenience']
+      }
     ]
   },
   {
-    q: "Rutinitas pagi Anda biasanya seperti apa?",
-    helper: "Bubur lebih cocok jika Anda sempat sarapan di rumah, sedangkan Jamu unggul saat jadwal padat.",
+    q: 'Rutinitas pagi Anda biasanya seperti apa?',
+    helper: 'Bubur lebih cocok jika Anda sempat menyiapkan sesuatu di rumah. Jamu lebih cocok bila Anda sering buru-buru atau langsung berangkat.',
     options: [
-      { t: "Saya biasanya ada di rumah saat sarapan", scores: { bubur: 2 } },
-      { t: "Pagi saya sering buru-buru atau harus cepat pergi", scores: { jamu: 2 } },
-      { t: "Tergantung hari, kadang sempat kadang tidak", scores: { bubur: 1, jamu: 1 } }
+      {
+        t: 'Saya biasanya masih sempat sarapan atau minum sesuatu di rumah',
+        scores: { bubur: 3, jamu: 0 },
+        traits: ['has time to prepare something at home']
+      },
+      {
+        t: 'Pagi saya sering mepet, harus cepat berangkat, atau mobile',
+        scores: { bubur: 0, jamu: 3 },
+        traits: ['needs something faster for busy mornings']
+      },
+      {
+        t: 'Jadwal saya berubah-ubah, jadi saya butuh yang fleksibel',
+        scores: { bubur: 1, jamu: 2 },
+        traits: ['needs a format that remains usable on inconsistent days']
+      }
     ]
   },
   {
-    q: "Soal menyiapkan produk, mana yang paling realistis untuk Anda?",
-    helper: "Jawaban ini jadi pembeda utama antara Bubur yang perlu dimasak dan Jamu yang lebih instan.",
+    q: 'Soal menyiapkan produk, mana yang paling realistis untuk Anda?',
+    helper: 'Perbedaan terbesar kedua produk ada di sini: Bubur perlu dimasak sampai mengental, sedangkan Jamu cukup dicampur air.',
     options: [
-      { t: "Saya tidak masalah masak sebentar asal hasilnya lebih maksimal", scores: { bubur: 2 } },
-      { t: "Saya maunya cepat, tinggal konsumsi lalu lanjut aktivitas", scores: { jamu: 2 } },
-      { t: "Kalau terlalu ribet, kemungkinan saya tidak konsisten", scores: { jamu: 2 } }
+      {
+        t: 'Saya tidak masalah masak singkat kalau hasilnya lebih menenangkan',
+        scores: { bubur: 4, jamu: 0 },
+        traits: ['is willing to cook briefly for a more soothing experience']
+      },
+      {
+        t: 'Saya butuh yang cukup seduh atau campur air lalu lanjut aktivitas',
+        scores: { bubur: 0, jamu: 4 },
+        traits: ['needs an instant mix format']
+      },
+      {
+        t: 'Kalau terlalu ribet, saya kemungkinan tidak akan rutin',
+        scores: { bubur: 0, jamu: 3 },
+        traits: ['needs the easiest option to maintain consistency']
+      }
+    ]
+  },
+  {
+    q: 'Bahan atau pengalaman seperti apa yang paling terdengar cocok untuk Anda?',
+    helper: 'Pertanyaan terakhir ini memakai detail dari produknya langsung: Bubur fokus ke saripati garut yang dimasak, sedangkan Jamu menambah kunyit dan psyllium dalam format instan.',
+    options: [
+      {
+        t: 'Saripati garut murni yang dimasak jadi gel hangat lebih sesuai untuk saya',
+        scores: { bubur: 4, jamu: 0 },
+        traits: ['prefers cooked arrowroot with a warm gel-like texture']
+      },
+      {
+        t: 'Saya suka ide arrowroot dengan tambahan kunyit dan psyllium',
+        scores: { bubur: 0, jamu: 4 },
+        traits: ['likes extra support from turmeric and psyllium']
+      },
+      {
+        t: 'Pilihkan berdasarkan jawaban saya sebelumnya saja',
+        scores: { bubur: 1, jamu: 1 },
+        traits: ['wants the recommendation driven by routine fit']
+      }
     ]
   }
 ];
 let currentStep = 0;
 let quizScores = { bubur: 0, jamu: 0 };
 let quizAnswers = [];
+
+const quizTraitCopy = {
+  'prioritizes immediate soothing relief': 'Anda lebih memprioritaskan rasa nyaman yang cepat terasa ketika lambung sedang sensitif.',
+  'leans toward a warmer format': 'Anda condong ke format hangat yang terasa lebih menenangkan.',
+  'needs a practical daily routine': 'Anda mencari solusi yang realistis dipakai rutin setiap hari.',
+  'wants the simplest format to stay consistent': 'Konsistensi harian penting, jadi format sederhana jadi nilai plus besar.',
+  'needs a balance between comfort and convenience': 'Anda ingin manfaat lambung tetap terasa tanpa proses yang terlalu merepotkan.',
+  'has time to prepare something at home': 'Rutinitas Anda masih memberi ruang untuk menyiapkan produk di rumah.',
+  'needs something faster for busy mornings': 'Pagi yang padat membuat kecepatan persiapan menjadi faktor utama.',
+  'needs a format that remains usable on inconsistent days': 'Produk perlu tetap cocok dipakai meski jadwal Anda berubah-ubah.',
+  'is willing to cook briefly for a more soothing experience': 'Anda siap memasak singkat jika hasilnya terasa lebih menenangkan.',
+  'needs an instant mix format': 'Format instan yang cukup dicampur air terdengar paling realistis untuk Anda.',
+  'needs the easiest option to maintain consistency': 'Anda tahu kemungkinan besar hanya akan lanjut dengan opsi yang paling praktis.',
+  'prefers cooked arrowroot with a warm gel-like texture': 'Anda lebih tertarik pada saripati garut yang dimasak sampai menjadi gel hangat.',
+  'likes extra support from turmeric and psyllium': 'Tambahan kunyit dan psyllium terdengar lebih cocok dengan preferensi Anda.',
+  'wants the recommendation driven by routine fit': 'Anda lebih ingin keputusan akhir ditentukan dari kecocokan rutinitas.'
+};
 
 function resetQuizState() {
   currentStep = 0;
@@ -822,6 +894,7 @@ function startQuiz() {
   document.getElementById('btn-take-quiz').style.display = 'none';
   document.getElementById('quiz-intro').style.display = 'none';
   document.getElementById('quiz-q').style.display = 'block';
+  document.getElementById('quiz-res').style.display = 'none';
   showStep();
 }
 
@@ -843,7 +916,10 @@ function showStep() {
 }
 
 function handleQuizAnswer(option) {
-  quizAnswers.push(option.t);
+  quizAnswers.push({
+    text: option.t,
+    traits: option.traits || []
+  });
   Object.entries(option.scores).forEach(([key, value]) => {
     quizScores[key] += value;
   });
@@ -860,16 +936,58 @@ function handleQuizAnswer(option) {
 function getQuizRecommendation() {
   if (quizScores.bubur === quizScores.jamu) {
     const prefersPractical = quizAnswers.some((answer) => (
-      answer.includes('praktis') ||
-      answer.includes('buru-buru') ||
-      answer.includes('tinggal konsumsi') ||
-      answer.includes('tidak konsisten')
+      answer.text.includes('praktis') ||
+      answer.text.includes('mepet') ||
+      answer.text.includes('campur air') ||
+      answer.text.includes('tidak akan rutin')
     ));
 
     return prefersPractical ? quizRecommendations.jamu : quizRecommendations.bubur;
   }
 
   return quizScores.bubur > quizScores.jamu ? quizRecommendations.bubur : quizRecommendations.jamu;
+}
+
+function getQuizReasonSummary(recommendationKey) {
+  const preferredTraits = recommendationKey === 'bubur'
+    ? [
+        'prioritizes immediate soothing relief',
+        'leans toward a warmer format',
+        'has time to prepare something at home',
+        'is willing to cook briefly for a more soothing experience',
+        'prefers cooked arrowroot with a warm gel-like texture'
+      ]
+    : [
+        'needs a practical daily routine',
+        'wants the simplest format to stay consistent',
+        'needs something faster for busy mornings',
+        'needs a format that remains usable on inconsistent days',
+        'needs an instant mix format',
+        'needs the easiest option to maintain consistency',
+        'likes extra support from turmeric and psyllium'
+      ];
+
+  const selectedTraits = [];
+  quizAnswers.forEach((answer) => {
+    answer.traits.forEach((trait) => {
+      if (preferredTraits.includes(trait) && !selectedTraits.includes(trait)) {
+        selectedTraits.push(trait);
+      }
+    });
+  });
+
+  const mappedTraits = selectedTraits
+    .slice(0, 3)
+    .map((trait) => quizTraitCopy[trait])
+    .filter(Boolean);
+
+  if (mappedTraits.length > 0) {
+    return mappedTraits.join(' ');
+  }
+
+  return recommendationKey === 'bubur'
+    ? 'Jawaban Anda lebih dekat ke kebutuhan akan format hangat yang dimasak dan terasa lebih nyaman di rumah.'
+    : 'Jawaban Anda lebih dekat ke kebutuhan akan format instan yang cepat dipakai dan mudah dijalani konsisten.';
 }
 
 function finishQuiz() {
@@ -879,15 +997,15 @@ function finishQuiz() {
   const rText = document.getElementById('r-text');
   const rDesc = document.getElementById('r-desc');
   const rFit = document.getElementById('r-fit');
+  const rReasons = document.getElementById('r-reasons');
   const rPack = document.getElementById('r-pack');
-  const rLink = document.getElementById('quiz-res-link');
   const addBtn = document.getElementById('quiz-add-cart');
 
   rText.innerText = recommendation.title;
   rDesc.innerText = recommendation.description;
   rFit.innerText = recommendation.fit;
+  rReasons.innerText = getQuizReasonSummary(recommendation.key);
   rPack.innerText = recommendation.pack;
-  rLink.href = recommendation.link;
   addBtn.innerText = recommendation.addLabel;
   addBtn.onclick = () => {
     window.addQuizRecommendationToCart?.(recommendation.key);
@@ -895,6 +1013,15 @@ function finishQuiz() {
   };
 }
 
+function retakeQuiz() {
+  resetQuizState();
+  document.getElementById('quiz-intro').style.display = 'none';
+  document.getElementById('quiz-res').style.display = 'none';
+  document.getElementById('quiz-q').style.display = 'block';
+  showStep();
+}
+
 window.openQuiz = openQuiz;
 window.closeQuiz = closeQuiz;
 window.startQuiz = startQuiz;
+window.retakeQuiz = retakeQuiz;

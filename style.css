@@ -1687,7 +1687,15 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .about-map-card,
   .about-vision-media,
   .about-cta-card {
-    padding: 24px 22px;
+    padding: 22px 20px;
+  }
+  .about-contact-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .about-contact-card h3 {
+    font-size: 1.45rem;
+    line-height: 1.15;
   }
   .about-stat-card p,
   .about-story-card p,
@@ -1699,8 +1707,14 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     font-size: 0.98rem;
     line-height: 1.75;
   }
-  .about-contact-grid,
   .about-social-links {
+    gap: 10px;
+  }
+  .about-social-links {
+    justify-content: flex-start;
+  }
+  .about-contact-actions {
+    flex-direction: column;
     gap: 10px;
   }
   .about-contact-actions .btn {

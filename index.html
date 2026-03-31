@@ -150,7 +150,7 @@
                         <p>Jenang Gemi adalah solusi all-in-one untuk kesehatan lambung yang diracik murni dari pati umbi garut premium. Pulihkan kenyamanan perut Anda dengan kekuatan tradisi Indonesia.</p>
                     </div>
                     <div class="hero-actions">
-                        <button class="btn btn-primary" onclick="openQuiz()">Mulai Sekarang</button>
+                        <button class="btn btn-primary" onclick="openQuiz()">Mulai</button>
                         <a href="#produk" class="btn btn-outline">Lihat Produk</a>
                     </div>
                 </div>
@@ -358,7 +358,7 @@
 
             <div class="quiz-stage quiz-intro-stage" id="quiz-intro">
                 <span class="eyebrow">Quiz Jenang Gemi</span>
-                <h2>Let's get you started.</h2>
+                <h2>Yuk, cari produk yang paling cocok untuk Anda.</h2>
                 <p id="quiz-caption">Jawab beberapa pertanyaan singkat tentang kebutuhan lambung, ritme pagi, dan format yang paling realistis untuk Anda. Hasilnya akan mengarahkan Anda ke produk Jenang Gemi yang paling masuk akal untuk dipakai rutin.</p>
                 <div class="quiz-intro-points">
                     <div class="quiz-intro-point">
@@ -393,15 +393,21 @@
                 <h3 id="r-text"></h3>
                 <p class="quiz-result-desc" id="r-desc"></p>
                 <div class="quiz-result-card">
-                    <div>
-                        <span class="quiz-result-label">Kenapa ini paling cocok</span>
-                        <p id="r-fit"></p>
+                    <div class="quiz-result-media">
+                        <div class="quiz-result-image-shell">
+                            <img id="r-image" src="" alt="">
+                        </div>
+                        <div class="quiz-result-summary">
+                            <span class="quiz-result-pill" id="r-pill"></span>
+                            <span class="quiz-result-label">Produk rekomendasi untuk Anda</span>
+                            <p id="r-fit"></p>
+                        </div>
                     </div>
-                    <div>
-                        <span class="quiz-result-label">Yang kami pertimbangkan</span>
-                        <p id="r-reasons"></p>
+                    <div class="quiz-result-reasons-wrap">
+                        <span class="quiz-result-label">Kenapa kami memilih ini</span>
+                        <ul class="quiz-result-reasons" id="r-reasons"></ul>
                     </div>
-                    <div>
+                    <div class="quiz-result-pack">
                         <span class="quiz-result-label">Starter pack yang disarankan</span>
                         <p id="r-pack"></p>
                     </div>

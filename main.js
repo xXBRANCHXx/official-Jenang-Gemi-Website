@@ -741,16 +741,22 @@ document.addEventListener('DOMContentLoaded', () => {
 const quizRecommendations = {
   bubur: {
     key: 'bubur',
-    title: 'Jenang Gemi Bubur paling cocok untuk Anda',
-    description: 'Pilihan ini paling pas bila Anda mencari format hangat yang dimasak hingga menjadi gel lembut untuk membantu menenangkan lambung dengan rasa nyaman yang lebih cepat terasa.',
+    title: 'Jenang Gemi Bubur cocok untuk Anda',
+    description: 'Ini produk yang paling sesuai dengan jawaban Anda: format hangat yang menenangkan dan pas untuk rutinitas rumah.',
+    pill: 'Pilihan hangat',
+    image: 'Media/Reseller Jenang Gemi Images (3).png',
+    imageAlt: 'Produk Jenang Gemi Bubur',
     fit: 'Dari jawaban Anda, Bubur lebih masuk akal karena Anda masih punya ruang untuk menyiapkan produk di rumah dan lebih memprioritaskan sensasi hangat serta lapisan lembut dari saripati garut yang dimasak.',
     pack: 'Starter pack 15 sachets rasa Original, pilihan paling sederhana untuk mencoba efek Bubur dalam rutinitas pagi Anda.',
     addLabel: 'Tambah Bubur Starter Pack'
   },
   jamu: {
     key: 'jamu',
-    title: 'Jenang Gemi Jamu paling cocok untuk Anda',
-    description: 'Pilihan ini paling pas bila Anda butuh format instan yang mudah dicampur, lebih realistis dijalani setiap hari, dan tetap memberi manfaat arrowroot plus tambahan kunyit dan psyllium.',
+    title: 'Jenang Gemi Jamu cocok untuk Anda',
+    description: 'Ini produk yang paling sesuai dengan jawaban Anda: format praktis yang cepat disiapkan dan lebih mudah dijalani konsisten.',
+    pill: 'Pilihan praktis',
+    image: 'Media/Reseller Jenang Gemi Images (4).png',
+    imageAlt: 'Produk Jenang Gemi Jamu',
     fit: 'Dari jawaban Anda, Jamu lebih cocok karena kebutuhan utamanya adalah kepraktisan, konsistensi, dan format yang tetap mudah diminum saat aktivitas sedang padat.',
     pack: 'Starter pack 15 sachets rasa Gula Aren, titik mulai paling praktis untuk membangun kebiasaan konsumsi harian.',
     addLabel: 'Tambah Jamu Starter Pack'
@@ -982,12 +988,12 @@ function getQuizReasonSummary(recommendationKey) {
     .filter(Boolean);
 
   if (mappedTraits.length > 0) {
-    return mappedTraits.join(' ');
+    return mappedTraits;
   }
 
   return recommendationKey === 'bubur'
-    ? 'Jawaban Anda lebih dekat ke kebutuhan akan format hangat yang dimasak dan terasa lebih nyaman di rumah.'
-    : 'Jawaban Anda lebih dekat ke kebutuhan akan format instan yang cepat dipakai dan mudah dijalani konsisten.';
+    ? ['Jawaban Anda lebih dekat ke kebutuhan akan format hangat yang dimasak dan terasa nyaman di rumah.']
+    : ['Jawaban Anda lebih dekat ke kebutuhan akan format instan yang cepat dipakai dan mudah dijalani konsisten.'];
 }
 
 function finishQuiz() {
@@ -996,15 +1002,26 @@ function finishQuiz() {
   const recommendation = getQuizRecommendation();
   const rText = document.getElementById('r-text');
   const rDesc = document.getElementById('r-desc');
+  const rPill = document.getElementById('r-pill');
+  const rImage = document.getElementById('r-image');
   const rFit = document.getElementById('r-fit');
   const rReasons = document.getElementById('r-reasons');
   const rPack = document.getElementById('r-pack');
   const addBtn = document.getElementById('quiz-add-cart');
+  const reasonItems = getQuizReasonSummary(recommendation.key);
 
   rText.innerText = recommendation.title;
   rDesc.innerText = recommendation.description;
+  rPill.innerText = recommendation.pill;
+  rImage.src = recommendation.image;
+  rImage.alt = recommendation.imageAlt;
   rFit.innerText = recommendation.fit;
-  rReasons.innerText = getQuizReasonSummary(recommendation.key);
+  rReasons.innerHTML = '';
+  reasonItems.forEach((reason) => {
+    const item = document.createElement('li');
+    item.innerText = reason;
+    rReasons.appendChild(item);
+  });
   rPack.innerText = recommendation.pack;
   addBtn.innerText = recommendation.addLabel;
   addBtn.onclick = () => {

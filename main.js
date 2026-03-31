@@ -775,6 +775,12 @@ document.addEventListener('DOMContentLoaded', () => {
     faqSearch.addEventListener('input', applyFaqFilters);
   }
 
+  const activeFaqChip = Array.from(faqFilterChips).find((chip) => chip.classList.contains('active'));
+  if (activeFaqChip instanceof HTMLButtonElement) {
+    activeFaqFilter = activeFaqChip.getAttribute('data-filter') || activeFaqFilter;
+    applyFaqFilters();
+  }
+
   updateV9Count();
   renderV9Cart();
 

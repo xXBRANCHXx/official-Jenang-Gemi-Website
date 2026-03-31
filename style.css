@@ -601,14 +601,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   gap: 22px;
 }
 .faq-page-item {
-  padding: 30px;
   cursor: default;
+  overflow: hidden;
   box-shadow: 0 24px 80px rgba(14, 38, 20, 0.08);
   transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.65s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.65s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.faq-page-item h3 {
-  font-size: 1.45rem;
-  margin-bottom: 14px;
 }
 .faq-page-item p {
   color: var(--text-main);
@@ -619,6 +615,65 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+}
+.faq-accordion-trigger {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 26px 28px;
+  text-align: left;
+  color: var(--text-dark);
+}
+.faq-accordion-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+.faq-accordion-icon {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.faq-accordion-icon::before,
+.faq-accordion-icon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--green-dark);
+  transform: translate(-50%, -50%);
+  transition: transform 0.32s ease, opacity 0.32s ease;
+}
+.faq-accordion-icon::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.faq-page-item.is-open .faq-accordion-icon::after {
+  transform: translate(-50%, -50%) rotate(0deg);
+  opacity: 0;
+}
+.faq-accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.faq-page-item.is-open .faq-accordion-panel {
+  grid-template-rows: 1fr;
+}
+.faq-accordion-content {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 28px 0;
+}
+.faq-accordion-content p {
+  padding: 0 0 28px;
 }
 .faq-page-number {
   min-width: 48px;
@@ -1284,8 +1339,18 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .faq-compare-card h3 {
     font-size: 1.55rem;
   }
-  .faq-page-item h3 {
+  .faq-accordion-trigger {
+    gap: 12px;
+    padding: 22px 22px 18px;
+  }
+  .faq-accordion-title {
     font-size: 1.28rem;
+  }
+  .faq-accordion-content {
+    padding: 0 22px 0;
+  }
+  .faq-accordion-content p {
+    padding-bottom: 22px;
   }
   .about-story-card h3,
   .about-principle-card h3,

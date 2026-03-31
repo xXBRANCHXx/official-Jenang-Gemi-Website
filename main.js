@@ -707,6 +707,30 @@ document.addEventListener('DOMContentLoaded', () => {
     uniqueRevealTargets.forEach((element) => element.classList.add('is-visible'));
   }
 
+  // --- FAQ Accordion ---
+  const faqAccordionItems = document.querySelectorAll('.faq-page-item');
+  faqAccordionItems.forEach((item) => {
+    const trigger = item.querySelector('.faq-accordion-trigger');
+    if (!(trigger instanceof HTMLButtonElement)) return;
+
+    trigger.addEventListener('click', () => {
+      const isOpen = item.classList.contains('is-open');
+
+      faqAccordionItems.forEach((entry) => {
+        entry.classList.remove('is-open');
+        const entryTrigger = entry.querySelector('.faq-accordion-trigger');
+        if (entryTrigger instanceof HTMLButtonElement) {
+          entryTrigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      if (isOpen) return;
+
+      item.classList.add('is-open');
+      trigger.setAttribute('aria-expanded', 'true');
+    });
+  });
+
   updateV9Count();
   renderV9Cart();
 

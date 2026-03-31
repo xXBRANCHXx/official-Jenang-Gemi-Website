@@ -611,7 +611,6 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 .partner-product-showcase p,
 .partner-stat-card p,
-.partner-tier-card p,
 .partner-product-card p,
 .partner-benefit-card p,
 .partner-step-card p,
@@ -781,6 +780,9 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 .partner-tier-card p {
   color: rgba(255, 255, 255, 0.76);
+}
+.partner-tier-card h3 {
+  color: white;
 }
 .partner-tier-points {
   display: grid;

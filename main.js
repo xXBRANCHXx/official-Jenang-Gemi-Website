@@ -1,3 +1,6 @@
+const buburQuizImage = new URL('./Media/Reseller Jenang Gemi Images (3).png', import.meta.url).href;
+const jamuQuizImage = new URL('./Media/Reseller Jenang Gemi Images (4).png', import.meta.url).href;
+
 document.addEventListener('DOMContentLoaded', () => {
   // --- Cart System ---
   let cart = JSON.parse(localStorage.getItem('gemi_cart_v10')) || [];
@@ -691,23 +694,8 @@ document.addEventListener('DOMContentLoaded', () => {
   updateV9Count();
   renderV9Cart();
 
-  window.addQuizRecommendationToCart = (recommendationKey) => {
-    const productMap = {
-      bubur: {
-        name: 'Jenang Gemi Bubur',
-        flavor: 'Original',
-        qtyLabel: '15 Sachets',
-        price: 120000
-      },
-      jamu: {
-        name: 'Jenang Gemi Jamu',
-        flavor: 'Gula Aren',
-        qtyLabel: '15 Sachets',
-        price: 120000
-      }
-    };
-
-    const item = productMap[recommendationKey];
+  window.addQuizRecommendationToCart = (itemConfig) => {
+    const item = itemConfig;
     if (!item) return;
 
     const existing = cart.find((entry) => (
@@ -742,24 +730,38 @@ const quizRecommendations = {
   bubur: {
     key: 'bubur',
     title: 'Jenang Gemi Bubur cocok untuk Anda',
-    description: 'Ini produk yang paling sesuai dengan jawaban Anda: format hangat yang menenangkan dan pas untuk rutinitas rumah.',
+    description: 'Pilihan paling pas untuk rutinitas Anda.',
     pill: 'Pilihan hangat',
-    image: 'Media/Reseller Jenang Gemi Images (3).png',
+    image: buburQuizImage,
     imageAlt: 'Produk Jenang Gemi Bubur',
-    fit: 'Dari jawaban Anda, Bubur lebih masuk akal karena Anda masih punya ruang untuk menyiapkan produk di rumah dan lebih memprioritaskan sensasi hangat serta lapisan lembut dari saripati garut yang dimasak.',
-    pack: 'Starter pack 15 sachets rasa Original, pilihan paling sederhana untuk mencoba efek Bubur dalam rutinitas pagi Anda.',
-    addLabel: 'Tambah Bubur Starter Pack'
+    fit: 'Format hangat ini paling cocok dengan kebutuhan nyaman dan ritme rumah Anda.',
+    addLabel: 'Tambah ke Keranjang',
+    flavors: ['Original', 'Gula Aren', 'Vanilla', 'Klepon'],
+    packs: [
+      { label: '15 Sachets', price: 120000 },
+      { label: '30 Sachets', price: 199000 },
+      { label: '60 Sachets', price: 398000 }
+    ],
+    defaultFlavor: 'Original',
+    defaultPack: '15 Sachets'
   },
   jamu: {
     key: 'jamu',
     title: 'Jenang Gemi Jamu cocok untuk Anda',
-    description: 'Ini produk yang paling sesuai dengan jawaban Anda: format praktis yang cepat disiapkan dan lebih mudah dijalani konsisten.',
+    description: 'Pilihan paling pas untuk rutinitas Anda.',
     pill: 'Pilihan praktis',
-    image: 'Media/Reseller Jenang Gemi Images (4).png',
+    image: jamuQuizImage,
     imageAlt: 'Produk Jenang Gemi Jamu',
-    fit: 'Dari jawaban Anda, Jamu lebih cocok karena kebutuhan utamanya adalah kepraktisan, konsistensi, dan format yang tetap mudah diminum saat aktivitas sedang padat.',
-    pack: 'Starter pack 15 sachets rasa Gula Aren, titik mulai paling praktis untuk membangun kebiasaan konsumsi harian.',
-    addLabel: 'Tambah Jamu Starter Pack'
+    fit: 'Format praktis ini paling cocok untuk jadwal Anda yang lebih cepat dan fleksibel.',
+    addLabel: 'Tambah ke Keranjang',
+    flavors: ['Gula Aren'],
+    packs: [
+      { label: '15 Sachets', price: 120000 },
+      { label: '30 Sachets', price: 199000 },
+      { label: '60 Sachets', price: 398000 }
+    ],
+    defaultFlavor: 'Gula Aren',
+    defaultPack: '15 Sachets'
   }
 };
 
@@ -852,6 +854,11 @@ const quizData = [
 let currentStep = 0;
 let quizScores = { bubur: 0, jamu: 0 };
 let quizAnswers = [];
+let quizSelection = {
+  key: '',
+  flavor: '',
+  qtyLabel: ''
+};
 
 const quizTraitCopy = {
   'prioritizes immediate soothing relief': 'Anda lebih memprioritaskan rasa nyaman yang cepat terasa ketika lambung sedang sensitif.',
@@ -1006,9 +1013,16 @@ function finishQuiz() {
   const rImage = document.getElementById('r-image');
   const rFit = document.getElementById('r-fit');
   const rReasons = document.getElementById('r-reasons');
-  const rPack = document.getElementById('r-pack');
+  const rFlavors = document.getElementById('r-flavors');
+  const rPacks = document.getElementById('r-packs');
   const addBtn = document.getElementById('quiz-add-cart');
   const reasonItems = getQuizReasonSummary(recommendation.key);
+
+  quizSelection = {
+    key: recommendation.key,
+    flavor: recommendation.defaultFlavor,
+    qtyLabel: recommendation.defaultPack
+  };
 
   rText.innerText = recommendation.title;
   rDesc.innerText = recommendation.description;
@@ -1022,10 +1036,46 @@ function finishQuiz() {
     item.innerText = reason;
     rReasons.appendChild(item);
   });
-  rPack.innerText = recommendation.pack;
+
+  rFlavors.innerHTML = '';
+  recommendation.flavors.forEach((flavor) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `quiz-mini-chip${flavor === quizSelection.flavor ? ' active' : ''}`;
+    button.innerText = flavor;
+    button.onclick = () => {
+      quizSelection.flavor = flavor;
+      rFlavors.querySelectorAll('.quiz-mini-chip').forEach((chip) => {
+        chip.classList.toggle('active', chip.innerText === flavor);
+      });
+    };
+    rFlavors.appendChild(button);
+  });
+
+  rPacks.innerHTML = '';
+  recommendation.packs.forEach((pack) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `quiz-mini-chip${pack.label === quizSelection.qtyLabel ? ' active' : ''}`;
+    button.innerText = pack.label;
+    button.onclick = () => {
+      quizSelection.qtyLabel = pack.label;
+      rPacks.querySelectorAll('.quiz-mini-chip').forEach((chip) => {
+        chip.classList.toggle('active', chip.innerText === pack.label);
+      });
+    };
+    rPacks.appendChild(button);
+  });
+
   addBtn.innerText = recommendation.addLabel;
   addBtn.onclick = () => {
-    window.addQuizRecommendationToCart?.(recommendation.key);
+    const chosenPack = recommendation.packs.find((pack) => pack.label === quizSelection.qtyLabel) || recommendation.packs[0];
+    window.addQuizRecommendationToCart?.({
+      name: recommendation.key === 'bubur' ? 'Jenang Gemi Bubur' : 'Jenang Gemi Jamu',
+      flavor: quizSelection.flavor,
+      qtyLabel: quizSelection.qtyLabel,
+      price: chosenPack.price
+    });
     closeQuiz();
   };
 }

@@ -407,13 +407,19 @@
                         <span class="quiz-result-label">Kenapa kami memilih ini</span>
                         <ul class="quiz-result-reasons" id="r-reasons"></ul>
                     </div>
-                    <div class="quiz-result-pack">
-                        <span class="quiz-result-label">Starter pack yang disarankan</span>
-                        <p id="r-pack"></p>
+                    <div class="quiz-result-config">
+                        <div class="quiz-picker-block">
+                            <span class="quiz-result-label">Rasa</span>
+                            <div class="quiz-mini-picker" id="r-flavors"></div>
+                        </div>
+                        <div class="quiz-picker-block">
+                            <span class="quiz-result-label">Jumlah</span>
+                            <div class="quiz-mini-picker" id="r-packs"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="quiz-result-actions">
-                    <button class="btn btn-primary" type="button" id="quiz-add-cart">Tambah Starter Pack</button>
+                    <button class="btn btn-primary" type="button" id="quiz-add-cart">Tambah ke Keranjang</button>
                     <button class="btn btn-outline" type="button" onclick="retakeQuiz()">Ulangi Quiz</button>
                     <button class="btn btn-outline" type="button" onclick="closeQuiz()">Tutup Quiz</button>
                 </div>

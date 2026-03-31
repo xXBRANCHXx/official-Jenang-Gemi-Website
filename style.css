@@ -1235,7 +1235,14 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   font-weight: 600;
 }
 .about-social-links {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, max-content));
+  justify-content: start;
+  gap: 12px;
   margin-top: 28px;
+}
+.about-social-link span:last-child {
+  display: none;
 }
 .about-map-card {
   overflow: hidden;
@@ -1708,10 +1715,9 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     line-height: 1.75;
   }
   .about-social-links {
+    grid-template-columns: repeat(4, minmax(0, max-content));
+    justify-content: start;
     gap: 10px;
-  }
-  .about-social-links {
-    justify-content: flex-start;
   }
   .about-contact-actions {
     flex-direction: column;

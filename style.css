@@ -1596,18 +1596,17 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .quiz-stage > .eyebrow {
   margin-bottom: 18px;
 }
-.quiz-intro-points {
+.quiz-intro-stage {
   display: grid;
   gap: 14px;
-  margin: 28px 0 32px;
 }
-.quiz-intro-point {
-  padding: 18px 20px;
-  border-radius: 22px;
-  background: #f4f8ef;
-  border: 1px solid rgba(99, 191, 71, 0.12);
+.quiz-intro-stage #quiz-caption {
+  max-width: 34rem;
+  margin-bottom: 8px;
 }
-.quiz-intro-point strong,
+.quiz-intro-stage .quiz-result-actions {
+  margin-top: 8px;
+}
 .quiz-result-label {
   display: block;
   margin-bottom: 6px;

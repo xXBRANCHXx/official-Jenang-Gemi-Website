@@ -366,8 +366,8 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 .site-footer-brand img {
   display: block;
-  width: 200px;
-  height: 64px;
+  width: 176px;
+  height: 54px;
   object-fit: cover;
   object-position: center;
   filter: brightness(0) invert(1);
@@ -435,8 +435,8 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   width: 56px;
   height: 56px;
   border-radius: 999px;
-  background: rgba(99, 191, 71, 0.12);
-  color: var(--green-dark);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
   box-shadow: 0 14px 32px rgba(15, 37, 20, 0.08);
 }
 .site-footer-social-icon svg,
@@ -466,25 +466,13 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   font-size: 0.9rem;
 }
 .brand-instagram .site-footer-social-icon,
-.brand-instagram .about-social-icon {
-  background: rgba(225, 48, 108, 0.10);
-  color: #e1306c;
-}
+.brand-instagram .about-social-icon { color: #e1306c; }
 .brand-facebook .site-footer-social-icon,
-.brand-facebook .about-social-icon {
-  background: rgba(24, 119, 242, 0.10);
-  color: #1877f2;
-}
+.brand-facebook .about-social-icon { color: #1877f2; }
 .brand-tiktok .site-footer-social-icon,
-.brand-tiktok .about-social-icon {
-  background: rgba(17, 17, 17, 0.08);
-  color: #111111;
-}
+.brand-tiktok .about-social-icon { color: #111111; }
 .brand-youtube .site-footer-social-icon,
-.brand-youtube .about-social-icon {
-  background: rgba(255, 0, 0, 0.10);
-  color: #ff0000;
-}
+.brand-youtube .about-social-icon { color: #ff0000; }
 
 .faq-section {
   background:
@@ -1452,17 +1440,27 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     padding: 52px 0 24px;
   }
   .site-footer-top {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
     padding-bottom: 18px;
   }
   .site-footer-brand {
+    grid-column: 1 / -1;
     max-width: none;
     gap: 10px;
   }
   .site-footer-brand img {
-    width: 220px;
-    height: 56px;
+    width: 168px;
+    height: 48px;
+  }
+  .site-footer-nav {
+    grid-column: 1;
+  }
+  .site-footer-contact {
+    grid-column: 2;
+  }
+  .site-footer-social {
+    grid-column: 1 / -1;
   }
   .site-footer-social-links {
     gap: 8px;

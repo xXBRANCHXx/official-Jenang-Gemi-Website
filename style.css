@@ -1754,9 +1754,15 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .bg-green .glass-card,
 .bg-green .glass-card h3,
 .bg-green .glass-card p,
-.bg-green .glass-card span,
 .bg-green .glass-card li {
   color: #fff !important;
+}
+.bg-green .glass-card .faq-spotlight-label,
+.bg-green .glass-card .faq-compare-kicker {
+  color: #fff !important;
+}
+.bg-green .glass-card .science-badge {
+  color: var(--green-dark) !important;
 }
 .bg-green .faq-checklist li::before {
   background: radial-gradient(circle at center, #fff 0 42%, rgba(255, 255, 255, 0.24) 43% 100%);

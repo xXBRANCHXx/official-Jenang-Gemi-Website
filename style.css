@@ -695,6 +695,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   color: var(--text-main);
   line-height: 1.8;
 }
+.faq-cta-card .faq-hero-actions {
+  justify-content: center;
+  align-items: center;
+}
 
 @keyframes faqFloat {
   0%, 100% { transform: translate3d(var(--faq-card-x), 0, 0); }

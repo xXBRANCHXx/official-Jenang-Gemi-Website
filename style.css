@@ -114,8 +114,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center 60%;
+  object-fit: contain;
+  object-position: center;
+  transform: scale(1.16);
+  transform-origin: center;
 }
 .nav-links ul { display: flex; gap: 40px; }
 .nav-links a { font-size: 15px; font-weight: 600; color: var(--muted); }

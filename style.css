@@ -441,18 +441,28 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   gap: 18px;
 }
 .faq-spotlight-card {
+  position: relative;
+  --faq-card-x: 0px;
   padding: 34px;
   border-radius: 34px;
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.65);
   box-shadow: 0 28px 90px rgba(15, 39, 19, 0.10);
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: faqFloat 7.5s ease-in-out infinite;
 }
 .faq-spotlight-primary {
-  transform: translateX(-18px);
+  --faq-card-x: -18px;
+  animation-delay: -1.4s;
 }
 .faq-spotlight-secondary {
-  transform: translateX(18px);
+  --faq-card-x: 18px;
   background: linear-gradient(180deg, rgba(99, 191, 71, 0.12), rgba(255, 255, 255, 0.96));
+  animation-delay: -3.8s;
+}
+.faq-spotlight-card:hover {
+  transform: translate3d(var(--faq-card-x), -8px, 0);
+  box-shadow: 0 34px 100px rgba(15, 39, 19, 0.16);
 }
 .faq-spotlight-label,
 .faq-compare-kicker,
@@ -486,7 +496,64 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   font-size: 1.03rem;
 }
 .faq-page-compare {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(241, 247, 235, 0.95));
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: transparent;
+}
+.faq-page-compare::before,
+.faq-page-compare::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.faq-page-compare::before {
+  z-index: -2;
+  background:
+    linear-gradient(rgba(72, 150, 53, 0.86), rgba(72, 150, 53, 0.86)),
+    url("Media/Hero Image Jenang Gemi Website.png") center center / cover no-repeat;
+  transform: translate3d(0, var(--faq-shift, 0px), 0) scale(var(--faq-scale, 1.08));
+  filter: blur(12px) saturate(0.95);
+  will-change: transform;
+}
+.faq-page-compare::after {
+  z-index: -1;
+  background:
+    radial-gradient(circle at 16% 20%, rgba(255, 255, 255, 0.14), transparent 24%),
+    radial-gradient(circle at 84% 26%, rgba(255, 255, 255, 0.09), transparent 20%),
+    linear-gradient(180deg, rgba(27, 72, 18, 0.12), rgba(18, 49, 13, 0.30));
+}
+.faq-page-compare .faq-page-heading {
+  margin-bottom: 34px;
+}
+.faq-page-compare .faq-page-heading p {
+  color: rgba(255, 255, 255, 0.84);
+}
+.faq-compare-highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.faq-compare-highlight {
+  padding: 24px;
+  cursor: default;
+  box-shadow: 0 24px 70px rgba(13, 39, 12, 0.18);
+}
+.faq-compare-highlight:hover,
+.faq-compare-card:hover,
+.faq-page-item:hover,
+.faq-cta-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 34px 100px rgba(10, 34, 12, 0.18);
+}
+.faq-compare-highlight h3 {
+  font-size: 1.35rem;
+  margin-bottom: 10px;
+}
+.faq-compare-highlight p {
+  line-height: 1.75;
 }
 .faq-compare-grid {
   display: grid;
@@ -496,9 +563,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .faq-compare-card {
   padding: 34px;
   cursor: default;
-}
-.faq-compare-card:hover {
-  transform: none;
+  box-shadow: 0 24px 80px rgba(11, 39, 12, 0.16);
 }
 .faq-compare-card h3 {
   font-size: 2rem;
@@ -539,9 +604,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   padding: 30px;
   cursor: default;
   box-shadow: 0 24px 80px rgba(14, 38, 20, 0.08);
-}
-.faq-page-item:hover {
-  transform: none;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.65s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.65s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .faq-page-item h3 {
   font-size: 1.45rem;
@@ -572,15 +635,18 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   text-align: center;
   cursor: default;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(239, 247, 233, 0.95));
-}
-.faq-cta-card:hover {
-  transform: none;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.65s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .faq-cta-card p {
   max-width: 62ch;
   margin: 18px auto 0;
   color: var(--text-main);
   line-height: 1.8;
+}
+
+@keyframes faqFloat {
+  0%, 100% { transform: translate3d(var(--faq-card-x), 0, 0); }
+  50% { transform: translate3d(var(--faq-card-x), -10px, 0); }
 }
 
 .about-hero {
@@ -1094,7 +1160,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     right: -100px;
     bottom: 80px;
   }
-  .hero-grid, .vision-split, .science-grid, .faq-page-hero-grid, .faq-compare-grid, .faq-page-list, .about-hero-grid, .about-vision-grid, .about-story-grid, .about-principles-grid {
+  .hero-grid, .vision-split, .science-grid, .faq-page-hero-grid, .faq-compare-grid, .faq-page-list, .about-hero-grid, .about-vision-grid, .about-story-grid, .about-principles-grid, .faq-compare-highlight-grid {
     grid-template-columns: 1fr !important;
     gap: 22px;
   }
@@ -1201,6 +1267,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     gap: 14px;
   }
   .faq-spotlight-card,
+  .faq-compare-highlight,
   .faq-compare-card,
   .faq-page-item,
   .faq-cta-card {
@@ -1208,7 +1275,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   }
   .faq-spotlight-primary,
   .faq-spotlight-secondary {
-    transform: none;
+    --faq-card-x: 0px;
   }
   .about-stat-card-primary,
   .about-stat-card-secondary {
@@ -1337,6 +1404,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   }
   .science-section::before {
     transform: translateY(var(--science-shift, 0px)) scale(1.04);
+    filter: blur(10px) saturate(0.98);
+  }
+  .faq-page-compare::before {
+    transform: translateY(var(--faq-shift, 0px)) scale(1.04);
     filter: blur(10px) saturate(0.98);
   }
   .vision-image-wrap {

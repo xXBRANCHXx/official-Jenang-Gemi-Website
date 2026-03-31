@@ -609,57 +609,73 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.nav-v9')?.classList.toggle('scrolled', window.scrollY > 50);
   });
 
-  // --- Science Section Parallax ---
-  const scienceSection = document.querySelector('.science-section');
-  if (scienceSection) {
-    let scienceTargetShift = 0;
-    let scienceCurrentShift = 0;
-    let scienceTargetScale = 1.08;
-    let scienceCurrentScale = 1.08;
-    let scienceAnimationFrame = null;
+  // --- Section Parallax ---
+  const parallaxSections = [
+    {
+      element: document.querySelector('.science-section'),
+      shiftVar: '--science-shift',
+      scaleVar: '--science-scale'
+    },
+    {
+      element: document.querySelector('.faq-parallax-section'),
+      shiftVar: '--faq-shift',
+      scaleVar: '--faq-scale'
+    }
+  ].filter((entry) => entry.element);
 
-    const measureScienceParallax = () => {
-      const rect = scienceSection.getBoundingClientRect();
+  parallaxSections.forEach(({ element, shiftVar, scaleVar }) => {
+    let targetShift = 0;
+    let currentShift = 0;
+    let targetScale = 1.08;
+    let currentScale = 1.08;
+    let animationFrame = null;
+
+    const measureParallax = () => {
+      const rect = element.getBoundingClientRect();
       const viewportHeight = window.innerHeight || 1;
       const progress = (viewportHeight - rect.top) / (viewportHeight + rect.height);
       const clampedProgress = Math.max(0, Math.min(1, progress));
-      scienceTargetShift = (clampedProgress - 0.5) * 140;
-      scienceTargetScale = 1.1 + (clampedProgress * 0.08);
+      targetShift = (clampedProgress - 0.5) * 140;
+      targetScale = 1.1 + (clampedProgress * 0.08);
     };
 
-    const animateScienceParallax = () => {
-      scienceCurrentShift += (scienceTargetShift - scienceCurrentShift) * 0.08;
-      scienceCurrentScale += (scienceTargetScale - scienceCurrentScale) * 0.08;
+    const animateParallax = () => {
+      currentShift += (targetShift - currentShift) * 0.08;
+      currentScale += (targetScale - currentScale) * 0.08;
 
-      scienceSection.style.setProperty('--science-shift', `${scienceCurrentShift.toFixed(2)}px`);
-      scienceSection.style.setProperty('--science-scale', scienceCurrentScale.toFixed(4));
+      element.style.setProperty(shiftVar, `${currentShift.toFixed(2)}px`);
+      element.style.setProperty(scaleVar, currentScale.toFixed(4));
 
-      const shiftSettled = Math.abs(scienceTargetShift - scienceCurrentShift) < 0.12;
-      const scaleSettled = Math.abs(scienceTargetScale - scienceCurrentScale) < 0.0015;
+      const shiftSettled = Math.abs(targetShift - currentShift) < 0.12;
+      const scaleSettled = Math.abs(targetScale - currentScale) < 0.0015;
 
       if (!shiftSettled || !scaleSettled) {
-        scienceAnimationFrame = window.requestAnimationFrame(animateScienceParallax);
+        animationFrame = window.requestAnimationFrame(animateParallax);
       } else {
-        scienceAnimationFrame = null;
+        animationFrame = null;
       }
     };
 
-    const requestScienceParallax = () => {
-      measureScienceParallax();
-      if (scienceAnimationFrame !== null) return;
-      scienceAnimationFrame = window.requestAnimationFrame(animateScienceParallax);
+    const requestParallax = () => {
+      measureParallax();
+      if (animationFrame !== null) return;
+      animationFrame = window.requestAnimationFrame(animateParallax);
     };
 
-    requestScienceParallax();
-    window.addEventListener('scroll', requestScienceParallax, { passive: true });
-    window.addEventListener('resize', requestScienceParallax);
-  }
+    requestParallax();
+    window.addEventListener('scroll', requestParallax, { passive: true });
+    window.addEventListener('resize', requestParallax);
+  });
 
   // --- Scroll Reveal Animations ---
   const revealTargets = [
     ...document.querySelectorAll('.hero-text, .hero-visual'),
     ...document.querySelectorAll('.vision-copy, .vision-image-wrap'),
     ...document.querySelectorAll('.science-card'),
+    ...document.querySelectorAll('.faq-page-hero-copy, .faq-page-hero-panel, .faq-spotlight-card'),
+    ...document.querySelectorAll('.faq-page-heading'),
+    ...document.querySelectorAll('.faq-compare-highlight, .faq-compare-card'),
+    ...document.querySelectorAll('.faq-page-item, .faq-cta-card'),
     ...document.querySelectorAll('#produk .p-card'),
     ...document.querySelectorAll('[data-expand]'),
     ...document.querySelectorAll('.testimonial-carousel'),

@@ -107,7 +107,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   display: inline-flex;
   align-items: center;
   width: min(148px, 22vw);
-  height: 28px;
+  height: 30px;
   overflow: hidden;
 }
 .logo img {
@@ -1367,7 +1367,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .nav-wrap { padding: 0; flex-wrap: nowrap; row-gap: 0; column-gap: 12px; }
   .logo {
     width: min(132px, 34vw);
-    height: 24px;
+    height: 26px;
   }
   .mobile-nav-toggle { display: inline-flex; }
   .nav-links {

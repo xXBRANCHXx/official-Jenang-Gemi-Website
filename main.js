@@ -620,6 +620,11 @@ document.addEventListener('DOMContentLoaded', () => {
       element: document.querySelector('.faq-parallax-section'),
       shiftVar: '--faq-shift',
       scaleVar: '--faq-scale'
+    },
+    {
+      element: document.querySelector('.partner-parallax-section'),
+      shiftVar: '--partner-shift',
+      scaleVar: '--partner-scale'
     }
   ].filter((entry) => entry.element);
 
@@ -681,7 +686,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ...document.querySelectorAll('.testimonial-carousel'),
     ...document.querySelectorAll('.prep-card'),
     ...document.querySelectorAll('footer .container'),
-    ...document.querySelectorAll('.p-info-grid > .hero-visual, .p-details')
+    ...document.querySelectorAll('.p-info-grid > .hero-visual, .p-details'),
+    ...document.querySelectorAll('.partner-hero-copy, .partner-hero-visual, .partner-metric-card, .partner-section-heading, .partner-tier-card, .partner-product-card, .partner-price-panel, .partner-benefit-card, .partner-step-card, .partner-support-card, .partner-cta-panel')
   ];
 
   const uniqueRevealTargets = [...new Set(revealTargets)].filter(Boolean);

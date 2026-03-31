@@ -15,6 +15,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         bubur: resolve(__dirname, 'bubur.html'),
         jamu: resolve(__dirname, 'jamu.html'),
+        kemitraan: resolve(__dirname, 'kemitraan.html'),
         about: resolve(__dirname, 'about.html'),
         faq: resolve(__dirname, 'faq.html')
       }

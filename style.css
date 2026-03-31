@@ -595,10 +595,83 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     radial-gradient(circle at top left, rgba(99, 191, 71, 0.10), transparent 28%),
     linear-gradient(180deg, #f8fbf4 0%, #ffffff 100%);
 }
+.faq-scan-tools {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 26px;
+  padding: 20px 22px;
+  cursor: default;
+}
+.faq-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(99, 191, 71, 0.08);
+  border: 1px solid rgba(99, 191, 71, 0.12);
+}
+.faq-search-wrap input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-dark);
+  font: inherit;
+}
+.faq-search-wrap input::placeholder {
+  color: var(--muted);
+}
+.faq-search-wrap input:focus {
+  outline: none;
+}
+.faq-search-icon {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--green-dark);
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+}
+.faq-search-icon::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  bottom: -4px;
+  width: 8px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--green-dark);
+  transform: rotate(45deg);
+}
+.faq-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.faq-filter-chip {
+  min-height: 38px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  color: var(--text-dark);
+  font-size: 13px;
+  font-weight: 700;
+  transition: var(--trans);
+}
+.faq-filter-chip.active {
+  border-color: var(--green);
+  background: rgba(99, 191, 71, 0.14);
+  color: var(--green-dark);
+  box-shadow: 0 10px 24px rgba(99, 191, 71, 0.12);
+}
 .faq-page-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
+}
+.faq-page-item.is-hidden {
+  display: none;
 }
 .faq-page-item {
   cursor: default;
@@ -1325,6 +1398,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .faq-spotlight-card,
   .faq-compare-highlight,
   .faq-compare-card,
+  .faq-scan-tools,
   .faq-page-item,
   .faq-cta-card {
     padding: 24px 22px;
@@ -1355,6 +1429,27 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     padding-bottom: 16px;
     font-size: 0.9rem;
     line-height: 1.55;
+  }
+  .faq-scan-tools {
+    gap: 10px;
+    margin-bottom: 18px;
+    padding: 14px;
+  }
+  .faq-search-wrap {
+    padding: 12px 14px;
+    border-radius: 16px;
+  }
+  .faq-filter-chips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .faq-filter-chip {
+    width: 100%;
+    min-height: 34px;
+    padding: 8px 10px;
+    font-size: 12px;
+    text-align: center;
   }
   .about-story-card h3,
   .about-principle-card h3,

@@ -709,27 +709,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- FAQ Accordion ---
   const faqAccordionItems = document.querySelectorAll('.faq-page-item');
+  const setFaqOpenItem = (targetItem) => {
+    faqAccordionItems.forEach((entry) => {
+      const entryTrigger = entry.querySelector('.faq-accordion-trigger');
+      const shouldOpen = entry === targetItem;
+      entry.classList.toggle('is-open', shouldOpen);
+      if (entryTrigger instanceof HTMLButtonElement) {
+        entryTrigger.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+      }
+    });
+  };
+
   faqAccordionItems.forEach((item) => {
     const trigger = item.querySelector('.faq-accordion-trigger');
     if (!(trigger instanceof HTMLButtonElement)) return;
 
     trigger.addEventListener('click', () => {
       const isOpen = item.classList.contains('is-open');
-
-      faqAccordionItems.forEach((entry) => {
-        entry.classList.remove('is-open');
-        const entryTrigger = entry.querySelector('.faq-accordion-trigger');
-        if (entryTrigger instanceof HTMLButtonElement) {
-          entryTrigger.setAttribute('aria-expanded', 'false');
-        }
-      });
-
-      if (isOpen) return;
-
-      item.classList.add('is-open');
-      trigger.setAttribute('aria-expanded', 'true');
+      setFaqOpenItem(isOpen ? null : item);
     });
   });
+
+  const faqSearch = document.getElementById('faq-search');
+  const faqFilterChips = document.querySelectorAll('.faq-filter-chip');
+  let activeFaqFilter = 'all';
+
+  const applyFaqFilters = () => {
+    const searchTerm = faqSearch instanceof HTMLInputElement
+      ? faqSearch.value.trim().toLowerCase()
+      : '';
+
+    let firstVisibleItem = null;
+
+    faqAccordionItems.forEach((item) => {
+      const category = (item.getAttribute('data-category') || '').toLowerCase();
+      const searchIndex = `${item.textContent || ''} ${(item.getAttribute('data-search') || '')}`.toLowerCase();
+      const matchesFilter = activeFaqFilter === 'all' || category.includes(activeFaqFilter);
+      const matchesSearch = searchTerm === '' || searchIndex.includes(searchTerm);
+      const isVisible = matchesFilter && matchesSearch;
+
+      item.classList.toggle('is-hidden', !isVisible);
+
+      if (isVisible && firstVisibleItem === null) {
+        firstVisibleItem = item;
+      }
+    });
+
+    if (firstVisibleItem) {
+      setFaqOpenItem(firstVisibleItem);
+    } else {
+      setFaqOpenItem(null);
+    }
+  };
+
+  faqFilterChips.forEach((chip) => {
+    if (!(chip instanceof HTMLButtonElement)) return;
+    chip.addEventListener('click', () => {
+      activeFaqFilter = chip.getAttribute('data-filter') || 'all';
+      faqFilterChips.forEach((entry) => entry.classList.toggle('active', entry === chip));
+      applyFaqFilters();
+    });
+  });
+
+  if (faqSearch instanceof HTMLInputElement) {
+    faqSearch.addEventListener('input', applyFaqFilters);
+  }
 
   updateV9Count();
   renderV9Cart();

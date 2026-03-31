@@ -219,8 +219,23 @@
                     <h2>Pertanyaan yang Paling Sering Muncul Sebelum Checkout</h2>
                     <p>Jawaban di bawah disusun dari konten produk, informasi varian, dan materi penjelasan Jenang Gemi yang tersedia di website ini.</p>
                 </div>
+                <div class="faq-scan-tools glass-card">
+                    <label class="faq-search-wrap" for="faq-search">
+                        <span class="faq-search-icon" aria-hidden="true"></span>
+                        <input id="faq-search" type="search" placeholder="Cari pertanyaan, misalnya harga, jamu, atau 15 sachet">
+                    </label>
+                    <div class="faq-filter-chips" id="faq-filter-chips">
+                        <button class="faq-filter-chip active" type="button" data-filter="all">Semua</button>
+                        <button class="faq-filter-chip" type="button" data-filter="produk">Produk</button>
+                        <button class="faq-filter-chip" type="button" data-filter="bahan">Bahan</button>
+                        <button class="faq-filter-chip" type="button" data-filter="harga">Harga</button>
+                        <button class="faq-filter-chip" type="button" data-filter="varian">Varian</button>
+                        <button class="faq-filter-chip" type="button" data-filter="cara">Cara Pakai</button>
+                        <button class="faq-filter-chip" type="button" data-filter="pilih">Memilih</button>
+                    </div>
+                </div>
                 <div class="faq-page-list">
-                    <article class="faq-page-item glass-card is-open">
+                    <article class="faq-page-item glass-card is-open" data-category="produk pilih" data-search="perbedaan bubur jamu produk lambung sensitif pagi pilihan">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="true" aria-controls="faq-answer-01" id="faq-question-01">
                             <span class="faq-page-number">01</span>
                             <span class="faq-accordion-title">Apa perbedaan utama Jenang Gemi Bubur dan Jamu Gemi?</span>
@@ -232,7 +247,7 @@
                             </div>
                         </div>
                     </article>
-                    <article class="faq-page-item glass-card">
+                    <article class="faq-page-item glass-card" data-category="pilih produk" data-search="produk cocok lambung sensitif pagi bubur jamu">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-answer-02" id="faq-question-02">
                             <span class="faq-page-number">02</span>
                             <span class="faq-accordion-title">Produk mana yang lebih cocok untuk lambung sensitif saat pagi hari?</span>
@@ -244,7 +259,7 @@
                             </div>
                         </div>
                     </article>
-                    <article class="faq-page-item glass-card">
+                    <article class="faq-page-item glass-card" data-category="bahan produk" data-search="bahan utama arrowroot pati garut kunyit psyllium">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-answer-03" id="faq-question-03">
                             <span class="faq-page-number">03</span>
                             <span class="faq-accordion-title">Apa bahan utama kedua produk ini?</span>
@@ -256,7 +271,7 @@
                             </div>
                         </div>
                     </article>
-                    <article class="faq-page-item glass-card">
+                    <article class="faq-page-item glass-card" data-category="harga" data-search="harga paket 15 sachet 30 sachet 60 sachet">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-answer-04" id="faq-question-04">
                             <span class="faq-page-number">04</span>
                             <span class="faq-accordion-title">Apakah kedua produk punya harga yang sama?</span>
@@ -268,7 +283,7 @@
                             </div>
                         </div>
                     </article>
-                    <article class="faq-page-item glass-card">
+                    <article class="faq-page-item glass-card" data-category="varian" data-search="varian rasa bubur original gula aren vanilla klepon">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-answer-05" id="faq-question-05">
                             <span class="faq-page-number">05</span>
                             <span class="faq-accordion-title">Varian rasa apa saja yang tersedia untuk Bubur Gemi?</span>
@@ -280,7 +295,7 @@
                             </div>
                         </div>
                     </article>
-                    <article class="faq-page-item glass-card">
+                    <article class="faq-page-item glass-card" data-category="varian bahan" data-search="nutrisi kalori gula varian bubur">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-answer-06" id="faq-question-06">
                             <span class="faq-page-number">06</span>
                             <span class="faq-accordion-title">Apa perbedaan nutrisi dasar tiap varian Bubur Gemi?</span>
@@ -292,7 +307,7 @@
                             </div>
                         </div>
                     </article>
-                    <article class="faq-page-item glass-card">
+                    <article class="faq-page-item glass-card" data-category="cara" data-search="cara menyiapkan bubur masak panci hangat">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-answer-07" id="faq-question-07">
                             <span class="faq-page-number">07</span>
                             <span class="faq-accordion-title">Bagaimana cara menyiapkan Bubur Gemi?</span>
@@ -304,7 +319,7 @@
                             </div>
                         </div>
                     </article>
-                    <article class="faq-page-item glass-card">
+                    <article class="faq-page-item glass-card" data-category="cara" data-search="cara menyiapkan jamu campur air aduk">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-answer-08" id="faq-question-08">
                             <span class="faq-page-number">08</span>
                             <span class="faq-accordion-title">Bagaimana cara menyiapkan Jamu Gemi?</span>
@@ -316,7 +331,7 @@
                             </div>
                         </div>
                     </article>
-                    <article class="faq-page-item glass-card">
+                    <article class="faq-page-item glass-card" data-category="pilih produk" data-search="memilih bubur atau jamu nyaman praktis">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-answer-09" id="faq-question-09">
                             <span class="faq-page-number">09</span>
                             <span class="faq-accordion-title">Kapan sebaiknya saya memilih Bubur Gemi dibanding Jamu Gemi?</span>
@@ -328,7 +343,7 @@
                             </div>
                         </div>
                     </article>
-                    <article class="faq-page-item glass-card">
+                    <article class="faq-page-item glass-card" data-category="bahan produk" data-search="arrowroot kandungan jamu bubur pati garut">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-answer-10" id="faq-question-10">
                             <span class="faq-page-number">10</span>
                             <span class="faq-accordion-title">Apakah Jamu Gemi punya kandungan arrowroot sebanyak Bubur Gemi?</span>
@@ -340,7 +355,7 @@
                             </div>
                         </div>
                     </article>
-                    <article class="faq-page-item glass-card">
+                    <article class="faq-page-item glass-card" data-category="harga pilih" data-search="paket aman mulai coba 15 sachet 30 60">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-answer-11" id="faq-question-11">
                             <span class="faq-page-number">11</span>
                             <span class="faq-accordion-title">Paket mana yang paling aman untuk mulai mencoba?</span>
@@ -352,7 +367,7 @@
                             </div>
                         </div>
                     </article>
-                    <article class="faq-page-item glass-card">
+                    <article class="faq-page-item glass-card" data-category="pilih" data-search="masih bingung langkah berikutnya bubur jamu ringkasan faq">
                         <button class="faq-accordion-trigger" type="button" aria-expanded="false" aria-controls="faq-answer-12" id="faq-question-12">
                             <span class="faq-page-number">12</span>
                             <span class="faq-accordion-title">Kalau saya masih bingung, langkah berikutnya apa?</span>

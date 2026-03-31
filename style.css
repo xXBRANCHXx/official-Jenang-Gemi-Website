@@ -598,7 +598,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .faq-page-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px;
+  gap: 18px;
 }
 .faq-page-item {
   cursor: default;
@@ -608,7 +608,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 .faq-page-item p {
   color: var(--text-main);
-  line-height: 1.8;
+  line-height: 1.65;
 }
 .faq-page-item a {
   color: var(--green-dark);
@@ -619,18 +619,18 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .faq-accordion-trigger {
   width: 100%;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
-  padding: 26px 28px;
+  gap: 12px;
+  padding: 22px 24px;
   text-align: left;
   color: var(--text-dark);
 }
 .faq-accordion-title {
   font-family: 'Manrope', sans-serif;
-  font-size: 1.45rem;
+  font-size: 1.34rem;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.16;
   letter-spacing: -0.03em;
 }
 .faq-accordion-icon {
@@ -670,16 +670,13 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .faq-accordion-content {
   min-height: 0;
   overflow: hidden;
-  padding: 0 28px 0;
+  padding: 0 24px 0;
 }
 .faq-accordion-content p {
-  padding: 0 0 28px;
+  padding: 0 0 22px;
 }
 .faq-page-number {
-  min-width: 48px;
-  padding: 9px 12px;
-  border-radius: 999px;
-  background: rgba(99, 191, 71, 0.12);
+  display: none;
 }
 .faq-page-cta {
   background: transparent;
@@ -1340,17 +1337,20 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     font-size: 1.55rem;
   }
   .faq-accordion-trigger {
-    gap: 12px;
-    padding: 22px 22px 18px;
+    gap: 10px;
+    padding: 16px 18px 14px;
   }
   .faq-accordion-title {
-    font-size: 1.28rem;
+    font-size: 1.08rem;
+    line-height: 1.14;
   }
   .faq-accordion-content {
-    padding: 0 22px 0;
+    padding: 0 18px 0;
   }
   .faq-accordion-content p {
-    padding-bottom: 22px;
+    padding-bottom: 16px;
+    font-size: 0.9rem;
+    line-height: 1.55;
   }
   .about-story-card h3,
   .about-principle-card h3,
@@ -1632,6 +1632,16 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .bg-green .glass-card { background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.2); }
 .bg-green .glass-card p { color: rgba(255, 255, 255, 0.8) !important; }
 .bg-green .glass-card:hover { background: rgba(255, 255, 255, 0.2); }
+.bg-green .glass-card,
+.bg-green .glass-card h3,
+.bg-green .glass-card p,
+.bg-green .glass-card span,
+.bg-green .glass-card li {
+  color: #fff !important;
+}
+.bg-green .faq-checklist li::before {
+  background: radial-gradient(circle at center, #fff 0 42%, rgba(255, 255, 255, 0.24) 43% 100%);
+}
 
 .science-section {
   isolation: isolate;

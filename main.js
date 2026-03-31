@@ -990,7 +990,7 @@ function getQuizReasonSummary(recommendationKey) {
   });
 
   const mappedTraits = selectedTraits
-    .slice(0, 3)
+    .slice(0, 2)
     .map((trait) => quizTraitCopy[trait])
     .filter(Boolean);
 

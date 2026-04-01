@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (partnerState.step < 0) {
       partnerFormQuestionType.textContent = 'Pendahuluan';
-      partnerFormQuestion.textContent = 'Anda sedang berada di form kemitraan.';
+      partnerFormQuestion.textContent = 'Anda sedang berada di Form Kemitraan Jenang Gemi.';
       partnerFormHelper.textContent = 'Tekan Lanjut untuk mulai mengisi form langkah demi langkah.';
       partnerFormStepLabel.textContent = 'Pendahuluan';
       partnerFormStepCount.textContent = `0 / ${partnerQuestions.length}`;
@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
       partnerFormNext.textContent = 'Lanjut';
       partnerFormInputArea.innerHTML = `
         <div class="partner-form-intro-card">
-          <strong>Ini adalah form kemitraan Jenang Gemi.</strong>
+          <strong>Ini adalah Form Kemitraan Jenang Gemi.</strong>
           <p class="partner-form-meta">Tekan <strong>Lanjut</strong> untuk masuk ke form dan mulai menjawab pertanyaan satu per satu.</p>
         </div>
       `;
@@ -460,13 +460,14 @@ document.addEventListener('DOMContentLoaded', () => {
             phoneField.focus();
           });
         });
-        document.addEventListener('click', (event) => {
+        const handleOutsideClick = (event) => {
           const target = event.target;
           if (!(target instanceof Node)) return;
           if (!partnerFormInputArea.contains(target)) {
             closeCountryList();
           }
-        }, { once: true });
+        };
+        document.addEventListener('click', handleOutsideClick);
         phoneField.addEventListener('input', () => {
           const selectedCountry = getPartnerCountry(countryField.value);
           phoneField.value = formatPhoneInputDisplay(phoneField.value, selectedCountry);

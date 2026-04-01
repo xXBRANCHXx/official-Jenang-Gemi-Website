@@ -1290,15 +1290,17 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .partner-form-country-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 12px;
   height: 100%;
-  min-width: 108px;
-  padding: 0 16px;
+  min-width: 124px;
+  padding: 0 18px;
   border-right: 1px solid rgba(17, 46, 19, 0.08);
-  background: rgba(99, 191, 71, 0.08);
+  background: linear-gradient(180deg, rgba(99, 191, 71, 0.18), rgba(99, 191, 71, 0.12));
   color: var(--green-dark);
   font: inherit;
   font-weight: 800;
+  cursor: pointer;
 }
 .partner-form-country-current {
   display: inline-flex;
@@ -1311,22 +1313,27 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 .partner-form-country-code {
   letter-spacing: -0.02em;
+  font-size: 0.98rem;
 }
 .partner-form-country-caret {
-  width: 10px;
-  height: 10px;
-  margin-left: 2px;
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
-  transform: rotate(45deg) translateY(-1px);
-  opacity: 0.7;
+  transform: rotate(45deg) translateY(-2px);
+  opacity: 0.82;
   transition: transform 0.2s ease;
 }
 .partner-form-country-trigger[aria-expanded="true"] .partner-form-country-caret {
-  transform: rotate(225deg) translateY(-1px);
+  transform: rotate(225deg) translateY(0);
 }
 .partner-form-country-trigger:focus {
   outline: none;
+}
+.partner-form-country-trigger:hover {
+  background: linear-gradient(180deg, rgba(99, 191, 71, 0.24), rgba(99, 191, 71, 0.16));
 }
 .partner-form-country-list {
   position: absolute;

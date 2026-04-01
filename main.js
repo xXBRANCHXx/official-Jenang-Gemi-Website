@@ -147,8 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const sections = [
       '*FORM KEMITRAAN JENANG GEMI*',
-      '`#192017`',
-      '_Mohon jangan hapus kode ini._',
       '-------------',
       '*Nama Lengkap*',
       formatLongValue(getTrimmedValue(formData, 'full_name')),

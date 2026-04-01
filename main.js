@@ -104,11 +104,47 @@ document.addEventListener('DOMContentLoaded', () => {
     window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`, '_blank');
   });
 
-  const partnerForm = document.getElementById('partner-form');
+  const partnerModal = document.getElementById('partner-form-modal');
+  const partnerFormInputArea = document.getElementById('partner-form-input-area');
+  const partnerFormQuestion = document.getElementById('partner-form-question');
+  const partnerFormHelper = document.getElementById('partner-form-helper');
+  const partnerFormQuestionType = document.getElementById('partner-form-question-type');
+  const partnerFormProgressFill = document.getElementById('partner-form-progress-fill');
+  const partnerFormStepLabel = document.getElementById('partner-form-step-label');
+  const partnerFormStepCount = document.getElementById('partner-form-step-count');
+  const partnerFormBack = document.getElementById('partner-form-back');
+  const partnerFormNext = document.getElementById('partner-form-next');
+  const partnerFormOpeners = document.querySelectorAll('[data-open-partner-form]');
+  const partnerFormClosers = document.querySelectorAll('[data-close-partner-form]');
 
-  const getRadioValue = (formData, name) => formData.get(name)?.toString().trim() || '';
-  const getTrimmedValue = (formData, name) => formData.get(name)?.toString().trim() || '';
-  const pickValue = (primaryValue, otherValue) => primaryValue === 'Lainnya' && otherValue ? `${primaryValue}: ${otherValue}` : (primaryValue || otherValue || '');
+  const partnerQuestions = [
+    { key: 'full_name', type: 'text', label: 'Nama Lengkap', helper: 'Masukkan nama lengkap Anda.', required: true, autocomplete: 'name' },
+    { key: 'phone', type: 'phone', label: 'No HP (WhatsApp)', helper: 'Isi tanpa angka 0 di depan jika ingin, kami akan rapikan ke format +62.', required: true },
+    { key: 'email', type: 'email', label: 'Email', helper: 'Email ini membantu kami follow-up dengan lebih mudah.', required: true, autocomplete: 'email' },
+    { key: 'partner_type', type: 'single', label: 'Tipe partner', helper: 'Pilih tipe partner yang paling sesuai saat ini.', required: true, options: ['Affiliasi', 'Reseller', 'Agen', 'Distributor'] },
+    { key: 'full_address', type: 'textarea', label: 'Alamat lengkap', helper: 'Tulis alamat lengkap Anda atau alamat usaha.', required: true },
+    { key: 'business_city', type: 'text', label: 'Kota tempat usaha', helper: 'Kota ini membantu kami memahami area distribusi Anda.', required: true },
+    { key: 'tried_product', type: 'single', label: 'Apakah Anda sudah pernah mencoba produk Jenang Gemi sebelumnya?', helper: 'Pilih salah satu jawaban.', required: true, options: ['Ya, sudah.', 'Belum.'] },
+    { key: 'main_interest', type: 'multi', label: 'Apa yang paling menarik Anda dari program Jenang Gemi?', helper: 'Boleh pilih lebih dari satu.', required: true, options: ['Profit margin tinggi & naik level.', 'Produk Jenang Gemi yang mudah dijual.', 'Cocok untuk side hustle / IRT / mahasiswa.', 'Ingin bantu orang lain hidup lebih sehat.', 'Lainnya'], otherKey: 'main_interest_other', otherPlaceholder: 'Jika lainnya, tulis di sini' },
+    { key: 'sales_experience', type: 'textarea', label: 'Jelaskan singkat pengalaman bisnis/jualan Anda (jika ada).', helper: 'Contoh: Pernah jualan online di Shopee/Tokopedia, belum ada pengalaman, atau sudah punya komunitas diet/kesehatan.' },
+    { key: 'sales_platform', type: 'multi', label: 'Platform penjualan utama yang akan Anda gunakan?', helper: 'Boleh pilih lebih dari satu.', required: true, options: ['Shopee', 'Tokopedia & TikTok', 'Instagram', 'Youtube', 'Facebook', 'WhatsApp / Offline (teman/komunitas)', 'Lainnya'], otherKey: 'sales_platform_other', otherPlaceholder: 'Jika lainnya, tulis di sini' },
+    { key: 'additional_notes', type: 'textarea', label: 'Ada pertanyaan lain atau catatan tambahan?', helper: 'Misal: Saya ingin info stok awal, bisa info katalog, dan lain-lain.' },
+    { key: 'source_channel', type: 'multi', label: 'Bisa tahu Jenang Gemi dari mana?', helper: 'Boleh pilih lebih dari satu.', required: true, options: ['Instagram', 'Facebook', 'Youtube', 'X / Thread', 'TikTok', 'WhatsApp / Offline (teman/komunitas)', 'Email', 'Google', 'Lainnya'], otherKey: 'source_channel_other', otherPlaceholder: 'Jika lainnya, tulis di sini' },
+    { key: 'meeting_schedule', type: 'datetime', label: 'Schedule video / phone call', helper: 'Disarankan agar kami bisa menjadwalkan follow-up lebih cepat.' },
+    { key: 'zero_interest', type: 'single', label: 'Apakah Anda tertarik juga untuk program ZERO (produk sirup dan pengganti gula - 0 gula, 0 kalori)', helper: 'Pilih salah satu jawaban.', required: true, options: ['Ya.', 'Tidak.', 'Mungkin, belum yakin.'] }
+  ];
+
+  const partnerState = {
+    step: 0,
+    answers: {}
+  };
+
+  const escapeHtml = (value) => value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
   const fallbackValue = (value) => value || '_Belum diisi_';
   const formatLongValue = (value) => value ? `\`\`\`${value}\`\`\`` : '_Belum diisi_';
   const formatPhoneValue = (rawValue) => {
@@ -132,58 +168,236 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  partnerForm?.addEventListener('submit', (event) => {
-    event.preventDefault();
+  const normalizeAnswerList = (value) => Array.isArray(value) ? value.filter(Boolean) : [];
+  const gatherQuestionValue = (question) => {
+    if (!partnerFormInputArea) return '';
 
-    if (!(partnerForm instanceof HTMLFormElement)) return;
-    if (!partnerForm.reportValidity()) return;
+    if (question.type === 'text' || question.type === 'email' || question.type === 'textarea' || question.type === 'datetime') {
+      const field = partnerFormInputArea.querySelector('[data-partner-input]');
+      return field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement ? field.value.trim() : '';
+    }
 
-    const formData = new FormData(partnerForm);
-    const phoneValue = formatPhoneValue(getTrimmedValue(formData, 'phone'));
-    const interestValue = pickValue(getRadioValue(formData, 'main_interest'), getTrimmedValue(formData, 'main_interest_other'));
-    const platformValue = pickValue(getRadioValue(formData, 'sales_platform'), getTrimmedValue(formData, 'sales_platform_other'));
-    const sourceValue = pickValue(getRadioValue(formData, 'source_channel'), getTrimmedValue(formData, 'source_channel_other'));
-    const meetingValue = formatMeetingValue(getTrimmedValue(formData, 'meeting_schedule'));
+    if (question.type === 'phone') {
+      const field = partnerFormInputArea.querySelector('[data-partner-input]');
+      return field instanceof HTMLInputElement ? field.value.trim() : '';
+    }
+
+    if (question.type === 'single') {
+      const checked = partnerFormInputArea.querySelector('input[type="radio"]:checked');
+      return checked instanceof HTMLInputElement ? checked.value : '';
+    }
+
+    if (question.type === 'multi') {
+      const checked = Array.from(partnerFormInputArea.querySelectorAll('input[type="checkbox"]:checked'))
+        .map((input) => input instanceof HTMLInputElement ? input.value : '')
+        .filter(Boolean);
+      const otherField = partnerFormInputArea.querySelector('[data-partner-other]');
+      const otherValue = otherField instanceof HTMLInputElement ? otherField.value.trim() : '';
+      return {
+        selected: checked,
+        other: otherValue
+      };
+    }
+
+    return '';
+  };
+
+  const saveCurrentPartnerAnswer = () => {
+    const question = partnerQuestions[partnerState.step];
+    if (!question) return true;
+
+    const value = gatherQuestionValue(question);
+
+    if (question.type === 'multi') {
+      const selected = normalizeAnswerList(value.selected);
+      const otherValue = value.other || '';
+      const includesOther = selected.includes('Lainnya');
+      if (question.required && selected.length === 0 && !otherValue) return false;
+      if (includesOther && !otherValue) return false;
+      partnerState.answers[question.key] = selected;
+      if (question.otherKey) {
+        partnerState.answers[question.otherKey] = otherValue;
+      }
+      return true;
+    }
+
+    if (question.required && !value) return false;
+    partnerState.answers[question.key] = value;
+    return true;
+  };
+
+  const renderPartnerQuestion = () => {
+    const question = partnerQuestions[partnerState.step];
+    if (!question || !partnerFormInputArea || !partnerFormQuestion || !partnerFormHelper || !partnerFormQuestionType || !partnerFormProgressFill || !partnerFormStepLabel || !partnerFormStepCount || !partnerFormBack || !partnerFormNext) return;
+
+    partnerFormQuestion.textContent = question.label;
+    partnerFormHelper.textContent = question.helper || '';
+    partnerFormQuestionType.textContent = question.type === 'multi' ? 'Bisa pilih beberapa' : question.type === 'textarea' ? 'Jawaban singkat' : 'Satu langkah';
+    partnerFormStepLabel.textContent = `Langkah ${partnerState.step + 1}`;
+    partnerFormStepCount.textContent = `${partnerState.step + 1} / ${partnerQuestions.length}`;
+    partnerFormProgressFill.style.width = `${((partnerState.step + 1) / partnerQuestions.length) * 100}%`;
+    partnerFormBack.disabled = partnerState.step === 0;
+    partnerFormNext.textContent = partnerState.step === partnerQuestions.length - 1 ? 'Kirim ke WhatsApp' : 'Lanjut';
+
+    const currentValue = partnerState.answers[question.key];
+    const currentOtherValue = question.otherKey ? partnerState.answers[question.otherKey] || '' : '';
+
+    let markup = '';
+
+    if (question.type === 'text' || question.type === 'email') {
+      markup = `<input class="partner-form-text" data-partner-input type="${question.type}" value="${escapeHtml(currentValue || '')}" autocomplete="${question.autocomplete || 'off'}">`;
+    } else if (question.type === 'phone') {
+      markup = `
+        <div class="partner-form-phone">
+          <span>+62</span>
+          <input data-partner-input type="tel" inputmode="numeric" placeholder="81234567890" value="${escapeHtml(currentValue || '')}">
+        </div>
+      `;
+    } else if (question.type === 'textarea') {
+      markup = `<textarea class="partner-form-textarea" data-partner-input>${escapeHtml(currentValue || '')}</textarea>`;
+    } else if (question.type === 'datetime') {
+      markup = `<input class="partner-form-datetime" data-partner-input type="datetime-local" value="${escapeHtml(currentValue || '')}">`;
+    } else if (question.type === 'single' || question.type === 'multi') {
+      const inputType = question.type === 'multi' ? 'checkbox' : 'radio';
+      const currentValues = question.type === 'multi' ? normalizeAnswerList(currentValue) : [];
+      markup = `<div class="partner-form-choice-grid ${question.type === 'multi' ? 'multi' : ''}">` + question.options.map((option, index) => {
+        const checked = question.type === 'multi' ? currentValues.includes(option) : currentValue === option;
+        return `
+          <label class="partner-form-choice">
+            <input type="${inputType}" name="partner-question" value="${escapeHtml(option)}" ${checked ? 'checked' : ''}>
+            <span>${escapeHtml(option)}</span>
+          </label>
+        `;
+      }).join('') + `</div>`;
+
+      if (question.otherKey) {
+        markup += `<input class="partner-form-text" data-partner-other type="text" placeholder="${escapeHtml(question.otherPlaceholder || 'Tulis jawaban lainnya')}" value="${escapeHtml(currentOtherValue)}">`;
+      }
+    }
+
+    partnerFormInputArea.innerHTML = markup;
+
+    const initialFocusTarget = partnerFormInputArea.querySelector('[data-partner-input], input[type="radio"], input[type="checkbox"]');
+    if (initialFocusTarget instanceof HTMLElement) {
+      initialFocusTarget.focus();
+    }
+  };
+
+  const openPartnerForm = () => {
+    if (!partnerModal) return;
+    partnerModal.classList.add('active');
+    partnerModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    renderPartnerQuestion();
+  };
+
+  const closePartnerForm = () => {
+    if (!partnerModal) return;
+    partnerModal.classList.remove('active');
+    partnerModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (window.location.hash === '#form-kemitraan') {
+      history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+    }
+  };
+
+  const buildPartnerWhatsappMessage = () => {
+    const interestValues = normalizeAnswerList(partnerState.answers.main_interest);
+    const platformValues = normalizeAnswerList(partnerState.answers.sales_platform);
+    const sourceValues = normalizeAnswerList(partnerState.answers.source_channel);
+
+    const appendOther = (values, otherKey) => {
+      const otherValue = (partnerState.answers[otherKey] || '').trim();
+      if (!otherValue) return values;
+      if (values.includes('Lainnya')) {
+        return values.map((entry) => entry === 'Lainnya' ? `Lainnya: ${otherValue}` : entry);
+      }
+      return [...values, `Lainnya: ${otherValue}`];
+    };
 
     const sections = [
       '*FORM KEMITRAAN JENANG GEMI*',
       '-------------',
       '*Nama Lengkap*',
-      formatLongValue(getTrimmedValue(formData, 'full_name')),
+      formatLongValue((partnerState.answers.full_name || '').trim()),
       '*No HP (WhatsApp)*',
-      formatLongValue(phoneValue),
+      formatLongValue(formatPhoneValue((partnerState.answers.phone || '').trim())),
       '*Email*',
-      formatLongValue(getTrimmedValue(formData, 'email')),
+      formatLongValue((partnerState.answers.email || '').trim()),
       '*Tipe Partner*',
-      fallbackValue(getRadioValue(formData, 'partner_type')),
+      fallbackValue(partnerState.answers.partner_type || ''),
       '-------------',
       '*Alamat Lengkap*',
-      formatLongValue(getTrimmedValue(formData, 'full_address')),
+      formatLongValue((partnerState.answers.full_address || '').trim()),
       '*Kota Tempat Usaha*',
-      formatLongValue(getTrimmedValue(formData, 'business_city')),
+      formatLongValue((partnerState.answers.business_city || '').trim()),
       '*Sudah Pernah Coba Produk Jenang Gemi?*',
-      fallbackValue(getRadioValue(formData, 'tried_product')),
+      fallbackValue(partnerState.answers.tried_product || ''),
       '*Yang Paling Menarik dari Program Jenang Gemi*',
-      fallbackValue(interestValue),
+      fallbackValue(appendOther(interestValues, 'main_interest_other').join(', ')),
       '-------------',
       '*Pengalaman Bisnis / Jualan*',
-      formatLongValue(getTrimmedValue(formData, 'sales_experience')),
+      formatLongValue((partnerState.answers.sales_experience || '').trim()),
       '*Platform Penjualan Utama*',
-      fallbackValue(platformValue),
+      fallbackValue(appendOther(platformValues, 'sales_platform_other').join(', ')),
       '*Pertanyaan / Catatan Tambahan*',
-      formatLongValue(getTrimmedValue(formData, 'additional_notes')),
+      formatLongValue((partnerState.answers.additional_notes || '').trim()),
       '-------------',
       '*Tahu Jenang Gemi dari Mana?*',
-      fallbackValue(sourceValue),
+      fallbackValue(appendOther(sourceValues, 'source_channel_other').join(', ')),
       '*Jadwal Video / Phone Call*',
-      fallbackValue(meetingValue),
+      fallbackValue(formatMeetingValue((partnerState.answers.meeting_schedule || '').trim())),
       '*Tertarik Program ZERO?*',
-      fallbackValue(getRadioValue(formData, 'zero_interest'))
+      fallbackValue(partnerState.answers.zero_interest || '')
     ];
 
-    const message = sections.join('\n');
-    window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(message)}`, '_blank');
+    return sections.join('\n');
+  };
+
+  const handlePartnerNext = () => {
+    const isValid = saveCurrentPartnerAnswer();
+    if (!isValid) {
+      const field = partnerFormInputArea?.querySelector('[data-partner-input], [data-partner-other], input[type="radio"], input[type="checkbox"]');
+      field?.focus();
+      return;
+    }
+
+    if (partnerState.step === partnerQuestions.length - 1) {
+      const message = buildPartnerWhatsappMessage();
+      window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(message)}`, '_blank');
+      closePartnerForm();
+      return;
+    }
+
+    partnerState.step += 1;
+    renderPartnerQuestion();
+  };
+
+  const handlePartnerBack = () => {
+    if (partnerState.step === 0) return;
+    saveCurrentPartnerAnswer();
+    partnerState.step -= 1;
+    renderPartnerQuestion();
+  };
+
+  partnerFormOpeners.forEach((trigger) => {
+    trigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      history.replaceState(null, '', '#form-kemitraan');
+      openPartnerForm();
+    });
   });
+
+  partnerFormClosers.forEach((trigger) => {
+    trigger.addEventListener('click', () => closePartnerForm());
+  });
+
+  partnerFormNext?.addEventListener('click', handlePartnerNext);
+  partnerFormBack?.addEventListener('click', handlePartnerBack);
+
+  if (window.location.hash === '#form-kemitraan') {
+    openPartnerForm();
+  }
 
   // --- Testimonials ---
   const testimonialImageModules = import.meta.glob('./Media/Testimonials/*.png', {

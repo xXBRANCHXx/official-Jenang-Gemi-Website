@@ -489,28 +489,29 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .partner-guide-green-band {
   position: relative;
   overflow: clip;
-  background:
-    radial-gradient(circle at 85% 18%, rgba(255, 255, 255, 0.12), transparent 22%),
-    linear-gradient(160deg, #103f1b 0%, #195628 42%, #2f8645 100%);
+  background: linear-gradient(160deg, #123f1d 0%, #1a5728 52%, #236d36 100%);
   padding: clamp(40px, 5vw, 64px) 0;
 }
 .partner-guide-green-band::before,
 .partner-guide-green-band::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
+  border-radius: 999px;
   pointer-events: none;
 }
 .partner-guide-green-band::before {
-  top: 0;
-  height: 96px;
-  background: linear-gradient(180deg, #f3f7ed 0%, rgba(243, 247, 237, 0) 100%);
+  width: 280px;
+  height: 280px;
+  top: -140px;
+  right: -90px;
+  background: rgba(255, 255, 255, 0.06);
 }
 .partner-guide-green-band::after {
-  bottom: 0;
-  height: 96px;
-  background: linear-gradient(0deg, #f3f7ed 0%, rgba(243, 247, 237, 0) 100%);
+  width: 220px;
+  height: 220px;
+  bottom: -120px;
+  left: -70px;
+  background: rgba(255, 255, 255, 0.04);
 }
 .partner-guide-green-band .container {
   position: relative;

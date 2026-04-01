@@ -448,14 +448,16 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           closeCountryList();
         };
-        countryToggle.addEventListener('click', () => {
+        countryToggle.addEventListener('click', (event) => {
+          event.stopPropagation();
           const isOpen = countryList.classList.contains('is-open');
           countryToggle.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
           countryList.classList.toggle('is-open', !isOpen);
         });
         countryOptions.forEach((option) => {
           if (!(option instanceof HTMLButtonElement)) return;
-          option.addEventListener('click', () => {
+          option.addEventListener('click', (event) => {
+            event.stopPropagation();
             applyCountry(option.dataset.country || defaultPartnerCountry.name);
             phoneField.focus();
           });

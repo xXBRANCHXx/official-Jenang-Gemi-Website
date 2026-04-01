@@ -1281,7 +1281,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   grid-template-columns: auto 1fr;
   gap: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
 }
 .partner-form-country-shell {

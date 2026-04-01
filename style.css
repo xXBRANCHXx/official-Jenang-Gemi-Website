@@ -490,37 +490,34 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   position: relative;
   overflow: clip;
   background:
-    linear-gradient(180deg, #f3f7ed 0%, rgba(243, 247, 237, 0) 16%),
-    linear-gradient(0deg, #f3f7ed 0%, rgba(243, 247, 237, 0) 16%),
-    linear-gradient(160deg, #0f3d1a 0%, #185126 38%, #24713a 72%, #43a857 100%);
-  padding: clamp(86px, 10vw, 128px) 0;
+    radial-gradient(circle at 85% 18%, rgba(255, 255, 255, 0.12), transparent 22%),
+    linear-gradient(160deg, #103f1b 0%, #195628 42%, #2f8645 100%);
+  padding: clamp(40px, 5vw, 64px) 0;
 }
 .partner-guide-green-band::before,
 .partner-guide-green-band::after {
   content: "";
   position: absolute;
-  border-radius: 999px;
+  left: 0;
+  right: 0;
   pointer-events: none;
 }
 .partner-guide-green-band::before {
-  width: 360px;
-  height: 360px;
-  top: -140px;
-  right: -110px;
-  background: rgba(255, 255, 255, 0.07);
+  top: 0;
+  height: 96px;
+  background: linear-gradient(180deg, #f3f7ed 0%, rgba(243, 247, 237, 0) 100%);
 }
 .partner-guide-green-band::after {
-  width: 280px;
-  height: 280px;
-  left: -90px;
-  bottom: -130px;
-  background: rgba(255, 255, 255, 0.05);
+  bottom: 0;
+  height: 96px;
+  background: linear-gradient(0deg, #f3f7ed 0%, rgba(243, 247, 237, 0) 100%);
 }
 .partner-guide-green-band .container {
   position: relative;
   z-index: 1;
   display: flex;
   justify-content: center;
+  padding-block: clamp(28px, 4vw, 44px);
 }
 .partner-guide-cover-card,
 .partner-guide-shell {
@@ -579,8 +576,9 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   color: white;
   background: rgba(255, 255, 255, 0.08);
 }
-.partner-guide-toc-section {
-  padding-top: 0;
+.partner-guide-toc-section,
+.partner-guide-section {
+  padding: clamp(42px, 5vw, 68px) 0;
 }
 .partner-guide-shell {
   padding: clamp(26px, 4vw, 38px);
@@ -681,9 +679,6 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   margin-top: 6px;
   color: var(--text-main);
   line-height: 1.65;
-}
-.partner-guide-section {
-  padding-top: 0;
 }
 .partner-guide-shell h2 {
   margin-top: 16px;

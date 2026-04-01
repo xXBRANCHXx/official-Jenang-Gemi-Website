@@ -116,6 +116,49 @@ document.addEventListener('DOMContentLoaded', () => {
   const partnerFormNext = document.getElementById('partner-form-next');
   const partnerFormOpeners = document.querySelectorAll('[data-open-partner-form]');
   const partnerFormClosers = document.querySelectorAll('[data-close-partner-form]');
+  const partnerCountries = [
+    { name: 'Argentina', flag: '🇦🇷', dialCode: '54', placeholder: '11 2345 6789' },
+    { name: 'Australia', flag: '🇦🇺', dialCode: '61', placeholder: '412 345 678' },
+    { name: 'Austria', flag: '🇦🇹', dialCode: '43', placeholder: '664 123 4567' },
+    { name: 'Belgium', flag: '🇧🇪', dialCode: '32', placeholder: '470 12 34 56' },
+    { name: 'Brazil', flag: '🇧🇷', dialCode: '55', placeholder: '11 91234 5678' },
+    { name: 'Canada', flag: '🇨🇦', dialCode: '1', placeholder: '416 555 1234' },
+    { name: 'China', flag: '🇨🇳', dialCode: '86', placeholder: '138 0013 8000' },
+    { name: 'Denmark', flag: '🇩🇰', dialCode: '45', placeholder: '20 12 34 56' },
+    { name: 'Egypt', flag: '🇪🇬', dialCode: '20', placeholder: '10 1234 5678' },
+    { name: 'Finland', flag: '🇫🇮', dialCode: '358', placeholder: '40 123 4567' },
+    { name: 'France', flag: '🇫🇷', dialCode: '33', placeholder: '6 12 34 56 78' },
+    { name: 'Germany', flag: '🇩🇪', dialCode: '49', placeholder: '1512 3456789' },
+    { name: 'Hong Kong', flag: '🇭🇰', dialCode: '852', placeholder: '5123 4567' },
+    { name: 'India', flag: '🇮🇳', dialCode: '91', placeholder: '91234 56789' },
+    { name: 'Indonesia', flag: '🇮🇩', dialCode: '62', placeholder: '812 3456 7890' },
+    { name: 'Ireland', flag: '🇮🇪', dialCode: '353', placeholder: '85 123 4567' },
+    { name: 'Italy', flag: '🇮🇹', dialCode: '39', placeholder: '312 345 6789' },
+    { name: 'Japan', flag: '🇯🇵', dialCode: '81', placeholder: '90 1234 5678' },
+    { name: 'Malaysia', flag: '🇲🇾', dialCode: '60', placeholder: '12 345 6789' },
+    { name: 'Mexico', flag: '🇲🇽', dialCode: '52', placeholder: '55 1234 5678' },
+    { name: 'Netherlands', flag: '🇳🇱', dialCode: '31', placeholder: '6 1234 5678' },
+    { name: 'New Zealand', flag: '🇳🇿', dialCode: '64', placeholder: '21 123 4567' },
+    { name: 'Norway', flag: '🇳🇴', dialCode: '47', placeholder: '412 34 567' },
+    { name: 'Philippines', flag: '🇵🇭', dialCode: '63', placeholder: '917 123 4567' },
+    { name: 'Poland', flag: '🇵🇱', dialCode: '48', placeholder: '512 345 678' },
+    { name: 'Portugal', flag: '🇵🇹', dialCode: '351', placeholder: '912 345 678' },
+    { name: 'Saudi Arabia', flag: '🇸🇦', dialCode: '966', placeholder: '50 123 4567' },
+    { name: 'Singapore', flag: '🇸🇬', dialCode: '65', placeholder: '8123 4567' },
+    { name: 'South Africa', flag: '🇿🇦', dialCode: '27', placeholder: '82 123 4567' },
+    { name: 'South Korea', flag: '🇰🇷', dialCode: '82', placeholder: '10 1234 5678' },
+    { name: 'Spain', flag: '🇪🇸', dialCode: '34', placeholder: '612 34 56 78' },
+    { name: 'Sweden', flag: '🇸🇪', dialCode: '46', placeholder: '70 123 45 67' },
+    { name: 'Switzerland', flag: '🇨🇭', dialCode: '41', placeholder: '78 123 45 67' },
+    { name: 'Taiwan', flag: '🇹🇼', dialCode: '886', placeholder: '912 345 678' },
+    { name: 'Thailand', flag: '🇹🇭', dialCode: '66', placeholder: '81 234 5678' },
+    { name: 'Turkey', flag: '🇹🇷', dialCode: '90', placeholder: '532 123 4567' },
+    { name: 'United Arab Emirates', flag: '🇦🇪', dialCode: '971', placeholder: '50 123 4567' },
+    { name: 'United Kingdom', flag: '🇬🇧', dialCode: '44', placeholder: '7400 123456' },
+    { name: 'United States', flag: '🇺🇸', dialCode: '1', placeholder: '201 555 0123' },
+    { name: 'Vietnam', flag: '🇻🇳', dialCode: '84', placeholder: '912 345 678' }
+  ].sort((a, b) => a.name.localeCompare(b.name));
+  const defaultPartnerCountry = partnerCountries.find((country) => country.name === 'Indonesia') || partnerCountries[0];
 
   const partnerQuestions = [
     { key: 'full_name', type: 'text', label: 'Nama Lengkap', helper: 'Masukkan nama lengkap Anda.', required: true, autocomplete: 'name' },
@@ -135,8 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   const partnerState = {
-    step: 0,
-    answers: {}
+    step: -1,
+    answers: {
+      phone_country: defaultPartnerCountry.name
+    }
   };
 
   const escapeHtml = (value) => value
@@ -147,12 +192,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const fallbackValue = (value) => value || '_Belum diisi_';
   const formatLongValue = (value) => value ? `\`\`\`${value}\`\`\`` : '_Belum diisi_';
-  const formatPhoneValue = (rawValue) => {
+  const getPartnerCountry = (countryName) => partnerCountries.find((country) => country.name === countryName) || defaultPartnerCountry;
+  const sanitizePhoneDigits = (rawValue, country) => {
     const digits = rawValue.replace(/\D/g, '');
     if (!digits) return '';
-    if (digits.startsWith('62')) return `+${digits}`;
-    if (digits.startsWith('0')) return `+62${digits.slice(1)}`;
-    return `+62${digits}`;
+    const selectedCountry = country || defaultPartnerCountry;
+    let normalized = digits;
+    if (normalized.startsWith(selectedCountry.dialCode)) {
+      normalized = normalized.slice(selectedCountry.dialCode.length);
+    }
+    normalized = normalized.replace(/^0+/, '');
+    return normalized.slice(0, 15);
+  };
+  const formatPhoneInputDisplay = (rawValue, country) => {
+    const digits = sanitizePhoneDigits(rawValue, country);
+    if (!digits) return '';
+    const groups = [];
+    let remaining = digits;
+    while (remaining.length > 4) {
+      groups.push(remaining.slice(0, 3));
+      remaining = remaining.slice(3);
+    }
+    if (remaining) groups.push(remaining);
+    return groups.join(' ');
+  };
+  const formatPhoneValue = (rawValue, countryName) => {
+    const selectedCountry = getPartnerCountry(countryName);
+    const digits = sanitizePhoneDigits(rawValue, selectedCountry);
+    if (!digits) return '';
+    return `+${selectedCountry.dialCode} ${formatPhoneInputDisplay(digits, selectedCountry)}`;
   };
   const formatMeetingValue = (rawValue) => {
     if (!rawValue) return '';
@@ -172,14 +240,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const gatherQuestionValue = (question) => {
     if (!partnerFormInputArea) return '';
 
+    if (question.type === 'phone') {
+      const field = partnerFormInputArea.querySelector('[data-partner-input]');
+      const countryField = partnerFormInputArea.querySelector('[data-partner-country]');
+      const selectedCountry = getPartnerCountry(countryField instanceof HTMLSelectElement ? countryField.value : partnerState.answers.phone_country);
+      return {
+        value: field instanceof HTMLInputElement ? sanitizePhoneDigits(field.value, selectedCountry) : '',
+        country: selectedCountry.name
+      };
+    }
+
     if (question.type === 'text' || question.type === 'email' || question.type === 'textarea' || question.type === 'datetime') {
       const field = partnerFormInputArea.querySelector('[data-partner-input]');
       return field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement ? field.value.trim() : '';
-    }
-
-    if (question.type === 'phone') {
-      const field = partnerFormInputArea.querySelector('[data-partner-input]');
-      return field instanceof HTMLInputElement ? field.value.trim() : '';
     }
 
     if (question.type === 'single') {
@@ -203,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const saveCurrentPartnerAnswer = () => {
+    if (partnerState.step < 0) return true;
     const question = partnerQuestions[partnerState.step];
     if (!question) return true;
 
@@ -221,14 +295,47 @@ document.addEventListener('DOMContentLoaded', () => {
       return true;
     }
 
+    if (question.type === 'phone') {
+      if (question.required && !value.value) return false;
+      partnerState.answers[question.key] = value.value;
+      partnerState.answers.phone_country = value.country;
+      return true;
+    }
+
     if (question.required && !value) return false;
     partnerState.answers[question.key] = value;
     return true;
   };
 
   const renderPartnerQuestion = () => {
+    if (!partnerFormInputArea || !partnerFormQuestion || !partnerFormHelper || !partnerFormQuestionType || !partnerFormProgressFill || !partnerFormStepLabel || !partnerFormStepCount || !partnerFormBack || !partnerFormNext) return;
+
+    if (partnerState.step < 0) {
+      partnerFormQuestionType.textContent = 'Pendahuluan';
+      partnerFormQuestion.textContent = 'Sebelum mulai, ini tujuan form kemitraan ini.';
+      partnerFormHelper.textContent = 'Form ini dipakai untuk membantu tim Jenang Gemi memahami profil partner Anda, menyesuaikan support yang relevan, dan menyiapkan tindak lanjut yang lebih cepat.';
+      partnerFormStepLabel.textContent = 'Pendahuluan';
+      partnerFormStepCount.textContent = `0 / ${partnerQuestions.length}`;
+      partnerFormProgressFill.style.width = '0%';
+      partnerFormBack.disabled = true;
+      partnerFormNext.textContent = 'Lanjut';
+      partnerFormInputArea.innerHTML = `
+        <div class="partner-form-intro-card">
+          <strong>Form ini akan digunakan untuk:</strong>
+          <ul class="partner-form-intro-list">
+            <li>mengumpulkan data awal calon partner dengan lebih rapi</li>
+            <li>membantu tim kami memahami kebutuhan dan pengalaman Anda</li>
+            <li>menyesuaikan respons, materi support, dan jalur follow-up</li>
+            <li>menyusun hasil jawaban ke WhatsApp dalam format yang mudah dibaca</li>
+          </ul>
+          <p class="partner-form-meta">Setelah menekan <strong>Lanjut</strong>, pertanyaan akan dimulai satu per satu seperti lesson singkat.</p>
+        </div>
+      `;
+      return;
+    }
+
     const question = partnerQuestions[partnerState.step];
-    if (!question || !partnerFormInputArea || !partnerFormQuestion || !partnerFormHelper || !partnerFormQuestionType || !partnerFormProgressFill || !partnerFormStepLabel || !partnerFormStepCount || !partnerFormBack || !partnerFormNext) return;
+    if (!question) return;
 
     partnerFormQuestion.textContent = question.label;
     partnerFormHelper.textContent = question.helper || '';
@@ -247,10 +354,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (question.type === 'text' || question.type === 'email') {
       markup = `<input class="partner-form-text" data-partner-input type="${question.type}" value="${escapeHtml(currentValue || '')}" autocomplete="${question.autocomplete || 'off'}">`;
     } else if (question.type === 'phone') {
+      const selectedCountry = getPartnerCountry(partnerState.answers.phone_country || defaultPartnerCountry.name);
       markup = `
         <div class="partner-form-phone">
-          <span>+62</span>
-          <input data-partner-input type="tel" inputmode="numeric" placeholder="81234567890" value="${escapeHtml(currentValue || '')}">
+          <select class="partner-form-country" data-partner-country aria-label="Pilih negara">
+            ${partnerCountries.map((country) => `<option value="${escapeHtml(country.name)}" ${country.name === selectedCountry.name ? 'selected' : ''}>${country.flag} ${country.name} (+${country.dialCode})</option>`).join('')}
+          </select>
+          <input data-partner-input type="tel" inputmode="numeric" pattern="[0-9 ]*" placeholder="${escapeHtml(selectedCountry.placeholder)}" value="${escapeHtml(formatPhoneInputDisplay(currentValue || '', selectedCountry))}">
         </div>
       `;
     } else if (question.type === 'textarea') {
@@ -280,6 +390,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const initialFocusTarget = partnerFormInputArea.querySelector('[data-partner-input], input[type="radio"], input[type="checkbox"]');
     if (initialFocusTarget instanceof HTMLElement) {
       initialFocusTarget.focus();
+    }
+
+    if (question.type === 'phone') {
+      const countryField = partnerFormInputArea.querySelector('[data-partner-country]');
+      const phoneField = partnerFormInputArea.querySelector('[data-partner-input]');
+      if (countryField instanceof HTMLSelectElement && phoneField instanceof HTMLInputElement) {
+        countryField.addEventListener('change', () => {
+          const selectedCountry = getPartnerCountry(countryField.value);
+          partnerState.answers.phone_country = selectedCountry.name;
+          phoneField.placeholder = selectedCountry.placeholder;
+          phoneField.value = formatPhoneInputDisplay(phoneField.value, selectedCountry);
+        });
+        phoneField.addEventListener('input', () => {
+          const selectedCountry = getPartnerCountry(countryField.value);
+          phoneField.value = formatPhoneInputDisplay(phoneField.value, selectedCountry);
+        });
+        phoneField.addEventListener('beforeinput', (event) => {
+          if (event.data && /[^\d\s]/.test(event.data)) {
+            event.preventDefault();
+          }
+        });
+      }
     }
   };
 
@@ -321,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '*Nama Lengkap*',
       formatLongValue((partnerState.answers.full_name || '').trim()),
       '*No HP (WhatsApp)*',
-      formatLongValue(formatPhoneValue((partnerState.answers.phone || '').trim())),
+      formatLongValue(formatPhoneValue((partnerState.answers.phone || '').trim(), partnerState.answers.phone_country || defaultPartnerCountry.name)),
       '*Email*',
       formatLongValue((partnerState.answers.email || '').trim()),
       '*Tipe Partner*',
@@ -355,6 +487,12 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const handlePartnerNext = () => {
+    if (partnerState.step < 0) {
+      partnerState.step = 0;
+      renderPartnerQuestion();
+      return;
+    }
+
     const isValid = saveCurrentPartnerAnswer();
     if (!isValid) {
       const field = partnerFormInputArea?.querySelector('[data-partner-input], [data-partner-other], input[type="radio"], input[type="checkbox"]');
@@ -374,7 +512,12 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const handlePartnerBack = () => {
-    if (partnerState.step === 0) return;
+    if (partnerState.step === 0) {
+      partnerState.step = -1;
+      renderPartnerQuestion();
+      return;
+    }
+    if (partnerState.step < 0) return;
     saveCurrentPartnerAnswer();
     partnerState.step -= 1;
     renderPartnerQuestion();

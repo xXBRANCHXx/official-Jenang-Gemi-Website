@@ -687,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ...document.querySelectorAll('.prep-card'),
     ...document.querySelectorAll('footer .container'),
     ...document.querySelectorAll('.p-info-grid > .hero-visual, .p-details'),
-    ...document.querySelectorAll('.partner-hero-copy, .partner-hero-visual, .partner-metric-card, .partner-section-heading, .partner-story-card, .partner-tier-card, .partner-product-card, .partner-price-panel, .partner-note-card, .partner-sim-card, .partner-benefit-card, .partner-step-card, .partner-commitment-card, .partner-support-card, .partner-cta-panel')
+    ...document.querySelectorAll('.partner-guide-cover-card, .partner-guide-shell, .partner-guide-toc-item, .partner-guide-value-card, .partner-guide-product-card, .partner-guide-price-hero, .partner-guide-price-card, .partner-guide-tier-card, .partner-guide-sim-card, .partner-guide-step-item, .partner-guide-contact-box, .partner-guide-support-item')
   ];
 
   const uniqueRevealTargets = [...new Set(revealTargets)].filter(Boolean);

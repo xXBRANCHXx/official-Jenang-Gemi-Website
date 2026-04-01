@@ -522,11 +522,14 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   border-radius: 36px;
   border: 1px solid rgba(15, 39, 19, 0.08);
   box-shadow: 0 30px 80px rgba(16, 40, 19, 0.08);
+  max-width: 1080px;
+  margin-inline: auto;
 }
 .partner-guide-cover-card {
   padding: clamp(32px, 5vw, 52px);
   background: linear-gradient(160deg, #0f3d1a 0%, #1a5c2a 40%, #2d8a45 80%, #43a857 100%);
   color: white;
+  max-width: 1140px;
 }
 .partner-guide-cover-card .breadcrumb-nav {
   margin-bottom: 26px;
@@ -614,10 +617,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   margin-top: 18px;
 }
 .partner-guide-toc-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
+  display: block;
   padding: 18px 20px;
   border-radius: 24px;
   background: #f8fbf4;
@@ -675,14 +675,6 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   margin-top: 6px;
   color: var(--text-main);
   line-height: 1.65;
-}
-.partner-guide-toc-item em {
-  min-width: 34px;
-  color: var(--green);
-  font-size: 0.98rem;
-  font-style: normal;
-  font-weight: 800;
-  text-align: right;
 }
 .partner-guide-section {
   padding-top: 0;
@@ -1084,7 +1076,6 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   color: white;
 }
 .partner-guide-shell-glass .partner-guide-toc-item strong,
-.partner-guide-shell-glass .partner-guide-toc-item em,
 .partner-guide-shell-glass .partner-guide-price-card strong,
 .partner-guide-shell-glass .partner-guide-sim-card strong {
   color: white;
@@ -1136,18 +1127,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .partner-guide-shell-glass .partner-guide-subtitle {
   color: rgba(255, 255, 255, 0.86);
 }
-.partner-guide-shell-glass .partner-guide-step-item span,
-.partner-guide-shell-glass .partner-guide-toc-item em {
+.partner-guide-shell-glass .partner-guide-step-item span {
   background: white;
   color: var(--green-dark);
   border-radius: 999px;
-}
-.partner-guide-shell-glass .partner-guide-toc-item em {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 38px;
-  height: 38px;
 }
 
 .partner-page-main {
@@ -2899,12 +2882,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     padding: 16px;
   }
   .partner-guide-toc-item {
-    gap: 12px;
     padding: 16px 18px;
-  }
-  .partner-guide-toc-item em {
-    min-width: 28px;
-    font-size: 0.9rem;
   }
   .partner-guide-tier-rows div {
     flex-direction: column;

@@ -104,6 +104,89 @@ document.addEventListener('DOMContentLoaded', () => {
     window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`, '_blank');
   });
 
+  const partnerForm = document.getElementById('partner-form');
+
+  const getRadioValue = (formData, name) => formData.get(name)?.toString().trim() || '';
+  const getTrimmedValue = (formData, name) => formData.get(name)?.toString().trim() || '';
+  const pickValue = (primaryValue, otherValue) => primaryValue === 'Lainnya' && otherValue ? `${primaryValue}: ${otherValue}` : (primaryValue || otherValue || '');
+  const fallbackValue = (value) => value || '_Belum diisi_';
+  const formatLongValue = (value) => value ? `\`\`\`${value}\`\`\`` : '_Belum diisi_';
+  const formatPhoneValue = (rawValue) => {
+    const digits = rawValue.replace(/\D/g, '');
+    if (!digits) return '';
+    if (digits.startsWith('62')) return `+${digits}`;
+    if (digits.startsWith('0')) return `+62${digits.slice(1)}`;
+    return `+62${digits}`;
+  };
+  const formatMeetingValue = (rawValue) => {
+    if (!rawValue) return '';
+    const parsed = new Date(rawValue);
+    if (Number.isNaN(parsed.getTime())) return rawValue;
+    return parsed.toLocaleString('id-ID', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  partnerForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    if (!(partnerForm instanceof HTMLFormElement)) return;
+    if (!partnerForm.reportValidity()) return;
+
+    const formData = new FormData(partnerForm);
+    const phoneValue = formatPhoneValue(getTrimmedValue(formData, 'phone'));
+    const interestValue = pickValue(getRadioValue(formData, 'main_interest'), getTrimmedValue(formData, 'main_interest_other'));
+    const platformValue = pickValue(getRadioValue(formData, 'sales_platform'), getTrimmedValue(formData, 'sales_platform_other'));
+    const sourceValue = pickValue(getRadioValue(formData, 'source_channel'), getTrimmedValue(formData, 'source_channel_other'));
+    const meetingValue = formatMeetingValue(getTrimmedValue(formData, 'meeting_schedule'));
+
+    const sections = [
+      '*FORM KEMITRAAN JENANG GEMI*',
+      '`#192017`',
+      '_Mohon jangan hapus kode ini._',
+      '-------------',
+      '*Nama Lengkap*',
+      formatLongValue(getTrimmedValue(formData, 'full_name')),
+      '*No HP (WhatsApp)*',
+      formatLongValue(phoneValue),
+      '*Email*',
+      formatLongValue(getTrimmedValue(formData, 'email')),
+      '*Tipe Partner*',
+      fallbackValue(getRadioValue(formData, 'partner_type')),
+      '-------------',
+      '*Alamat Lengkap*',
+      formatLongValue(getTrimmedValue(formData, 'full_address')),
+      '*Kota Tempat Usaha*',
+      formatLongValue(getTrimmedValue(formData, 'business_city')),
+      '*Sudah Pernah Coba Produk Jenang Gemi?*',
+      fallbackValue(getRadioValue(formData, 'tried_product')),
+      '*Yang Paling Menarik dari Program Jenang Gemi*',
+      fallbackValue(interestValue),
+      '-------------',
+      '*Pengalaman Bisnis / Jualan*',
+      formatLongValue(getTrimmedValue(formData, 'sales_experience')),
+      '*Platform Penjualan Utama*',
+      fallbackValue(platformValue),
+      '*Pertanyaan / Catatan Tambahan*',
+      formatLongValue(getTrimmedValue(formData, 'additional_notes')),
+      '-------------',
+      '*Tahu Jenang Gemi dari Mana?*',
+      fallbackValue(sourceValue),
+      '*Jadwal Video / Phone Call*',
+      fallbackValue(meetingValue),
+      '*Tertarik Program ZERO?*',
+      fallbackValue(getRadioValue(formData, 'zero_interest'))
+    ];
+
+    const message = sections.join('\n');
+    window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(message)}`, '_blank');
+  });
+
   // --- Testimonials ---
   const testimonialImageModules = import.meta.glob('./Media/Testimonials/*.png', {
     eager: true,

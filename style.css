@@ -1016,6 +1016,151 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .partner-guide-support-item {
   line-height: 1.65;
 }
+.partner-guide-form {
+  margin-top: 22px;
+}
+.partner-guide-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.partner-guide-field {
+  display: grid;
+  gap: 8px;
+}
+.partner-guide-field-full {
+  grid-column: 1 / -1;
+}
+.partner-guide-field > span,
+.partner-guide-field legend {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: white;
+}
+.partner-guide-field small {
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.55;
+}
+.partner-guide-field em {
+  font-style: italic;
+}
+.partner-guide-field input[type="text"],
+.partner-guide-field input[type="email"],
+.partner-guide-field input[type="tel"],
+.partner-guide-field input[type="datetime-local"],
+.partner-guide-field textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text-dark);
+  padding: 14px 16px;
+  font: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.partner-guide-field textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+.partner-guide-field input::placeholder,
+.partner-guide-field textarea::placeholder {
+  color: #6c7b6a;
+}
+.partner-guide-field input:focus,
+.partner-guide-field textarea:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+}
+.partner-guide-phone-field {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  overflow: hidden;
+}
+.partner-guide-phone-field span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  padding: 0 16px;
+  background: rgba(18, 63, 29, 0.08);
+  color: var(--green-dark);
+  font-weight: 800;
+}
+.partner-guide-phone-field input {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.partner-guide-choice-group {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.partner-guide-option-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.partner-guide-option-grid-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.partner-guide-option-grid label {
+  position: relative;
+}
+.partner-guide-option-grid input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.partner-guide-option-grid span {
+  display: flex;
+  align-items: center;
+  min-height: 100%;
+  padding: 14px 15px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.86);
+  line-height: 1.55;
+  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+.partner-guide-option-grid label:hover span {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.partner-guide-option-grid input:checked + span {
+  background: white;
+  border-color: white;
+  color: var(--green-dark);
+  font-weight: 800;
+}
+.partner-guide-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 22px;
+}
+.partner-guide-form-note {
+  color: rgba(255, 255, 255, 0.76);
+  line-height: 1.65;
+  max-width: 34rem;
+}
+.partner-guide-form-note code {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+  font-family: inherit;
+  font-weight: 800;
+}
 .partner-guide-doc-note {
   margin-top: 20px;
   padding-top: 14px;
@@ -1141,6 +1286,14 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   background: white;
   color: var(--green-dark);
   border-radius: 999px;
+}
+.partner-guide-shell-glass .partner-guide-field input[type="text"],
+.partner-guide-shell-glass .partner-guide-field input[type="email"],
+.partner-guide-shell-glass .partner-guide-field input[type="tel"],
+.partner-guide-shell-glass .partner-guide-field input[type="datetime-local"],
+.partner-guide-shell-glass .partner-guide-field textarea,
+.partner-guide-shell-glass .partner-guide-phone-field {
+  background: rgba(255, 255, 255, 0.98);
 }
 
 .partner-page-main {
@@ -2885,7 +3038,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .partner-guide-value-grid,
   .partner-guide-price-grid,
   .partner-guide-sim-grid,
-  .partner-guide-support-grid {
+  .partner-guide-support-grid,
+  .partner-guide-form-grid,
+  .partner-guide-option-grid,
+  .partner-guide-option-grid-two {
     grid-template-columns: 1fr;
   }
   .partner-guide-step-item {
@@ -2900,6 +3056,12 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   }
   .partner-guide-tier-rows strong {
     text-align: left;
+  }
+  .partner-guide-form-actions {
+    align-items: stretch;
+  }
+  .partner-guide-form-actions .btn {
+    width: 100%;
   }
   .partner-hero-grid,
   .partner-product-grid,

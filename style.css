@@ -664,6 +664,41 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
 }
+.partner-story-section {
+  padding-top: 0;
+}
+.partner-story-grid,
+.partner-note-grid,
+.partner-sim-grid {
+  display: grid;
+  gap: 20px;
+}
+.partner-story-grid {
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+}
+.partner-story-card,
+.partner-note-card,
+.partner-sim-card,
+.partner-commitment-card {
+  padding: 28px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 39, 19, 0.06);
+  box-shadow: 0 22px 54px rgba(16, 40, 19, 0.06);
+}
+.partner-story-card p,
+.partner-note-card p,
+.partner-sim-card p,
+.partner-commitment-card p {
+  color: var(--text-main);
+  line-height: 1.8;
+}
+.partner-story-card-accent {
+  background: linear-gradient(180deg, #16381a 0%, #0f2613 100%);
+}
+.partner-story-card-accent p {
+  color: rgba(255, 255, 255, 0.78);
+}
 .partner-metric-card,
 .partner-benefit-card,
 .partner-step-card {
@@ -938,6 +973,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   text-align: center;
   line-height: 1.7;
 }
+.partner-note-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 20px;
+}
 .partner-benefit-section {
   background: transparent;
 }
@@ -976,6 +1015,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .partner-support-section {
   padding-top: 0;
 }
+.partner-sim-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 22px;
+}
 .partner-support-grid {
   grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
   align-items: stretch;
@@ -988,6 +1031,9 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .partner-support-list {
   display: grid;
   gap: 12px;
+  margin-top: 20px;
+}
+.partner-commitment-card {
   margin-top: 20px;
 }
 .partner-cta-panel {
@@ -2138,7 +2184,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .partner-support-grid,
   .partner-tier-grid,
   .partner-benefit-grid,
-  .partner-step-grid {
+  .partner-step-grid,
+  .partner-story-grid,
+  .partner-note-grid,
+  .partner-sim-grid {
     grid-template-columns: 1fr;
     gap: 18px;
   }
@@ -2177,6 +2226,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .partner-tier-card,
   .partner-price-panel,
   .partner-metric-card,
+  .partner-story-card,
+  .partner-note-card,
+  .partner-sim-card,
+  .partner-commitment-card,
   .partner-benefit-card,
   .partner-step-card,
   .partner-support-card,

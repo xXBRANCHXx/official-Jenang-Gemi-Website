@@ -490,7 +490,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   position: relative;
   overflow: clip;
   background:
+    linear-gradient(180deg, #f3f7ed 0%, rgba(243, 247, 237, 0) 16%),
+    linear-gradient(0deg, #f3f7ed 0%, rgba(243, 247, 237, 0) 16%),
     linear-gradient(160deg, #0f3d1a 0%, #185126 38%, #24713a 72%, #43a857 100%);
+  padding: clamp(86px, 10vw, 128px) 0;
 }
 .partner-guide-green-band::before,
 .partner-guide-green-band::after {
@@ -516,6 +519,8 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .partner-guide-green-band .container {
   position: relative;
   z-index: 1;
+  display: flex;
+  justify-content: center;
 }
 .partner-guide-cover-card,
 .partner-guide-shell {
@@ -523,6 +528,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   border: 1px solid rgba(15, 39, 19, 0.08);
   box-shadow: 0 30px 80px rgba(16, 40, 19, 0.08);
   max-width: 1080px;
+  width: 100%;
   margin-inline: auto;
 }
 .partner-guide-cover-card {

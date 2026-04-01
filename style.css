@@ -486,6 +486,37 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .partner-guide-cover {
   padding: 154px 0 72px;
 }
+.partner-guide-green-band {
+  position: relative;
+  overflow: clip;
+  background:
+    linear-gradient(160deg, #0f3d1a 0%, #185126 38%, #24713a 72%, #43a857 100%);
+}
+.partner-guide-green-band::before,
+.partner-guide-green-band::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+}
+.partner-guide-green-band::before {
+  width: 360px;
+  height: 360px;
+  top: -140px;
+  right: -110px;
+  background: rgba(255, 255, 255, 0.07);
+}
+.partner-guide-green-band::after {
+  width: 280px;
+  height: 280px;
+  left: -90px;
+  bottom: -130px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.partner-guide-green-band .container {
+  position: relative;
+  z-index: 1;
+}
 .partner-guide-cover-card,
 .partner-guide-shell {
   border-radius: 36px;
@@ -546,6 +577,12 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   padding: clamp(26px, 4vw, 38px);
   background: rgba(255, 255, 255, 0.94);
 }
+.partner-guide-shell-glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.1));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 26px 70px rgba(4, 27, 9, 0.24);
+  backdrop-filter: blur(20px);
+}
 .partner-guide-head {
   display: flex;
   justify-content: space-between;
@@ -585,6 +622,35 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   border-radius: 24px;
   background: #f8fbf4;
   border: 1px solid rgba(99, 191, 71, 0.14);
+}
+.partner-guide-toc-item,
+.partner-guide-value-card,
+.partner-guide-product-card,
+.partner-guide-price-card,
+.partner-guide-sim-card,
+.partner-guide-tier-card,
+.partner-guide-step-item,
+.partner-guide-support-item,
+.partner-guide-callout,
+.partner-guide-note-strip,
+.partner-guide-contact-box,
+.partner-guide-intro-card {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease,
+    background-color 220ms ease;
+}
+.partner-guide-toc-item:hover,
+.partner-guide-value-card:hover,
+.partner-guide-product-card:hover,
+.partner-guide-price-card:hover,
+.partner-guide-sim-card:hover,
+.partner-guide-tier-card:hover,
+.partner-guide-step-item:hover,
+.partner-guide-support-item:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(16, 40, 19, 0.12);
 }
 .partner-guide-toc-item span,
 .partner-guide-chip {
@@ -956,6 +1022,132 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.65;
+}
+.partner-guide-shell-glass .partner-guide-head {
+  border-bottom-color: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.74);
+}
+.partner-guide-shell-glass h2,
+.partner-guide-shell-glass .partner-guide-copy p strong,
+.partner-guide-shell-glass .partner-guide-value-card strong,
+.partner-guide-shell-glass .partner-guide-product-head h3,
+.partner-guide-shell-glass .partner-guide-step-item strong,
+.partner-guide-shell-glass .partner-guide-callout strong,
+.partner-guide-shell-glass .partner-guide-note-strip strong,
+.partner-guide-shell-glass .partner-guide-tier-top strong,
+.partner-guide-shell-glass .partner-guide-tier-rows strong,
+.partner-guide-shell-glass .partner-guide-contact-box strong {
+  color: white;
+}
+.partner-guide-shell-glass .partner-guide-copy p,
+.partner-guide-shell-glass .partner-guide-callout p,
+.partner-guide-shell-glass .partner-guide-tier-note,
+.partner-guide-shell-glass .partner-guide-step-item p,
+.partner-guide-shell-glass .partner-guide-support-item,
+.partner-guide-shell-glass .partner-guide-note-strip,
+.partner-guide-shell-glass .partner-guide-product-head p,
+.partner-guide-shell-glass .partner-guide-tier-top p,
+.partner-guide-shell-glass .partner-guide-tier-rows span,
+.partner-guide-shell-glass .partner-guide-doc-note {
+  color: rgba(255, 255, 255, 0.82);
+}
+.partner-guide-shell-glass .partner-guide-chip,
+.partner-guide-shell-glass .partner-guide-toc-item span,
+.partner-guide-shell-glass .partner-guide-product-head span,
+.partner-guide-shell-glass .partner-guide-tier-badge {
+  background: white;
+  color: var(--green-dark);
+}
+.partner-guide-shell-glass .partner-guide-toc-item,
+.partner-guide-shell-glass .partner-guide-value-card,
+.partner-guide-shell-glass .partner-guide-product-card,
+.partner-guide-shell-glass .partner-guide-price-card,
+.partner-guide-shell-glass .partner-guide-sim-card,
+.partner-guide-shell-glass .partner-guide-tier-card,
+.partner-guide-shell-glass .partner-guide-step-item,
+.partner-guide-shell-glass .partner-guide-support-item,
+.partner-guide-shell-glass .partner-guide-note-strip {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.partner-guide-shell-glass .partner-guide-intro-card,
+.partner-guide-shell-glass .partner-guide-price-hero,
+.partner-guide-shell-glass .partner-guide-contact-box {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.1));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.partner-guide-shell-glass .partner-guide-intro-card h2,
+.partner-guide-shell-glass .partner-guide-price-hero strong,
+.partner-guide-shell-glass .partner-guide-contact-box strong {
+  color: white;
+}
+.partner-guide-shell-glass .partner-guide-toc-item strong,
+.partner-guide-shell-glass .partner-guide-toc-item em,
+.partner-guide-shell-glass .partner-guide-price-card strong,
+.partner-guide-shell-glass .partner-guide-sim-card strong {
+  color: white;
+}
+.partner-guide-shell-glass .partner-guide-toc-item p,
+.partner-guide-shell-glass .partner-guide-price-card p,
+.partner-guide-shell-glass .partner-guide-price-card small,
+.partner-guide-shell-glass .partner-guide-price-card span,
+.partner-guide-shell-glass .partner-guide-sim-card p,
+.partner-guide-shell-glass .partner-guide-sim-card span,
+.partner-guide-shell-glass .partner-guide-price-hero span,
+.partner-guide-shell-glass .partner-guide-price-hero p,
+.partner-guide-shell-glass .partner-guide-contact-box span,
+.partner-guide-shell-glass .partner-guide-contact-box p {
+  color: rgba(255, 255, 255, 0.78);
+}
+.partner-guide-shell-glass .partner-guide-callout,
+.partner-guide-shell-glass .partner-guide-tier-note {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.partner-guide-shell-glass .partner-guide-callout {
+  border-left-color: rgba(255, 255, 255, 0.75);
+}
+.partner-guide-shell-glass .partner-guide-callout-warm {
+  background: rgba(255, 224, 150, 0.16);
+  border-left-color: rgba(255, 233, 183, 0.95);
+}
+.partner-guide-shell-glass .partner-guide-callout-cool {
+  background: rgba(144, 203, 255, 0.15);
+  border-left-color: rgba(188, 226, 255, 0.95);
+}
+.partner-guide-shell-glass .partner-guide-tag-row span {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: white;
+}
+.partner-guide-shell-glass .partner-guide-tag-row .is-featured {
+  background: white;
+  color: var(--green-dark);
+  border-color: white;
+}
+.partner-guide-shell-glass .partner-guide-bullet-list div {
+  color: rgba(255, 255, 255, 0.84);
+}
+.partner-guide-shell-glass .partner-guide-bullet-list div::before {
+  background: white;
+}
+.partner-guide-shell-glass .partner-guide-subtitle {
+  color: rgba(255, 255, 255, 0.86);
+}
+.partner-guide-shell-glass .partner-guide-step-item span,
+.partner-guide-shell-glass .partner-guide-toc-item em {
+  background: white;
+  color: var(--green-dark);
+  border-radius: 999px;
+}
+.partner-guide-shell-glass .partner-guide-toc-item em {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
 }
 
 .partner-page-main {

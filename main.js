@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const partnerQuestions = [
     { key: 'full_name', type: 'text', label: 'Nama Lengkap', helper: 'Masukkan nama lengkap Anda.', required: true, autocomplete: 'name' },
-    { key: 'phone', type: 'phone', label: 'No HP (WhatsApp)', helper: 'Isi tanpa angka 0 di depan jika ingin, kami akan rapikan ke format +62.', required: true },
+    { key: 'phone', type: 'phone', label: 'No HP (WhatsApp)', helper: 'Pilih kode negara yang sesuai. Nomor akan kami rapikan ke format internasional.', required: true },
     { key: 'email', type: 'email', label: 'Email', helper: 'Email ini membantu kami follow-up dengan lebih mudah.', required: true, autocomplete: 'email' },
     { key: 'partner_type', type: 'single', label: 'Tipe partner', helper: 'Pilih tipe partner yang paling sesuai saat ini.', required: true, options: ['Affiliasi', 'Reseller', 'Agen', 'Distributor'] },
     { key: 'full_address', type: 'textarea', label: 'Alamat lengkap', helper: 'Tulis alamat lengkap Anda atau alamat usaha.', required: true },
@@ -235,6 +235,35 @@ document.addEventListener('DOMContentLoaded', () => {
       minute: '2-digit'
     });
   };
+  const buildPartnerCountryMenu = (selectedCountry) => `
+    <div class="partner-form-country-shell">
+      <button class="partner-form-country-trigger" type="button" data-partner-country-toggle aria-haspopup="listbox" aria-expanded="false" aria-label="Pilih negara">
+        <span class="partner-form-country-current">
+          <span class="partner-form-country-flag">${selectedCountry.flag}</span>
+          <span class="partner-form-country-code">+${selectedCountry.dialCode}</span>
+        </span>
+        <span class="partner-form-country-caret" aria-hidden="true"></span>
+      </button>
+      <div class="partner-form-country-list" data-partner-country-list role="listbox" tabindex="-1" aria-label="Daftar negara">
+        ${partnerCountries.map((country) => `
+          <button
+            class="partner-form-country-option${country.name === selectedCountry.name ? ' is-selected' : ''}"
+            type="button"
+            role="option"
+            data-partner-country-option
+            data-country="${escapeHtml(country.name)}"
+            aria-selected="${country.name === selectedCountry.name ? 'true' : 'false'}"
+          >
+            <span class="partner-form-country-option-main">
+              <span class="partner-form-country-flag">${country.flag}</span>
+              <span>${escapeHtml(country.name)}</span>
+            </span>
+            <span class="partner-form-country-option-code">+${country.dialCode}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
 
   const normalizeAnswerList = (value) => Array.isArray(value) ? value.filter(Boolean) : [];
   const gatherQuestionValue = (question) => {
@@ -242,8 +271,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (question.type === 'phone') {
       const field = partnerFormInputArea.querySelector('[data-partner-input]');
-      const countryField = partnerFormInputArea.querySelector('[data-partner-country]');
-      const selectedCountry = getPartnerCountry(countryField instanceof HTMLSelectElement ? countryField.value : partnerState.answers.phone_country);
+      const countryField = partnerFormInputArea.querySelector('[data-partner-country-hidden]');
+      const selectedCountry = getPartnerCountry(countryField instanceof HTMLInputElement ? countryField.value : partnerState.answers.phone_country);
       return {
         value: field instanceof HTMLInputElement ? sanitizePhoneDigits(field.value, selectedCountry) : '',
         country: selectedCountry.name
@@ -312,8 +341,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (partnerState.step < 0) {
       partnerFormQuestionType.textContent = 'Pendahuluan';
-      partnerFormQuestion.textContent = 'Sebelum mulai, ini tujuan form kemitraan ini.';
-      partnerFormHelper.textContent = 'Form ini dipakai untuk membantu tim Jenang Gemi memahami profil partner Anda, menyesuaikan support yang relevan, dan menyiapkan tindak lanjut yang lebih cepat.';
+      partnerFormQuestion.textContent = 'Anda sedang berada di form kemitraan.';
+      partnerFormHelper.textContent = 'Tekan Lanjut untuk mulai mengisi form langkah demi langkah.';
       partnerFormStepLabel.textContent = 'Pendahuluan';
       partnerFormStepCount.textContent = `0 / ${partnerQuestions.length}`;
       partnerFormProgressFill.style.width = '0%';
@@ -321,14 +350,8 @@ document.addEventListener('DOMContentLoaded', () => {
       partnerFormNext.textContent = 'Lanjut';
       partnerFormInputArea.innerHTML = `
         <div class="partner-form-intro-card">
-          <strong>Form ini akan digunakan untuk:</strong>
-          <ul class="partner-form-intro-list">
-            <li>mengumpulkan data awal calon partner dengan lebih rapi</li>
-            <li>membantu tim kami memahami kebutuhan dan pengalaman Anda</li>
-            <li>menyesuaikan respons, materi support, dan jalur follow-up</li>
-            <li>menyusun hasil jawaban ke WhatsApp dalam format yang mudah dibaca</li>
-          </ul>
-          <p class="partner-form-meta">Setelah menekan <strong>Lanjut</strong>, pertanyaan akan dimulai satu per satu seperti lesson singkat.</p>
+          <strong>Ini adalah form kemitraan Jenang Gemi.</strong>
+          <p class="partner-form-meta">Tekan <strong>Lanjut</strong> untuk masuk ke form dan mulai menjawab pertanyaan satu per satu.</p>
         </div>
       `;
       return;
@@ -357,9 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const selectedCountry = getPartnerCountry(partnerState.answers.phone_country || defaultPartnerCountry.name);
       markup = `
         <div class="partner-form-phone">
-          <select class="partner-form-country" data-partner-country aria-label="Pilih negara">
-            ${partnerCountries.map((country) => `<option value="${escapeHtml(country.name)}" ${country.name === selectedCountry.name ? 'selected' : ''}>${country.flag} ${country.name} (+${country.dialCode})</option>`).join('')}
-          </select>
+          ${buildPartnerCountryMenu(selectedCountry)}
+          <input type="hidden" data-partner-country-hidden value="${escapeHtml(selectedCountry.name)}">
           <input data-partner-input type="tel" inputmode="numeric" pattern="[0-9 ]*" placeholder="${escapeHtml(selectedCountry.placeholder)}" value="${escapeHtml(formatPhoneInputDisplay(currentValue || '', selectedCountry))}">
         </div>
       `;
@@ -393,15 +415,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (question.type === 'phone') {
-      const countryField = partnerFormInputArea.querySelector('[data-partner-country]');
+      const countryField = partnerFormInputArea.querySelector('[data-partner-country-hidden]');
+      const countryToggle = partnerFormInputArea.querySelector('[data-partner-country-toggle]');
+      const countryList = partnerFormInputArea.querySelector('[data-partner-country-list]');
+      const countryOptions = Array.from(partnerFormInputArea.querySelectorAll('[data-partner-country-option]'));
       const phoneField = partnerFormInputArea.querySelector('[data-partner-input]');
-      if (countryField instanceof HTMLSelectElement && phoneField instanceof HTMLInputElement) {
-        countryField.addEventListener('change', () => {
-          const selectedCountry = getPartnerCountry(countryField.value);
+      if (countryField instanceof HTMLInputElement && countryToggle instanceof HTMLButtonElement && countryList instanceof HTMLDivElement && phoneField instanceof HTMLInputElement) {
+        const closeCountryList = () => {
+          countryToggle.setAttribute('aria-expanded', 'false');
+          countryList.classList.remove('is-open');
+        };
+        const setCountryVisual = (selectedCountry) => {
+          const current = countryToggle.querySelector('.partner-form-country-current');
+          if (!current) return;
+          current.innerHTML = `
+            <span class="partner-form-country-flag">${selectedCountry.flag}</span>
+            <span class="partner-form-country-code">+${selectedCountry.dialCode}</span>
+          `;
+        };
+        const applyCountry = (countryName) => {
+          const selectedCountry = getPartnerCountry(countryName);
           partnerState.answers.phone_country = selectedCountry.name;
+          countryField.value = selectedCountry.name;
           phoneField.placeholder = selectedCountry.placeholder;
           phoneField.value = formatPhoneInputDisplay(phoneField.value, selectedCountry);
+          setCountryVisual(selectedCountry);
+          countryOptions.forEach((option) => {
+            if (!(option instanceof HTMLButtonElement)) return;
+            const isSelected = option.dataset.country === selectedCountry.name;
+            option.classList.toggle('is-selected', isSelected);
+            option.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+          });
+          closeCountryList();
+        };
+        countryToggle.addEventListener('click', () => {
+          const isOpen = countryList.classList.contains('is-open');
+          countryToggle.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+          countryList.classList.toggle('is-open', !isOpen);
         });
+        countryOptions.forEach((option) => {
+          if (!(option instanceof HTMLButtonElement)) return;
+          option.addEventListener('click', () => {
+            applyCountry(option.dataset.country || defaultPartnerCountry.name);
+            phoneField.focus();
+          });
+        });
+        document.addEventListener('click', (event) => {
+          const target = event.target;
+          if (!(target instanceof Node)) return;
+          if (!partnerFormInputArea.contains(target)) {
+            closeCountryList();
+          }
+        }, { once: true });
         phoneField.addEventListener('input', () => {
           const selectedCountry = getPartnerCountry(countryField.value);
           phoneField.value = formatPhoneInputDisplay(phoneField.value, selectedCountry);

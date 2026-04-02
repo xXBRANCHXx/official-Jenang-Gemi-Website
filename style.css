@@ -2008,7 +2008,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 .partner-market-chart-wrap {
   position: relative;
-  width: min(100%, 340px);
+  width: min(100%, 280px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -2038,9 +2038,13 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .partner-market-chart-label {
   position: absolute;
   display: grid;
-  gap: 2px;
-  max-width: 122px;
+  gap: 3px;
+  max-width: 126px;
   z-index: 2;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 14px 28px rgba(18, 50, 21, 0.1);
 }
 .partner-market-chart-label strong {
   font-family: 'Manrope', sans-serif;
@@ -2057,41 +2061,41 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .partner-market-chart-label::before {
   content: "";
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: currentColor;
-  box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.96);
 }
 .label-gastritis {
-  top: 18%;
-  right: -8%;
+  top: -6px;
+  right: -54px;
   text-align: left;
   color: #4fa53b;
 }
 .label-gastritis::before {
-  left: -28px;
-  top: 2px;
+  left: 12px;
+  bottom: -6px;
 }
 .label-gerd {
-  bottom: 16%;
-  right: -6%;
+  bottom: 14px;
+  right: -64px;
   text-align: left;
   color: #76c85f;
 }
 .label-gerd::before {
-  left: -28px;
-  top: 4px;
+  left: 12px;
+  top: -6px;
 }
 .label-awareness {
-  left: -6%;
-  bottom: 28%;
+  left: -64px;
+  bottom: 88px;
   text-align: right;
   color: #123a1c;
 }
 .label-awareness::before {
-  right: -28px;
-  top: 4px;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 .partner-market-copy {
   display: grid;
@@ -3479,28 +3483,30 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     padding: 22px 20px;
   }
   .partner-market-chart-wrap {
-    width: min(100%, 250px);
+    width: min(100%, 220px);
   }
   .partner-market-chart-label {
-    max-width: 102px;
+    max-width: 94px;
+    padding: 8px 10px;
   }
   .partner-market-chart-label strong {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
   }
   .partner-market-chart-label span {
-    font-size: 0.72rem;
+    font-size: 0.66rem;
+    line-height: 1.25;
   }
   .label-gastritis {
-    top: 12%;
-    right: -14%;
+    top: -2px;
+    right: -36px;
   }
   .label-gerd {
-    bottom: 12%;
-    right: -12%;
+    bottom: 10px;
+    right: -42px;
   }
   .label-awareness {
-    left: -12%;
-    bottom: 25%;
+    left: -38px;
+    bottom: 68px;
   }
   .partner-product-showcase img {
     max-width: 220px;

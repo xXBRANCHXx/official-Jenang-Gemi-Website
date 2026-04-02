@@ -242,15 +242,15 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   position: absolute;
   inset: 9% 8% 11%;
   border-radius: 40px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(240, 247, 233, 0.96));
-  box-shadow: 0 34px 90px rgba(18, 50, 21, 0.10);
+  background: transparent;
+  box-shadow: none;
 }
 .homepage-hero-visual img {
   display: block;
   width: 100%;
   height: auto;
   object-fit: contain;
-  filter: none;
+  filter: drop-shadow(0 28px 55px rgba(18, 50, 21, 0.14));
   position: relative;
   z-index: 1;
 }

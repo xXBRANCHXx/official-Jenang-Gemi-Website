@@ -1256,7 +1256,7 @@ document.addEventListener('DOMContentLoaded', () => {
     faqAccordionItems.forEach((item) => {
       const category = (item.getAttribute('data-category') || '').toLowerCase();
       const searchIndex = `${item.textContent || ''} ${(item.getAttribute('data-search') || '')}`.toLowerCase();
-      const matchesFilter = activeFaqFilter === 'all' || category.includes(activeFaqFilter);
+      const matchesFilter = activeFaqFilter === 'all' || category === activeFaqFilter;
       const matchesSearch = searchTerm === '' || searchIndex.includes(searchTerm);
       const isVisible = matchesFilter && matchesSearch;
 
@@ -1292,6 +1292,24 @@ document.addEventListener('DOMContentLoaded', () => {
     activeFaqFilter = activeFaqChip.getAttribute('data-filter') || activeFaqFilter;
     applyFaqFilters();
   }
+
+  const backToTopButton = document.createElement('button');
+  backToTopButton.type = 'button';
+  backToTopButton.className = 'back-to-top-btn';
+  backToTopButton.setAttribute('aria-label', 'Kembali ke atas');
+  backToTopButton.innerHTML = '<span aria-hidden="true">^</span>';
+  document.body.appendChild(backToTopButton);
+
+  const syncBackToTopButton = () => {
+    backToTopButton.classList.toggle('is-visible', window.scrollY > 320);
+  };
+
+  backToTopButton.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  syncBackToTopButton();
+  window.addEventListener('scroll', syncBackToTopButton, { passive: true });
 
   updateV9Count();
   renderV9Cart();

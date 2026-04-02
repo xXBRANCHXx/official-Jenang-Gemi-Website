@@ -3935,6 +3935,12 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .quiz-result-summary {
   display: grid;
   gap: 8px;
+  min-width: 0;
+  align-content: start;
+}
+.quiz-stage#quiz-res h3 {
+  font-size: clamp(1.8rem, 3vw, 2.35rem);
+  line-height: 1.04;
 }
 .quiz-result-pill {
   display: inline-flex;
@@ -3952,6 +3958,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .quiz-picker-block p {
   font-size: 0.92rem;
   line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 .quiz-result-reasons-wrap {
   padding: 14px 16px;
@@ -3986,6 +3993,9 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   gap: 6px;
 }
 .quiz-mini-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 30px;
   padding: 7px 10px;
   border-radius: 999px;
@@ -4010,6 +4020,40 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 .quiz-result-actions .btn {
   min-width: 0;
+}
+
+.back-to-top-btn {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(19, 54, 23, 0.92);
+  color: #fff;
+  box-shadow: 0 18px 36px rgba(18, 50, 21, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 180ms ease, transform 180ms ease, background 180ms ease;
+  z-index: 3200;
+}
+.back-to-top-btn span {
+  font-size: 1.25rem;
+  font-weight: 900;
+  line-height: 1;
+  transform: translateY(-2px);
+}
+.back-to-top-btn.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.back-to-top-btn:hover {
+  background: var(--green-dark);
 }
 
 @media (max-width: 640px) {
@@ -4053,6 +4097,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 
   .quiz-result-desc {
     margin-bottom: 12px;
+  }
+
+  .quiz-stage#quiz-res h3 {
+    font-size: 1.58rem;
   }
 
   .quiz-result-card {
@@ -4118,6 +4166,13 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     min-width: 0;
     padding: 14px 12px;
     font-size: 14px;
+  }
+
+  .back-to-top-btn {
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    width: 44px;
+    height: 44px;
   }
 
   .quiz-start-btn {

@@ -1502,6 +1502,12 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   flex-wrap: wrap;
   gap: 14px;
 }
+.public-partner-hero .partner-hero-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.public-partner-hero .partner-hero-copy {
+  max-width: 760px;
+}
 .partner-pill-row {
   display: flex;
   flex-wrap: wrap;

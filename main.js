@@ -1297,7 +1297,7 @@ document.addEventListener('DOMContentLoaded', () => {
   backToTopButton.type = 'button';
   backToTopButton.className = 'back-to-top-btn';
   backToTopButton.setAttribute('aria-label', 'Kembali ke atas');
-  backToTopButton.innerHTML = '<span aria-hidden="true">^</span>';
+  backToTopButton.innerHTML = '<span aria-hidden="true">&and;</span>';
   document.body.appendChild(backToTopButton);
 
   const syncBackToTopButton = () => {

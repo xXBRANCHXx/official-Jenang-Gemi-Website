@@ -14,11 +14,16 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         bubur: resolve(__dirname, 'bubur.html'),
+        buburYoutube: resolve(__dirname, 'bubur-youtube.html'),
+        buburFacebook: resolve(__dirname, 'bubur-facebook.html'),
+        buburInstagram: resolve(__dirname, 'bubur-instagram.html'),
+        buburTiktok: resolve(__dirname, 'bubur-tiktok.html'),
         jamu: resolve(__dirname, 'jamu.html'),
         kemitraan: resolve(__dirname, 'kemitraan.html'),
         programKemitraan: resolve(__dirname, 'program-kemitraan.html'),
         about: resolve(__dirname, 'about.html'),
-        faq: resolve(__dirname, 'faq.html')
+        faq: resolve(__dirname, 'faq.html'),
+        admin: resolve(__dirname, 'admin/index.html')
       }
     }
   }

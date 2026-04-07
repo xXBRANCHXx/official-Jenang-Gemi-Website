@@ -22,6 +22,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    http_response_code(403);
+    echo json_encode(['error' => 'Public report access is disabled.'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 $storageDir = __DIR__ . '/analytics-data';
 $storageFile = $storageDir . '/landing-events.json';
 

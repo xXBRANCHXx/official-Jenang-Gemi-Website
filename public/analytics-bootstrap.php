@@ -48,11 +48,11 @@ function analyticsResolveTimezone(?string $requestedTimezone = null): DateTimeZo
         $timezoneName = trim((string) getenv('JG_ANALYTICS_TIMEZONE'));
     }
     if ($timezoneName === '') {
-        $timezoneName = 'Asia/Makassar';
+        $timezoneName = 'Asia/Jakarta';
     }
 
     if (!in_array($timezoneName, timezone_identifiers_list(), true)) {
-        $timezoneName = 'Asia/Makassar';
+        $timezoneName = 'Asia/Jakarta';
     }
 
     return new DateTimeZone($timezoneName);

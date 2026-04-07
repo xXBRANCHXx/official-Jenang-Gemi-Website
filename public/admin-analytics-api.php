@@ -18,14 +18,17 @@ if (!hash_equals($expectedToken, $providedToken)) {
 $storageFile = analyticsResolveStorageFile();
 analyticsEnsureStorage($storageFile);
 $timeframe = (string) ($_GET['timeframe'] ?? '7d');
-$allowedTimeframes = ['24h', '7d', '30d', '90d', 'all'];
+$allowedTimeframes = ['1h', '24h', '7d', '30d', '90d', 'all'];
 if (!in_array($timeframe, $allowedTimeframes, true)) {
     $timeframe = '7d';
 }
 
 $now = new DateTimeImmutable('now', $displayTimezone);
+$currentHour = $now->setTime((int) $now->format('H'), 0, 0);
+$currentFiveMinute = $now->setTime((int) $now->format('H'), ((int) floor(((int) $now->format('i')) / 5)) * 5, 0);
 $rangeStart = match ($timeframe) {
-    '24h' => $now->modify('-24 hours'),
+    '1h' => $currentFiveMinute->modify('-55 minutes'),
+    '24h' => $currentHour->modify('-23 hours'),
     '7d' => $now->modify('-7 days'),
     '30d' => $now->modify('-30 days'),
     '90d' => $now->modify('-90 days'),
@@ -33,6 +36,7 @@ $rangeStart = match ($timeframe) {
 };
 
 $bucketInterval = match ($timeframe) {
+    '1h' => 'PT5M',
     '24h' => 'PT1H',
     '7d' => 'P1D',
     '30d' => 'P1D',
@@ -41,6 +45,7 @@ $bucketInterval = match ($timeframe) {
 };
 
 $bucketLabelFormat = match ($timeframe) {
+    '1h' => 'H:i',
     '24h' => 'H:i',
     '7d' => 'd M',
     '30d' => 'd M',
@@ -128,10 +133,20 @@ if ($bucketStartCursor === null) {
         $bucketStartCursor = $now->modify('first day of this month')->setTime(0, 0);
     }
 }
+$bucketStartCursor = match ($timeframe) {
+    '1h' => $bucketStartCursor?->setTime((int) $bucketStartCursor->format('H'), ((int) floor(((int) $bucketStartCursor->format('i')) / 5)) * 5, 0),
+    '24h' => $bucketStartCursor?->setTime((int) $bucketStartCursor->format('H'), 0, 0),
+    default => $bucketStartCursor,
+};
 
 $intervalSpec = new DateInterval($bucketInterval);
+$bucketLimit = match ($timeframe) {
+    '1h' => $currentFiveMinute,
+    '24h' => $currentHour,
+    default => $now,
+};
 $bucketEndCursor = $bucketStartCursor;
-while ($bucketEndCursor <= $now) {
+while ($bucketEndCursor <= $bucketLimit) {
     $bucketKey = $bucketEndCursor->format(DATE_ATOM);
     $timeBuckets[$bucketKey] = [
         'bucket_start' => $bucketEndCursor->format(DATE_ATOM),

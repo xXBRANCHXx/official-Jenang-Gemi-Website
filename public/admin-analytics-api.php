@@ -5,6 +5,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 $expectedToken = 'ba7e42d060466c149e331452cc58339e64b62a3b61ed953e90f3ec274495f59d';
 $providedToken = (string) ($_SERVER['HTTP_X_JG_ADMIN_TOKEN'] ?? '');
+$displayTimezone = new DateTimeZone('Asia/Jakarta');
 
 if (!hash_equals($expectedToken, $providedToken)) {
     http_response_code(401);
@@ -19,7 +20,7 @@ if (!in_array($timeframe, $allowedTimeframes, true)) {
     $timeframe = '7d';
 }
 
-$now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+$now = new DateTimeImmutable('now', $displayTimezone);
 $rangeStart = match ($timeframe) {
     '24h' => $now->modify('-24 hours'),
     '7d' => $now->modify('-7 days'),
@@ -76,6 +77,7 @@ foreach ($events as $event) {
     $occurredAtRaw = (string) ($event['occurred_at'] ?? '');
     try {
         $occurredAt = new DateTimeImmutable($occurredAtRaw ?: 'now', new DateTimeZone('UTC'));
+        $occurredAt = $occurredAt->setTimezone($displayTimezone);
     } catch (Throwable) {
         continue;
     }
@@ -249,6 +251,10 @@ usort($filteredEvents, static function (array $a, array $b): int {
 });
 
 $recentEvents = array_map(static function (array $event): array {
+    /** @var DateTimeImmutable $occurredAt */
+    $occurredAt = $event['_occurred_at_dt'];
+    $event['occurred_at_iso'] = $occurredAt->format(DATE_ATOM);
+    $event['occurred_at'] = $occurredAt->format('d M Y H:i') . ' WIB';
     unset($event['_occurred_at_dt']);
     return $event;
 }, array_slice($filteredEvents, 0, 25));
@@ -257,6 +263,7 @@ echo json_encode([
     'meta' => [
         'timeframe' => $timeframe,
         'generated_at' => $now->format(DATE_ATOM),
+        'timezone' => 'Asia/Jakarta',
         'range_start' => $rangeStart?->format(DATE_ATOM),
     ],
     'summary' => $summary,

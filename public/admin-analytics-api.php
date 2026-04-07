@@ -18,6 +18,7 @@ if (!hash_equals($expectedToken, $providedToken)) {
 $storageFile = analyticsResolveStorageFile();
 analyticsEnsureStorage($storageFile);
 $timeframe = (string) ($_GET['timeframe'] ?? '7d');
+$recentLimit = max(15, min(300, (int) ($_GET['recent_limit'] ?? 180)));
 $allowedTimeframes = ['1h', '24h', '7d', '30d', '90d', 'all'];
 if (!in_array($timeframe, $allowedTimeframes, true)) {
     $timeframe = '7d';
@@ -276,7 +277,7 @@ $recentEvents = array_map(static function (array $event): array {
     $event['occurred_at'] = $occurredAt->format('d M Y H:i');
     unset($event['_occurred_at_dt']);
     return $event;
-}, array_slice($filteredEvents, 0, 25));
+}, array_slice($filteredEvents, 0, $recentLimit));
 
 echo json_encode([
     'meta' => [

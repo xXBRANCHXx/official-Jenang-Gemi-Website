@@ -75,6 +75,6 @@ function jg_admin_require_auth_page(): void
         return;
     }
 
-    header('Location: ./index.php');
+    header('Location: ./dashboard');
     exit;
 }

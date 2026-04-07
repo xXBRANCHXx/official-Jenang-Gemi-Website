@@ -4,5 +4,5 @@ declare(strict_types=1);
 require __DIR__ . '/auth.php';
 
 jg_admin_logout();
-header('Location: ./index.php');
+header('Location: ./dashboard');
 exit;

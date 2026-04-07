@@ -4720,6 +4720,12 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   min-height: auto;
 }
 
+.landing-hero-centered {
+  display: grid;
+  gap: 28px;
+  justify-items: center;
+}
+
 .landing-hero-grid,
 .landing-proof-grid,
 .landing-checkout-banner,
@@ -4732,6 +4738,46 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 
 .landing-hero-grid {
   grid-template-columns: 1.05fr 0.95fr;
+}
+
+.landing-hero-copy-centered {
+  max-width: 860px;
+  text-align: center;
+}
+
+.landing-hero-copy-centered h1 {
+  margin-bottom: 0;
+}
+
+.landing-hero-visual-centered {
+  width: 100%;
+}
+
+.landing-hero-frame-centered {
+  width: min(430px, 100%);
+}
+
+.landing-hero-intro-card {
+  width: min(860px, 100%);
+  padding: clamp(28px, 4vw, 40px);
+  text-align: center;
+}
+
+.landing-hero-intro-card h2 {
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  margin-bottom: 14px;
+}
+
+.landing-hero-intro-card p {
+  max-width: 720px;
+  margin: 0 auto;
+  font-size: 1.06rem;
+  color: var(--muted);
+}
+
+.landing-hero-actions-centered {
+  justify-content: center;
+  margin: 26px 0 0;
 }
 
 .landing-source-pill {
@@ -4879,6 +4925,100 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   border-radius: 34px;
   border: 1px solid rgba(0, 0, 0, 0.07);
   box-shadow: 0 24px 70px rgba(20, 52, 23, 0.12);
+}
+
+.landing-biome-section {
+  background: linear-gradient(180deg, #63bf47 0%, #4da436 100%);
+}
+
+.landing-biome-shell {
+  display: grid;
+  gap: 28px;
+}
+
+.landing-section-head-light .eyebrow,
+.landing-section-head-light h2,
+.landing-section-head-light p {
+  color: #fff;
+}
+
+.landing-biome-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.landing-biome-card {
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 28px 60px rgba(22, 70, 17, 0.16);
+}
+
+.landing-biome-card h3,
+.landing-biome-card p,
+.landing-biome-benefits li {
+  color: #fff;
+}
+
+.landing-biome-card h3 {
+  margin-bottom: 14px;
+  font-size: 1.6rem;
+}
+
+.landing-biome-benefits {
+  display: grid;
+  gap: 12px;
+  padding-left: 20px;
+}
+
+.landing-biome-checklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.landing-biome-checklist span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-weight: 700;
+}
+
+.landing-biome-checklist span::before {
+  content: "✓";
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.landing-biome-card-media {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.landing-biome-card-media img {
+  width: 100%;
+  display: block;
+  border-radius: 24px;
 }
 
 .landing-prep-section {
@@ -5053,6 +5193,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 
 @media (max-width: 1024px) {
+  .landing-biome-grid,
   .landing-hero-grid,
   .landing-proof-grid,
   .landing-order-summary,
@@ -5064,9 +5205,14 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 
   .landing-stat-row,
   .landing-benefit-grid,
+  .landing-biome-checklist,
   .landing-package-grid,
   .landing-admin-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .landing-biome-card-media {
+    grid-template-columns: 1fr;
   }
 
   .landing-order-summary-actions {
@@ -5091,6 +5237,8 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 
   .landing-stat-row,
   .landing-benefit-grid,
+  .landing-biome-grid,
+  .landing-biome-checklist,
   .landing-package-grid,
   .landing-admin-metrics {
     grid-template-columns: 1fr;
@@ -5099,6 +5247,8 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .landing-proof-grid,
   .landing-checkout-banner,
   .landing-order-summary,
+  .landing-hero-intro-card,
+  .landing-biome-card,
   .landing-benefit-card,
   .landing-faq-item,
   .landing-admin-panel {

@@ -1,8 +1,2 @@
 Options -Indexes
-DirectoryIndex dashboard.php index.php index.html
-
-RewriteEngine On
-
-RewriteRule ^dashboard/?$ dashboard.php [L,QSA]
-RewriteRule ^logout/?$ logout.php [L,QSA]
-RewriteRule ^api/analytics/?$ analytics.php [L,QSA]
+DirectoryIndex index.php index.html

@@ -13,3 +13,5 @@ dist-ssr/
 *.njsproj
 *.sln
 *.sw?
+analytics-storage/
+public/analytics-data/*.json

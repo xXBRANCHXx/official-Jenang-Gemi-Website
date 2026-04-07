@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/analytics-bootstrap.php';
+
 header('Content-Type: application/json; charset=utf-8');
 $allowedOrigins = [
     'https://admin.jenanggemi.com',
@@ -28,23 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit;
 }
 
-$storageDir = __DIR__ . '/analytics-data';
-$storageFile = $storageDir . '/landing-events.json';
-
-if (!is_dir($storageDir)) {
-    mkdir($storageDir, 0775, true);
-}
-
-if (!file_exists($storageFile)) {
-    file_put_contents($storageFile, json_encode([], JSON_PRETTY_PRINT));
-}
-
-function jsonResponse(array $payload, int $status = 200): void
-{
-    http_response_code($status);
-    echo json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    exit;
-}
+$storageFile = analyticsResolveStorageFile();
+analyticsEnsureStorage($storageFile);
 
 function readEvents(string $storageFile): array
 {
@@ -61,7 +48,7 @@ function writeEvent(string $storageFile, array $event): void
 {
     $handle = fopen($storageFile, 'c+');
     if ($handle === false) {
-        jsonResponse(['error' => 'Unable to open analytics storage.'], 500);
+        analyticsJsonResponse(['error' => 'Unable to open analytics storage.'], 500);
     }
 
     flock($handle, LOCK_EX);
@@ -84,7 +71,7 @@ function writeEvent(string $storageFile, array $event): void
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payload = json_decode(file_get_contents('php://input') ?: '', true);
     if (!is_array($payload)) {
-        jsonResponse(['error' => 'Invalid JSON payload.'], 400);
+        analyticsJsonResponse(['error' => 'Invalid JSON payload.'], 400);
     }
 
     $event = [
@@ -103,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
 
     writeEvent($storageFile, $event);
-    jsonResponse(['ok' => true], 201);
+    analyticsJsonResponse(['ok' => true], 201);
 }
 
 $events = readEvents($storageFile);
@@ -203,7 +190,7 @@ usort($events, static function (array $a, array $b): int {
     return strcmp((string) ($b['occurred_at'] ?? ''), (string) ($a['occurred_at'] ?? ''));
 });
 
-jsonResponse([
+analyticsJsonResponse([
     'summary' => $summary,
     'by_url' => $byUrl,
     'by_source' => $bySource,

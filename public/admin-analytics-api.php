@@ -1,11 +1,13 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/analytics-bootstrap.php';
+
 header('Content-Type: application/json; charset=utf-8');
 
 $expectedToken = 'ba7e42d060466c149e331452cc58339e64b62a3b61ed953e90f3ec274495f59d';
 $providedToken = (string) ($_SERVER['HTTP_X_JG_ADMIN_TOKEN'] ?? '');
-$displayTimezone = new DateTimeZone('Asia/Jakarta');
+$displayTimezone = analyticsResolveTimezone($_GET['timezone'] ?? null);
 
 if (!hash_equals($expectedToken, $providedToken)) {
     http_response_code(401);
@@ -13,7 +15,8 @@ if (!hash_equals($expectedToken, $providedToken)) {
     exit;
 }
 
-$storageFile = __DIR__ . '/analytics-data/landing-events.json';
+$storageFile = analyticsResolveStorageFile();
+analyticsEnsureStorage($storageFile);
 $timeframe = (string) ($_GET['timeframe'] ?? '7d');
 $allowedTimeframes = ['24h', '7d', '30d', '90d', 'all'];
 if (!in_array($timeframe, $allowedTimeframes, true)) {
@@ -56,6 +59,7 @@ if (!file_exists($storageFile)) {
         'meta' => [
             'timeframe' => $timeframe,
             'generated_at' => $now->format(DATE_ATOM),
+            'timezone' => $displayTimezone->getName(),
         ],
         'by_url' => [],
         'by_source' => [],
@@ -254,7 +258,7 @@ $recentEvents = array_map(static function (array $event): array {
     /** @var DateTimeImmutable $occurredAt */
     $occurredAt = $event['_occurred_at_dt'];
     $event['occurred_at_iso'] = $occurredAt->format(DATE_ATOM);
-    $event['occurred_at'] = $occurredAt->format('d M Y H:i') . ' WIB';
+    $event['occurred_at'] = $occurredAt->format('d M Y H:i');
     unset($event['_occurred_at_dt']);
     return $event;
 }, array_slice($filteredEvents, 0, 25));
@@ -263,7 +267,7 @@ echo json_encode([
     'meta' => [
         'timeframe' => $timeframe,
         'generated_at' => $now->format(DATE_ATOM),
-        'timezone' => 'Asia/Jakarta',
+        'timezone' => $displayTimezone->getName(),
         'range_start' => $rangeStart?->format(DATE_ATOM),
     ],
     'summary' => $summary,

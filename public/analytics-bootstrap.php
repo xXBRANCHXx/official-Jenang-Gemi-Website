@@ -86,3 +86,56 @@ function analyticsResolveWebhookSecret(): string
 {
     return trim((string) getenv('JG_CONVERSION_WEBHOOK_SECRET'));
 }
+
+function analyticsResolveWhatsappVerifyToken(): string
+{
+    return trim((string) getenv('JG_WHATSAPP_VERIFY_TOKEN'));
+}
+
+function analyticsResolveWhatsappAppSecret(): string
+{
+    return trim((string) getenv('JG_WHATSAPP_APP_SECRET'));
+}
+
+function analyticsExtractOrderCode(string $message): ?array
+{
+    if (!preg_match('/\b(FB|YT|TK|IG)(JGB|JGJ)(15|30|60)(OR|KL|VA|GU)\b/i', $message, $matches)) {
+        return null;
+    }
+
+    $sourceMap = [
+        'FB' => 'facebook',
+        'YT' => 'youtube',
+        'TK' => 'tiktok',
+        'IG' => 'instagram',
+    ];
+
+    $productMap = [
+        'JGB' => 'Jenang Gemi Bubur',
+        'JGJ' => 'Jenang Gemi Jamu',
+    ];
+
+    $flavorMap = [
+        'OR' => 'Original',
+        'KL' => 'Klepon',
+        'VA' => 'Vanilla',
+        'GU' => 'Gula Aren',
+    ];
+
+    $sourceCode = strtoupper($matches[1]);
+    $productCode = strtoupper($matches[2]);
+    $packageSize = $matches[3];
+    $flavorCode = strtoupper($matches[4]);
+
+    return [
+        'order_code' => strtoupper($matches[0]),
+        'source_code' => $sourceCode,
+        'source' => $sourceMap[$sourceCode] ?? 'unknown',
+        'product_code' => $productCode,
+        'product_label' => $productMap[$productCode] ?? $productCode,
+        'package_size' => $packageSize,
+        'package_label' => $packageSize . ' Sachet',
+        'flavor_code' => $flavorCode,
+        'flavor_label' => $flavorMap[$flavorCode] ?? $flavorCode,
+    ];
+}

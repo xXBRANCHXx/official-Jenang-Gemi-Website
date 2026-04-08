@@ -41,37 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     node.textContent = sourceConfig.badge;
   });
 
-  const main = root.querySelector('main');
-  if (main) {
-    ['a', 'b', 'c', 'd'].forEach((suffix) => {
-      const leaf = document.createElement('span');
-      leaf.className = `landing-leaf landing-leaf-${suffix}`;
-      leaf.setAttribute('aria-hidden', 'true');
-      main.appendChild(leaf);
-    });
-
-    const leaves = main.querySelectorAll('.landing-leaf');
-    let leafFrame = 0;
-
-    const updateLeaves = () => {
-      const scrollY = window.scrollY || window.pageYOffset || 0;
-      leaves.forEach((leaf, index) => {
-        const speed = 0.08 + (index * 0.035);
-        const rotation = (scrollY * (0.018 + index * 0.004));
-        leaf.style.setProperty('--leaf-parallax', `${scrollY * speed}px`);
-        leaf.style.setProperty('--leaf-scroll-rotate', `${rotation}deg`);
-      });
-      leafFrame = 0;
-    };
-
-    updateLeaves();
-
-    window.addEventListener('scroll', () => {
-      if (leafFrame) return;
-      leafFrame = window.requestAnimationFrame(updateLeaves);
-    }, { passive: true });
-  }
-
   const trackEvent = (eventType, extra = {}, useBeacon = false) => {
     const payload = {
       event_type: eventType,

@@ -4649,75 +4649,27 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   overflow: hidden;
 }
 
-.landing-leaf {
+.landing-shell main::before,
+.landing-shell main::after {
+  content: "";
   position: fixed;
-  width: 180px;
-  height: 120px;
-  background: radial-gradient(circle at 35% 34%, rgba(185, 238, 111, 0.72) 0%, rgba(121, 191, 66, 0.52) 38%, rgba(86, 150, 49, 0.18) 58%, rgba(86, 150, 49, 0) 76%);
-  border-radius: 12% 88% 18% 82% / 16% 82% 18% 84%;
-  clip-path: polygon(3% 49%, 14% 30%, 34% 16%, 58% 10%, 80% 20%, 94% 42%, 97% 52%, 90% 67%, 72% 82%, 46% 90%, 22% 84%, 8% 67%);
-  filter: blur(12px);
+  width: 220px;
+  height: 220px;
+  border-radius: 46% 54% 58% 42%;
+  background: radial-gradient(circle, rgba(103, 173, 65, 0.62) 0%, rgba(103, 173, 65, 0.18) 34%, rgba(103, 173, 65, 0) 72%);
+  filter: blur(16px);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.78;
-  transform:
-    translate3d(var(--leaf-x, 0), calc(var(--leaf-y, 0) + var(--leaf-parallax, 0px)), 0)
-    rotate(calc(var(--leaf-rotate, 0deg) + var(--leaf-scroll-rotate, 0deg)));
-  will-change: transform;
 }
 
-.landing-leaf::before {
-  content: "";
-  position: absolute;
-  inset: 10% 18% 12% 20%;
-  border-radius: 10% 90% 14% 86% / 14% 88% 12% 86%;
-  background: linear-gradient(180deg, rgba(233, 255, 199, 0.54), rgba(180, 224, 111, 0.08));
-  opacity: 0.75;
-}
-
-.landing-leaf::after {
-  content: "";
-  position: absolute;
-  top: 18%;
-  bottom: 18%;
-  left: 49%;
-  width: 2px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(245,255,229,0), rgba(245,255,229,0.72), rgba(245,255,229,0));
-  transform: rotate(24deg);
-  transform-origin: center;
-}
-
-.landing-leaf-a {
+.landing-shell main::before {
   top: 12%;
-  left: -42px;
-  --leaf-x: 0px;
-  --leaf-y: 0px;
-  --leaf-rotate: -28deg;
+  left: -80px;
 }
 
-.landing-leaf-b {
-  top: 22%;
-  right: 3%;
-  width: 160px;
-  height: 106px;
-  --leaf-rotate: 18deg;
-}
-
-.landing-leaf-c {
-  bottom: 22%;
-  left: 6%;
-  width: 190px;
-  height: 124px;
-  --leaf-rotate: 32deg;
-}
-
-.landing-leaf-d {
-  right: -38px;
-  bottom: 12%;
-  width: 210px;
-  height: 136px;
-  --leaf-rotate: -36deg;
+.landing-shell main::after {
+  right: -90px;
+  bottom: 18%;
 }
 
 .landing-shell .eyebrow {
@@ -5821,19 +5773,6 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .landing-biome-checklist,
   .landing-admin-metrics {
     grid-template-columns: 1fr;
-  }
-
-  .landing-leaf {
-    width: 124px;
-    height: 84px;
-    filter: blur(10px);
-    opacity: 0.6;
-  }
-
-  .landing-leaf-b,
-  .landing-leaf-c,
-  .landing-leaf-d {
-    display: none;
   }
 
   .landing-flavor-grid {

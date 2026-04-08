@@ -106,13 +106,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const packageCards = document.querySelectorAll('[data-package-card]');
+  const flavorCards = document.querySelectorAll('[data-flavor-card]');
   const packageNameNode = document.querySelector('[data-selected-package]');
   const packagePriceNode = document.querySelector('[data-selected-price]');
+  const flavorNameNode = document.querySelector('[data-selected-flavor]');
   const checkoutButtons = document.querySelectorAll('[data-checkout-button]');
 
   const packageState = {
     label: packageCards[0]?.dataset.packageLabel || '15 Sachet',
     price: packageCards[0]?.dataset.packagePrice || '120000'
+  };
+
+  const flavorState = {
+    label: flavorCards[0]?.dataset.flavorLabel || 'Original'
   };
 
   const syncPackageUI = () => {
@@ -123,10 +129,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (packageNameNode) packageNameNode.textContent = packageState.label;
     if (packagePriceNode) packagePriceNode.textContent = formatCurrency(packageState.price);
+    if (flavorNameNode) flavorNameNode.textContent = flavorState.label;
+
+    flavorCards.forEach((card) => {
+      const isActive = card.dataset.flavorLabel === flavorState.label;
+      card.classList.toggle('is-active', isActive);
+    });
 
     checkoutButtons.forEach((button) => {
       button.dataset.packageLabel = packageState.label;
       button.dataset.packagePrice = packageState.price;
+      button.dataset.flavorLabel = flavorState.label;
     });
   };
 
@@ -142,6 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  flavorCards.forEach((card) => {
+    card.addEventListener('click', () => {
+      flavorState.label = card.dataset.flavorLabel || flavorState.label;
+      syncPackageUI();
+      trackEvent('flavor_select', {
+        flavor_label: flavorState.label,
+        package_label: packageState.label,
+        package_price: packageState.price
+      });
+    });
+  });
+
   syncPackageUI();
 
   document.querySelectorAll('[data-order-scroll]').forEach((button) => {
@@ -149,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelector('#order')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       trackEvent('order_now_click', {
         cta_location: button.dataset.ctaLocation || 'unknown',
+        flavor_label: flavorState.label,
         package_label: packageState.label,
         package_price: packageState.price
       });
@@ -161,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '',
       `Sumber traffic: ${sourceConfig.label}`,
       `Landing page: ${window.location.pathname}`,
+      `Rasa yang dipilih: ${flavorState.label}`,
       `Paket yang dipilih: ${packageState.label}`,
       `Harga: ${formatCurrency(packageState.price)}`,
       `Tombol checkout: ${buttonLabel}`
@@ -175,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const message = buildWhatsappMessage({ buttonLabel });
       trackEvent('checkout_click', {
         cta_location: button.dataset.ctaLocation || 'unknown',
+        flavor_label: flavorState.label,
         package_label: packageState.label,
         package_price: packageState.price
       });

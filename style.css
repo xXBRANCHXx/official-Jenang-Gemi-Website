@@ -4760,7 +4760,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .landing-hero-intro-card {
   width: min(860px, 100%);
   padding: clamp(28px, 4vw, 40px);
-  text-align: left;
+  text-align: center;
 }
 
 .landing-hero-intro-card h2 {
@@ -4769,14 +4769,15 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 
 .landing-hero-intro-card p {
-  max-width: none;
-  margin: 0;
+  max-width: 720px;
+  margin: 0 auto;
   font-size: 1.06rem;
   color: var(--muted);
 }
 
 .landing-symptom-intro {
   margin-top: 18px;
+  text-align: left;
 }
 
 .landing-symptom-intro strong {
@@ -4809,6 +4810,8 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   background: #f5f9ef;
   border: 1px solid rgba(15, 39, 19, 0.08);
   box-shadow: 0 20px 50px rgba(20, 52, 23, 0.08);
+  text-align: left;
+  justify-items: stretch;
 }
 
 .landing-symptom-grid span {
@@ -4855,7 +4858,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 
 .landing-hero-actions-centered {
-  justify-content: flex-start;
+  justify-content: center;
   margin: 26px 0 0;
 }
 

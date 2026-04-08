@@ -4684,7 +4684,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
-  min-width: 220px;
+  min-width: 200px;
   padding: 14px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.96);
@@ -4773,6 +4773,28 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   margin: 0 auto;
   font-size: 1.06rem;
   color: var(--muted);
+}
+
+.landing-hero-proof {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.landing-proof-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: #f4f8ef;
+  border: 1px solid rgba(15, 39, 19, 0.08);
+  color: var(--text-dark);
+  font-weight: 700;
+  font-size: 0.92rem;
 }
 
 .landing-hero-actions-centered {
@@ -5021,6 +5043,36 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   border-radius: 24px;
 }
 
+.landing-focus-strip {
+  padding: 0 0 42px;
+}
+
+.landing-focus-shell {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.landing-focus-card {
+  padding: 22px 24px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 39, 19, 0.07);
+  box-shadow: 0 18px 50px rgba(16, 40, 19, 0.07);
+}
+
+.landing-focus-card strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-dark);
+  font-size: 1.05rem;
+}
+
+.landing-focus-card p {
+  color: var(--text-main);
+  line-height: 1.72;
+}
+
 .landing-prep-section {
   background: linear-gradient(180deg, rgba(242, 247, 237, 0.8), rgba(252, 253, 249, 0.92));
 }
@@ -5071,6 +5123,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   gap: 16px;
 }
 
+.landing-faq-section {
+  padding-top: 76px;
+}
+
 .landing-checkout-banner {
   grid-template-columns: 1fr auto;
   padding: 34px 38px;
@@ -5082,6 +5138,24 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 
 .landing-footer {
   margin-top: 0;
+}
+
+.landing-footer-minimal {
+  padding: 30px 0 48px;
+}
+
+.landing-footer-minimal .site-footer-top {
+  display: block;
+}
+
+.landing-footer-minimal .site-footer-brand {
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.landing-footer-minimal .site-footer-brand img {
+  margin: 0 auto 14px;
 }
 
 .landing-admin-shell {
@@ -5193,6 +5267,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 
 @media (max-width: 1024px) {
+  .landing-focus-shell,
   .landing-biome-grid,
   .landing-hero-grid,
   .landing-proof-grid,
@@ -5237,6 +5312,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 
   .landing-stat-row,
   .landing-benefit-grid,
+  .landing-focus-shell,
   .landing-biome-grid,
   .landing-biome-checklist,
   .landing-package-grid,

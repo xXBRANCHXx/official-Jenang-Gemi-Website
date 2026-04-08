@@ -11,6 +11,10 @@ const createSessionId = () => {
 };
 
 const formatCurrency = (value) => `Rp ${Number(value).toLocaleString('id-ID')}`;
+const testimonialImageModules = import.meta.glob('./Media/Testimonials/*.png', {
+  eager: true,
+  import: 'default'
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   const root = document.querySelector('[data-landing-page]');
@@ -224,6 +228,161 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   });
+
+  const testimonialSources = Object.entries(testimonialImageModules)
+    .map(([path, src]) => {
+      const match = path.match(/Testimonial (\d+)\.png$/);
+      const number = match ? Number(match[1]) : 0;
+      return {
+        src,
+        number,
+        alt: `Testimoni pelanggan Jenang Gemi ${number}`,
+        label: `Testimonial ${number}`
+      };
+    })
+    .sort((a, b) => a.number - b.number);
+
+  const carouselEls = document.querySelectorAll('.testimonial-carousel');
+  const lightbox = document.getElementById('testimonial-lightbox');
+  const lightboxTrack = document.getElementById('testimonial-lightbox-track');
+  const lightboxCounter = document.getElementById('testimonial-lightbox-counter');
+  const lightboxBackBtn = document.getElementById('testimonial-back-btn');
+
+  if (carouselEls.length && testimonialSources.length) {
+    const testimonialGroups = [
+      testimonialSources.filter((_, index) => index % 2 === 0),
+      testimonialSources.filter((_, index) => index % 2 === 1)
+    ];
+
+    const carouselStates = testimonialGroups.map(() => ({ index: 0 }));
+    const carouselTimers = [];
+    const lightboxState = { groupIndex: 0, itemIndex: 0 };
+
+    const updateLightboxPosition = () => {
+      if (!lightboxTrack) return;
+      lightboxTrack.style.transform = `translateX(-${lightboxState.itemIndex * 100}%)`;
+      lightboxTrack.style.transition = 'transform 0.35s ease';
+      if (lightboxCounter) {
+        lightboxCounter.textContent = `${lightboxState.itemIndex + 1} / ${testimonialGroups[lightboxState.groupIndex].length}`;
+      }
+    };
+
+    const renderLightbox = () => {
+      if (!lightboxTrack) return;
+      const items = testimonialGroups[lightboxState.groupIndex];
+      lightboxTrack.innerHTML = items.map((item) => `
+        <div class="testimonial-lightbox-slide">
+          <div class="testimonial-lightbox-media">
+            <img src="${item.src}" alt="${item.alt}">
+          </div>
+        </div>
+      `).join('');
+      updateLightboxPosition();
+    };
+
+    const openLightbox = (groupIndex, itemIndex) => {
+      lightboxState.groupIndex = groupIndex;
+      lightboxState.itemIndex = itemIndex;
+      renderLightbox();
+      lightbox?.classList.add('active');
+      lightbox?.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeLightbox = () => {
+      lightbox?.classList.remove('active');
+      lightbox?.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    };
+
+    const setCarouselIndex = (groupIndex, nextIndex) => {
+      const items = testimonialGroups[groupIndex];
+      const normalizedIndex = (nextIndex + items.length) % items.length;
+      carouselStates[groupIndex].index = normalizedIndex;
+
+      const carouselEl = carouselEls[groupIndex];
+      const track = carouselEl?.querySelector('.testimonial-track');
+      const dots = carouselEl?.querySelectorAll('.testimonial-dot');
+      if (track) track.style.transform = `translateX(-${normalizedIndex * 100}%)`;
+      dots?.forEach((dot, index) => dot.classList.toggle('active', index === normalizedIndex));
+    };
+
+    const startCarouselAutoRotate = (groupIndex) => {
+      window.clearInterval(carouselTimers[groupIndex]);
+      carouselTimers[groupIndex] = window.setInterval(() => {
+        setCarouselIndex(groupIndex, carouselStates[groupIndex].index + 1);
+      }, 3400 + (groupIndex * 600));
+    };
+
+    carouselEls.forEach((carouselEl, groupIndex) => {
+      const track = carouselEl.querySelector('.testimonial-track');
+      const dots = carouselEl.querySelector('.testimonial-dots');
+      const items = testimonialGroups[groupIndex];
+
+      if (track) {
+        track.innerHTML = items.map((item, itemIndex) => `
+          <div class="testimonial-slide">
+            <button class="testimonial-media-card" type="button" data-open-lightbox="${itemIndex}">
+              <img src="${item.src}" alt="${item.alt}">
+              <span class="testimonial-slide-label">${item.label} • Klik untuk fullscreen</span>
+            </button>
+          </div>
+        `).join('');
+      }
+
+      if (dots) {
+        dots.innerHTML = items.map((_, itemIndex) => `
+          <button class="testimonial-dot${itemIndex === 0 ? ' active' : ''}" type="button" aria-label="Lihat testimonial ${itemIndex + 1}"></button>
+        `).join('');
+      }
+
+      carouselEl.querySelectorAll('.testimonial-dot').forEach((dot, itemIndex) => {
+        dot.addEventListener('click', () => setCarouselIndex(groupIndex, itemIndex));
+      });
+
+      carouselEl.querySelectorAll('[data-open-lightbox]').forEach((buttonEl) => {
+        buttonEl.addEventListener('click', () => {
+          openLightbox(groupIndex, Number(buttonEl.getAttribute('data-open-lightbox')) || 0);
+        });
+      });
+
+      carouselEl.addEventListener('mouseenter', () => window.clearInterval(carouselTimers[groupIndex]));
+      carouselEl.addEventListener('mouseleave', () => startCarouselAutoRotate(groupIndex));
+      carouselEl.addEventListener('focusin', () => window.clearInterval(carouselTimers[groupIndex]));
+      carouselEl.addEventListener('focusout', () => startCarouselAutoRotate(groupIndex));
+
+      setCarouselIndex(groupIndex, 0);
+      startCarouselAutoRotate(groupIndex);
+    });
+
+    lightbox?.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (target.dataset.closeLightbox === 'true') {
+        closeLightbox();
+      }
+    });
+
+    lightboxBackBtn?.addEventListener('click', closeLightbox);
+
+    document.addEventListener('keydown', (event) => {
+      if (!lightbox?.classList.contains('active')) return;
+
+      if (event.key === 'Escape') {
+        closeLightbox();
+        return;
+      }
+
+      const items = testimonialGroups[lightboxState.groupIndex];
+      if (event.key === 'ArrowRight') {
+        lightboxState.itemIndex = (lightboxState.itemIndex + 1) % items.length;
+        updateLightboxPosition();
+      } else if (event.key === 'ArrowLeft') {
+        lightboxState.itemIndex = (lightboxState.itemIndex - 1 + items.length) % items.length;
+        updateLightboxPosition();
+      }
+    });
+  }
 
   window.setInterval(() => trackElapsedTime(false), 30000);
 

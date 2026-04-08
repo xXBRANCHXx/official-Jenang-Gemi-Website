@@ -4783,6 +4783,41 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   margin-top: 18px;
 }
 
+.landing-symptom-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.landing-symptom-grid span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 9px 11px;
+  border-radius: 14px;
+  background: #f5f9ef;
+  border: 1px solid rgba(15, 39, 19, 0.08);
+  color: var(--text-dark);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.landing-symptom-grid span::before {
+  content: "✓";
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--landing-accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
 .landing-proof-pill {
   display: inline-flex;
   align-items: center;
@@ -4998,21 +5033,23 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 
 .landing-biome-checklist {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .landing-biome-checklist span {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 56px;
-  padding: 14px 16px;
-  border-radius: 18px;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: #fff;
   font-weight: 700;
+  font-size: 0.74rem;
+  line-height: 1.25;
 }
 
 .landing-biome-checklist span::before {
@@ -5285,26 +5322,6 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 
 .landing-proof-section {
   background: linear-gradient(180deg, rgba(244, 248, 239, 0.86), rgba(255, 255, 255, 0.96));
-}
-
-.landing-proof-gallery {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.landing-proof-shot {
-  margin: 0;
-  overflow: hidden;
-  border-radius: 28px;
-  border: 1px solid rgba(15, 39, 19, 0.08);
-  background: #fff;
-  box-shadow: 0 24px 70px rgba(14, 35, 17, 0.08);
-}
-
-.landing-proof-shot img {
-  width: 100%;
-  display: block;
 }
 
 .landing-inline-cta {

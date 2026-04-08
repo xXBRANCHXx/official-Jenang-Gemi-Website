@@ -5321,7 +5321,9 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 
 .landing-package-grid {
-  grid-template-columns: 1fr;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
   margin-bottom: 24px;
 }
 
@@ -5329,17 +5331,14 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   width: 100%;
   text-align: left;
   align-items: center;
-  margin-bottom: 12px;
+  justify-content: space-between;
+  min-height: 92px;
+  margin-bottom: 0;
   font-weight: 700;
 }
 
 .landing-prep-section {
   background: linear-gradient(180deg, rgba(242, 247, 237, 0.8), rgba(252, 253, 249, 0.92));
-}
-
-.landing-package-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-bottom: 24px;
 }
 
 .landing-package-card {
@@ -5533,7 +5532,6 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .landing-empathy-shell,
   .landing-mechanism-row,
   .landing-proof-gallery,
-  .landing-flavor-grid,
   .landing-biome-grid,
   .landing-hero-grid,
   .landing-proof-grid,
@@ -5546,10 +5544,15 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 
   .landing-stat-row,
   .landing-benefit-grid,
+  .landing-flavor-grid,
   .landing-biome-checklist,
   .landing-package-grid,
   .landing-admin-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .landing-package-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .landing-biome-card-media {
@@ -5584,11 +5587,17 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   .landing-empathy-shell,
   .landing-mechanism-row,
   .landing-proof-gallery,
-  .landing-flavor-grid,
   .landing-biome-grid,
   .landing-biome-checklist,
-  .landing-package-grid,
   .landing-admin-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-flavor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .landing-package-grid {
     grid-template-columns: 1fr;
   }
 

@@ -125,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     packageCards.forEach((card) => {
       const isActive = card.dataset.packageLabel === packageState.label;
       card.classList.toggle('is-active', isActive);
+      card.classList.toggle('active', isActive);
     });
 
     if (packageNameNode) packageNameNode.textContent = packageState.label;
@@ -134,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     flavorCards.forEach((card) => {
       const isActive = card.dataset.flavorLabel === flavorState.label;
       card.classList.toggle('is-active', isActive);
+      card.classList.toggle('active', isActive);
     });
 
     checkoutButtons.forEach((button) => {

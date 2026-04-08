@@ -1,1 +1,5 @@
 DirectoryIndex index.html
+
+<FilesMatch "^(whatsapp-config\.local\.php|whatsapp-config\.example\.php)$">
+    Require all denied
+</FilesMatch>

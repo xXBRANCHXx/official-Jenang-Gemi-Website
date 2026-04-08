@@ -1,6 +1,26 @@
 <?php
 declare(strict_types=1);
 
+function analyticsLoadLocalConfig(): array
+{
+    static $config = null;
+
+    if (is_array($config)) {
+        return $config;
+    }
+
+    $config = [];
+    $configFile = __DIR__ . '/whatsapp-config.local.php';
+    if (file_exists($configFile)) {
+        $loaded = require $configFile;
+        if (is_array($loaded)) {
+            $config = $loaded;
+        }
+    }
+
+    return $config;
+}
+
 function analyticsJsonResponse(array $payload, int $status = 200): void
 {
     http_response_code($status);
@@ -84,16 +104,28 @@ function analyticsResolveTimezone(?string $requestedTimezone = null): DateTimeZo
 
 function analyticsResolveWebhookSecret(): string
 {
+    $config = analyticsLoadLocalConfig();
+    if (!empty($config['conversion_webhook_secret']) && is_string($config['conversion_webhook_secret'])) {
+        return trim($config['conversion_webhook_secret']);
+    }
     return trim((string) getenv('JG_CONVERSION_WEBHOOK_SECRET'));
 }
 
 function analyticsResolveWhatsappVerifyToken(): string
 {
+    $config = analyticsLoadLocalConfig();
+    if (!empty($config['whatsapp_verify_token']) && is_string($config['whatsapp_verify_token'])) {
+        return trim($config['whatsapp_verify_token']);
+    }
     return trim((string) getenv('JG_WHATSAPP_VERIFY_TOKEN'));
 }
 
 function analyticsResolveWhatsappAppSecret(): string
 {
+    $config = analyticsLoadLocalConfig();
+    if (!empty($config['whatsapp_app_secret']) && is_string($config['whatsapp_app_secret'])) {
+        return trim($config['whatsapp_app_secret']);
+    }
     return trim((string) getenv('JG_WHATSAPP_APP_SECRET'));
 }
 

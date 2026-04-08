@@ -41,6 +41,30 @@ function analyticsEnsureStorage(string $storageFile): void
     }
 }
 
+function analyticsAppendEvent(string $storageFile, array $event): void
+{
+    $handle = fopen($storageFile, 'c+');
+    if ($handle === false) {
+        analyticsJsonResponse(['error' => 'Unable to open analytics storage.'], 500);
+    }
+
+    flock($handle, LOCK_EX);
+    $contents = stream_get_contents($handle);
+    $events = $contents ? json_decode($contents, true) : [];
+    if (!is_array($events)) {
+        $events = [];
+    }
+
+    $events[] = $event;
+
+    rewind($handle);
+    ftruncate($handle, 0);
+    fwrite($handle, json_encode($events, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    fflush($handle);
+    flock($handle, LOCK_UN);
+    fclose($handle);
+}
+
 function analyticsResolveTimezone(?string $requestedTimezone = null): DateTimeZone
 {
     $timezoneName = trim((string) ($requestedTimezone ?? ''));
@@ -56,4 +80,9 @@ function analyticsResolveTimezone(?string $requestedTimezone = null): DateTimeZo
     }
 
     return new DateTimeZone($timezoneName);
+}
+
+function analyticsResolveWebhookSecret(): string
+{
+    return trim((string) getenv('JG_CONVERSION_WEBHOOK_SECRET'));
 }

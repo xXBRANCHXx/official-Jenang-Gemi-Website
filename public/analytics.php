@@ -44,30 +44,6 @@ function readEvents(string $storageFile): array
     return is_array($decoded) ? $decoded : [];
 }
 
-function writeEvent(string $storageFile, array $event): void
-{
-    $handle = fopen($storageFile, 'c+');
-    if ($handle === false) {
-        analyticsJsonResponse(['error' => 'Unable to open analytics storage.'], 500);
-    }
-
-    flock($handle, LOCK_EX);
-    $contents = stream_get_contents($handle);
-    $events = $contents ? json_decode($contents, true) : [];
-    if (!is_array($events)) {
-        $events = [];
-    }
-
-    $events[] = $event;
-
-    rewind($handle);
-    ftruncate($handle, 0);
-    fwrite($handle, json_encode($events, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-    fflush($handle);
-    flock($handle, LOCK_UN);
-    fclose($handle);
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payload = json_decode(file_get_contents('php://input') ?: '', true);
     if (!is_array($payload)) {
@@ -83,13 +59,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'page_title' => substr((string) ($payload['page_title'] ?? ''), 0, 255),
         'referrer' => substr((string) ($payload['referrer'] ?? ''), 0, 500),
         'cta_location' => substr((string) ($payload['cta_location'] ?? ''), 0, 120),
+        'product_code' => substr((string) ($payload['product_code'] ?? ''), 0, 20),
+        'product_label' => substr((string) ($payload['product_label'] ?? ''), 0, 120),
+        'flavor_label' => substr((string) ($payload['flavor_label'] ?? ''), 0, 120),
+        'flavor_code' => substr((string) ($payload['flavor_code'] ?? ''), 0, 20),
         'package_label' => substr((string) ($payload['package_label'] ?? ''), 0, 120),
+        'package_size' => substr((string) ($payload['package_size'] ?? ''), 0, 20),
         'package_price' => substr((string) ($payload['package_price'] ?? ''), 0, 40),
+        'order_code' => substr((string) ($payload['order_code'] ?? ''), 0, 40),
+        'conversion_status' => substr((string) ($payload['conversion_status'] ?? ''), 0, 40),
+        'external_id' => substr((string) ($payload['external_id'] ?? ''), 0, 120),
+        'notes' => substr((string) ($payload['notes'] ?? ''), 0, 255),
         'elapsed_ms' => max(0, (int) ($payload['elapsed_ms'] ?? 0)),
         'occurred_at' => substr((string) ($payload['occurred_at'] ?? gmdate(DATE_ATOM)), 0, 80),
     ];
 
-    writeEvent($storageFile, $event);
+    analyticsAppendEvent($storageFile, $event);
     analyticsJsonResponse(['ok' => true], 201);
 }
 

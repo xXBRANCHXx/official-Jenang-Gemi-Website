@@ -5,6 +5,25 @@ const LANDING_DEFAULTS = {
   tiktok: { label: 'TikTok', badge: 'Pengunjung TikTok', accent: '#111111' }
 };
 
+const SOURCE_CODES = {
+  youtube: 'YT',
+  facebook: 'FB',
+  instagram: 'IG',
+  tiktok: 'TK'
+};
+
+const PRODUCT_CODES = {
+  bubur: { code: 'JGB', label: 'Jenang Gemi Bubur' },
+  jamu: { code: 'JGJ', label: 'Jenang Gemi Jamu' }
+};
+
+const FLAVOR_CODES = {
+  Original: 'OR',
+  Klepon: 'KL',
+  Vanilla: 'VA',
+  'Gula Aren': 'GU'
+};
+
 const createSessionId = () => {
   if (window.crypto?.randomUUID) return window.crypto.randomUUID();
   return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -30,6 +49,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sessionId = createSessionId();
   const visitStartedAt = Date.now();
   let lastTrackedElapsedMs = 0;
+  const pathname = window.location.pathname.toLowerCase();
+
+  const resolveProductMeta = () => {
+    if (pathname.includes('jamu')) return PRODUCT_CODES.jamu;
+    return PRODUCT_CODES.bubur;
+  };
+
+  const productMeta = resolveProductMeta();
 
   document.documentElement.style.setProperty('--landing-accent', sourceConfig.accent);
 
@@ -125,6 +152,15 @@ document.addEventListener('DOMContentLoaded', () => {
     label: flavorCards[0]?.dataset.flavorLabel || 'Original'
   };
 
+  const getPackageSize = () => {
+    const match = packageState.label.match(/\d+/);
+    return match ? match[0] : '';
+  };
+
+  const getFlavorCode = () => FLAVOR_CODES[flavorState.label] || 'OR';
+  const getSourceCode = () => SOURCE_CODES[sourceKey] || 'NA';
+  const buildOrderCode = () => `${getSourceCode()}${productMeta.code}${getPackageSize()}${getFlavorCode()}`;
+
   const syncPackageUI = () => {
     packageCards.forEach((card) => {
       const isActive = card.dataset.packageLabel === packageState.label;
@@ -188,9 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const buildWhatsappMessage = ({ buttonLabel }) => {
+    const orderCode = buildOrderCode();
     const lines = [
-      'Halo Admin Jenang Gemi, saya ingin order Jenang Gemi Bubur.',
+      `Halo Admin Jenang Gemi, saya ingin order ${productMeta.label}.`,
       '',
+      `Kode order: ${orderCode}`,
       `Sumber traffic: ${sourceConfig.label}`,
       `Landing page: ${window.location.pathname}`,
       `Rasa yang dipilih: ${flavorState.label}`,
@@ -206,11 +244,17 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', () => {
       const buttonLabel = button.dataset.buttonLabel || button.textContent?.trim() || 'Checkout';
       const message = buildWhatsappMessage({ buttonLabel });
+      const orderCode = buildOrderCode();
       trackEvent('checkout_click', {
         cta_location: button.dataset.ctaLocation || 'unknown',
+        product_code: productMeta.code,
+        product_label: productMeta.label,
         flavor_label: flavorState.label,
+        flavor_code: getFlavorCode(),
         package_label: packageState.label,
-        package_price: packageState.price
+        package_size: getPackageSize(),
+        package_price: packageState.price,
+        order_code: orderCode
       });
       window.open(
         `https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(message)}`,

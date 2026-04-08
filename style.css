@@ -5308,6 +5308,10 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   box-shadow: 0 24px 70px rgba(14, 35, 17, 0.08);
 }
 
+.landing-mechanism-row-feature {
+  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+}
+
 .landing-mechanism-row.is-reversed .landing-mechanism-media {
   order: 2;
 }
@@ -5326,6 +5330,7 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
   height: 100%;
   object-fit: cover;
   display: block;
+  object-position: center right;
 }
 
 .landing-mechanism-copy {
@@ -5343,6 +5348,24 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .landing-mechanism-copy p {
   color: var(--text-main);
   line-height: 1.8;
+}
+
+.landing-mechanism-row-feature .landing-mechanism-copy {
+  padding: 24px 28px 24px 32px;
+}
+
+.landing-mechanism-row-feature .landing-mechanism-copy .eyebrow {
+  margin-bottom: 16px;
+}
+
+.landing-mechanism-row-feature .landing-mechanism-copy h3 {
+  font-size: clamp(1.34rem, 2.2vw, 1.9rem);
+  margin-bottom: 10px;
+}
+
+.landing-mechanism-row-feature .landing-mechanism-copy p {
+  font-size: 0.94rem;
+  line-height: 1.62;
 }
 
 .landing-proof-section {

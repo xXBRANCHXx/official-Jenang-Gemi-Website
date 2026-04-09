@@ -1,5 +1,21 @@
 const buburQuizImage = new URL('./Media/Reseller Jenang Gemi Images (3).png', import.meta.url).href;
 const jamuQuizImage = new URL('./Media/Reseller Jenang Gemi Images (4).png', import.meta.url).href;
+const formatIdr = (value) => `Rp ${Number(value).toLocaleString('id-ID')}`;
+const getPackQuantity = (label = '') => {
+  const match = label.match(/\d+/);
+  return match ? parseInt(match[0], 10) : 0;
+};
+const getComparisonPackPrice = ({ label = '', price = 0, basePrice = 0 }) => {
+  const quantity = getPackQuantity(label);
+  if (!basePrice || quantity <= 15 || quantity % 15 !== 0) return null;
+  const comparisonPrice = basePrice * (quantity / 15);
+  return comparisonPrice > price ? comparisonPrice : null;
+};
+const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
+  comparisonPrice
+    ? `<span class="price-compare">${formatIdr(comparisonPrice)}</span><span class="price-current">${formatIdr(price)}</span>`
+    : `<span class="price-current">${formatIdr(price)}</span>`
+);
 
 document.addEventListener('DOMContentLoaded', () => {
   // --- Cart System ---
@@ -1078,6 +1094,23 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const packRows = document.querySelectorAll('.pack-row');
+  const basePackPrice = Array.from(packRows).find((row) => getPackQuantity(row.querySelector('div:first-child')?.innerText || '') === 15);
+
+  packRows.forEach((row) => {
+    const packLabel = row.querySelector('div:first-child')?.innerText || '';
+    const priceNode = row.querySelector('.pack-val');
+    const packPrice = parseInt(row.getAttribute('data-price') || row.dataset.packagePrice || '0', 10);
+    const comparisonPrice = getComparisonPackPrice({
+      label: packLabel,
+      price: packPrice,
+      basePrice: parseInt(basePackPrice?.getAttribute('data-price') || basePackPrice?.dataset.packagePrice || '0', 10)
+    });
+
+    if (priceNode) {
+      priceNode.innerHTML = buildPriceMarkup({ price: packPrice, comparisonPrice });
+    }
+  });
+
   packRows.forEach(row => {
     row.addEventListener('click', () => {
       packRows.forEach(r => r.classList.remove('active'));

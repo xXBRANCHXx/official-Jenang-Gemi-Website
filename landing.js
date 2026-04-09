@@ -30,6 +30,21 @@ const createSessionId = () => {
 };
 
 const formatCurrency = (value) => `Rp ${Number(value).toLocaleString('id-ID')}`;
+const getPackQuantity = (label = '') => {
+  const match = label.match(/\d+/);
+  return match ? parseInt(match[0], 10) : 0;
+};
+const getComparisonPackPrice = ({ label = '', price = 0, basePrice = 0 }) => {
+  const quantity = getPackQuantity(label);
+  if (!basePrice || quantity <= 15 || quantity % 15 !== 0) return null;
+  const comparisonPrice = basePrice * (quantity / 15);
+  return comparisonPrice > price ? comparisonPrice : null;
+};
+const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
+  comparisonPrice
+    ? `<span class="price-compare">${formatCurrency(comparisonPrice)}</span><span class="price-current">${formatCurrency(price)}</span>`
+    : `<span class="price-current">${formatCurrency(price)}</span>`
+);
 const testimonialImageModules = import.meta.glob('./Media/Testimonials/*.png', {
   eager: true,
   import: 'default'
@@ -147,6 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
     label: packageCards[0]?.dataset.packageLabel || '15 Sachet',
     price: packageCards[0]?.dataset.packagePrice || '120000'
   };
+  const basePackagePrice = parseInt(
+    Array.from(packageCards).find((card) => getPackQuantity(card.dataset.packageLabel || '') === 15)?.dataset.packagePrice || '0',
+    10
+  );
 
   const flavorState = {
     label: flavorCards[0]?.dataset.flavorLabel || 'Original'
@@ -166,10 +185,31 @@ document.addEventListener('DOMContentLoaded', () => {
       const isActive = card.dataset.packageLabel === packageState.label;
       card.classList.toggle('is-active', isActive);
       card.classList.toggle('active', isActive);
+
+      const priceNode = card.querySelector('.pack-val');
+      const packPrice = parseInt(card.dataset.packagePrice || '0', 10);
+      const comparisonPrice = getComparisonPackPrice({
+        label: card.dataset.packageLabel || '',
+        price: packPrice,
+        basePrice: basePackagePrice
+      });
+
+      if (priceNode) {
+        priceNode.innerHTML = buildPriceMarkup({ price: packPrice, comparisonPrice });
+      }
     });
 
     if (packageNameNode) packageNameNode.textContent = packageState.label;
-    if (packagePriceNode) packagePriceNode.textContent = formatCurrency(packageState.price);
+    if (packagePriceNode) {
+      packagePriceNode.innerHTML = buildPriceMarkup({
+        price: parseInt(packageState.price, 10),
+        comparisonPrice: getComparisonPackPrice({
+          label: packageState.label,
+          price: parseInt(packageState.price, 10),
+          basePrice: basePackagePrice
+        })
+      });
+    }
     if (flavorNameNode) flavorNameNode.textContent = flavorState.label;
 
     flavorCards.forEach((card) => {

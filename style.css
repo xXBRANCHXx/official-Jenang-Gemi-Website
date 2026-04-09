@@ -4385,6 +4385,22 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 }
 .pack-row:hover { border-color: var(--green); transform: translateY(-2px); }
 .pack-row.active { border-color: var(--green); background: var(--green-light); box-shadow: 0 10px 20px rgba(99, 191, 71, 0.14); }
+.pack-val,
+[data-selected-price] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.price-compare {
+  color: #b6b6bc;
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+.price-current {
+  color: var(--text-dark);
+}
 
 /* 9. Testimonials */
 .testimonial-section {
@@ -5550,6 +5566,15 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
 .landing-order-summary-actions strong {
   font-size: clamp(2rem, 4vw, 2.8rem);
   color: var(--text-dark);
+}
+
+.landing-order-summary-actions .price-compare {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 600;
+}
+
+.landing-order-summary-actions .price-current {
+  font-size: inherit;
 }
 
 .landing-faq-list {

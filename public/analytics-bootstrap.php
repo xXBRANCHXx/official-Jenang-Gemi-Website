@@ -59,6 +59,11 @@ function analyticsResolveAffiliateStorageFile(): string
     return analyticsResolveStorageDir() . '/affiliates.json';
 }
 
+function analyticsResolveLiveStateFile(): string
+{
+    return analyticsResolveStorageDir() . '/live-state.json';
+}
+
 function analyticsEnsureStorage(string $storageFile): void
 {
     $storageDir = dirname($storageFile);
@@ -104,6 +109,40 @@ function analyticsWriteJsonFile(string $storageFile, array $payload): void
     fclose($handle);
 }
 
+function analyticsTouchLiveState(string $reason = 'update'): array
+{
+    $storageFile = analyticsResolveLiveStateFile();
+    analyticsEnsureStorage($storageFile);
+    $current = analyticsReadJsonFile($storageFile);
+    $sequence = max(0, (int) ($current['sequence'] ?? 0)) + 1;
+    $state = [
+        'sequence' => $sequence,
+        'reason' => substr($reason, 0, 80),
+        'updated_at' => gmdate(DATE_ATOM),
+    ];
+    analyticsWriteJsonFile($storageFile, $state);
+    return $state;
+}
+
+function analyticsReadLiveState(): array
+{
+    $storageFile = analyticsResolveLiveStateFile();
+    analyticsEnsureStorage($storageFile);
+    $state = analyticsReadJsonFile($storageFile);
+    if (!is_array($state) || empty($state['updated_at'])) {
+        $state = [
+            'sequence' => 0,
+            'reason' => 'init',
+            'updated_at' => gmdate(DATE_ATOM),
+        ];
+        analyticsWriteJsonFile($storageFile, $state);
+    }
+    $state['sequence'] = max(0, (int) ($state['sequence'] ?? 0));
+    $state['reason'] = substr((string) ($state['reason'] ?? 'update'), 0, 80);
+    $state['updated_at'] = substr((string) ($state['updated_at'] ?? gmdate(DATE_ATOM)), 0, 80);
+    return $state;
+}
+
 function analyticsAppendEvent(string $storageFile, array $event): void
 {
     analyticsEnsureStorage($storageFile);
@@ -127,6 +166,7 @@ function analyticsAppendEvent(string $storageFile, array $event): void
     fflush($handle);
     flock($handle, LOCK_UN);
     fclose($handle);
+    analyticsTouchLiveState('analytics_event');
 }
 
 function analyticsResolveTimezone(?string $requestedTimezone = null): DateTimeZone
@@ -360,4 +400,5 @@ function analyticsSaveAffiliates(array $affiliates): void
     $storageFile = analyticsResolveAffiliateStorageFile();
     analyticsEnsureStorage($storageFile);
     analyticsWriteJsonFile($storageFile, array_values($affiliates));
+    analyticsTouchLiveState('affiliate_update');
 }

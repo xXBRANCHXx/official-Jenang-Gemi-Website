@@ -7,8 +7,6 @@ header('Content-Type: application/json; charset=utf-8');
 
 $verifyToken = analyticsResolveWhatsappVerifyToken();
 $appSecret = analyticsResolveWhatsappAppSecret();
-$storageFile = analyticsResolveStorageFile();
-analyticsEnsureStorage($storageFile);
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $mode = (string) ($_GET['hub_mode'] ?? $_GET['hub.mode'] ?? '');
@@ -149,7 +147,7 @@ foreach (($payload['entry'] ?? []) as $entry) {
                 'occurred_at' => $occurredAt,
             ];
 
-            analyticsAppendEvent($storageFile, $event);
+            analyticsAppendEvent($event);
         }
     }
 }

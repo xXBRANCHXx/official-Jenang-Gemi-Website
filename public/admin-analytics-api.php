@@ -15,8 +15,6 @@ if (!hash_equals($expectedToken, $providedToken)) {
     exit;
 }
 
-$storageFile = analyticsResolveStorageFile();
-analyticsEnsureStorage($storageFile);
 $timeframe = (string) ($_GET['timeframe'] ?? '7d');
 $recentLimit = max(15, min(300, (int) ($_GET['recent_limit'] ?? 180)));
 $dataset = strtolower(trim((string) ($_GET['dataset'] ?? 'landing')));
@@ -59,32 +57,7 @@ $bucketLabelFormat = match ($timeframe) {
     default => 'M Y',
 };
 
-if (!file_exists($storageFile)) {
-    echo json_encode([
-        'summary' => [
-            'total_views' => 0,
-            'order_now_clicks' => 0,
-            'checkout_clicks' => 0,
-            'avg_time_spent_seconds' => 0,
-        ],
-        'meta' => [
-            'timeframe' => $timeframe,
-            'dataset' => $dataset,
-            'affiliate_code' => $affiliateCodeFilter,
-            'generated_at' => $now->format(DATE_ATOM),
-            'timezone' => $displayTimezone->getName(),
-        ],
-        'affiliates' => analyticsLoadAffiliates(),
-        'by_url' => [],
-        'by_source' => [],
-        'recent_events' => [],
-        'timeseries' => [],
-        'hour_of_day' => [],
-    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    exit;
-}
-
-$events = analyticsReadJsonFile($storageFile);
+$events = analyticsLoadEvents($rangeStart);
 $affiliates = analyticsLoadAffiliates();
 
 $filteredEvents = [];

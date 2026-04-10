@@ -28,144 +28,244 @@ function analyticsJsonResponse(array $payload, int $status = 200): void
     exit;
 }
 
-function analyticsResolveStorageFile(): string
+function analyticsResolveDatabaseConfig(): array
 {
-    $overrideFile = trim((string) getenv('JG_ANALYTICS_STORAGE_FILE'));
-    if ($overrideFile !== '') {
-        return $overrideFile;
-    }
+    return [
+        'host' => trim((string) getenv('JG_DB_HOST')),
+        'port' => trim((string) getenv('JG_DB_PORT')) ?: '3306',
+        'name' => trim((string) getenv('JG_DB_NAME')) ?: 'u558678012_Bign',
+        'user' => trim((string) getenv('JG_DB_USER')),
+        'pass' => (string) getenv('JG_DB_PASSWORD'),
+        'charset' => trim((string) getenv('JG_DB_CHARSET')) ?: 'utf8mb4',
+    ];
+}
 
-    $defaultFile = dirname(__DIR__) . '/analytics-storage/landing-events.json';
-    $legacyFile = __DIR__ . '/analytics-data/landing-events.json';
+function analyticsDb(): PDO
+{
+    static $pdo = null;
+    static $schemaEnsured = false;
 
-    if (!file_exists($defaultFile) && file_exists($legacyFile)) {
-        $defaultDir = dirname($defaultFile);
-        if (!is_dir($defaultDir)) {
-            mkdir($defaultDir, 0775, true);
+    if ($pdo instanceof PDO) {
+        if (!$schemaEnsured) {
+            analyticsEnsureDatabaseSchema($pdo);
+            $schemaEnsured = true;
         }
-        @copy($legacyFile, $defaultFile);
+        return $pdo;
     }
 
-    return $defaultFile;
-}
-
-function analyticsResolveStorageDir(): string
-{
-    return dirname(analyticsResolveStorageFile());
-}
-
-function analyticsResolveAffiliateStorageFile(): string
-{
-    return analyticsResolveStorageDir() . '/affiliates.json';
-}
-
-function analyticsResolveLiveStateFile(): string
-{
-    return analyticsResolveStorageDir() . '/live-state.json';
-}
-
-function analyticsEnsureStorage(string $storageFile): void
-{
-    $storageDir = dirname($storageFile);
-    if (!is_dir($storageDir)) {
-        mkdir($storageDir, 0775, true);
+    $config = analyticsResolveDatabaseConfig();
+    if ($config['host'] === '' || $config['user'] === '') {
+        analyticsJsonResponse(['error' => 'Database environment variables are not configured.'], 503);
     }
 
-    if (!file_exists($storageFile)) {
-        file_put_contents($storageFile, json_encode([], JSON_PRETTY_PRINT));
+    try {
+        $pdo = new PDO(
+            sprintf(
+                'mysql:host=%s;port=%s;dbname=%s;charset=%s',
+                $config['host'],
+                $config['port'],
+                $config['name'],
+                $config['charset']
+            ),
+            $config['user'],
+            $config['pass'],
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]
+        );
+    } catch (Throwable $error) {
+        analyticsJsonResponse([
+            'error' => 'Unable to connect to analytics database.',
+            'details' => $error->getMessage(),
+        ], 503);
     }
+
+    analyticsEnsureDatabaseSchema($pdo);
+    $schemaEnsured = true;
+
+    return $pdo;
 }
 
-function analyticsReadJsonFile(string $storageFile): array
+function analyticsEnsureDatabaseSchema(PDO $pdo): void
 {
-    if (!file_exists($storageFile)) {
-        return [];
-    }
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS analytics_events (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            event_type VARCHAR(80) NOT NULL,
+            session_id VARCHAR(120) NOT NULL DEFAULT "",
+            source VARCHAR(50) NOT NULL DEFAULT "unknown",
+            traffic_kind VARCHAR(20) NOT NULL DEFAULT "landing",
+            affiliate_code VARCHAR(16) NOT NULL DEFAULT "",
+            affiliate_name VARCHAR(120) NOT NULL DEFAULT "",
+            page_path VARCHAR(255) NOT NULL DEFAULT "",
+            page_url VARCHAR(500) NOT NULL DEFAULT "",
+            page_title VARCHAR(255) NOT NULL DEFAULT "",
+            referrer VARCHAR(500) NOT NULL DEFAULT "",
+            cta_location VARCHAR(120) NOT NULL DEFAULT "",
+            product_code VARCHAR(20) NOT NULL DEFAULT "",
+            product_label VARCHAR(120) NOT NULL DEFAULT "",
+            flavor_label VARCHAR(120) NOT NULL DEFAULT "",
+            flavor_code VARCHAR(20) NOT NULL DEFAULT "",
+            package_label VARCHAR(120) NOT NULL DEFAULT "",
+            package_size VARCHAR(20) NOT NULL DEFAULT "",
+            package_price VARCHAR(40) NOT NULL DEFAULT "",
+            order_code VARCHAR(40) NOT NULL DEFAULT "",
+            conversion_status VARCHAR(40) NOT NULL DEFAULT "",
+            external_id VARCHAR(120) NOT NULL DEFAULT "",
+            notes VARCHAR(255) NOT NULL DEFAULT "",
+            customer_name VARCHAR(120) NOT NULL DEFAULT "",
+            customer_wa_id VARCHAR(120) NOT NULL DEFAULT "",
+            business_phone VARCHAR(50) NOT NULL DEFAULT "",
+            elapsed_ms INT UNSIGNED NOT NULL DEFAULT 0,
+            occurred_at DATETIME(6) NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_analytics_occurred_at (occurred_at),
+            INDEX idx_analytics_affiliate_code (affiliate_code),
+            INDEX idx_analytics_traffic_kind (traffic_kind),
+            INDEX idx_analytics_source (source),
+            INDEX idx_analytics_session_id (session_id),
+            INDEX idx_analytics_order_code (order_code),
+            INDEX idx_analytics_page_path (page_path)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+    );
 
-    $raw = file_get_contents($storageFile);
-    if ($raw === false || trim($raw) === '') {
-        return [];
-    }
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS affiliates (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            code VARCHAR(16) NOT NULL,
+            name VARCHAR(120) NOT NULL,
+            slug VARCHAR(160) NOT NULL,
+            created_at DATETIME(6) NOT NULL,
+            updated_at DATETIME(6) NOT NULL,
+            UNIQUE KEY uniq_affiliate_code (code)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+    );
 
-    $decoded = json_decode($raw, true);
-    return is_array($decoded) ? $decoded : [];
-}
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS affiliate_platforms (
+            affiliate_id BIGINT UNSIGNED NOT NULL,
+            platform VARCHAR(20) NOT NULL,
+            PRIMARY KEY (affiliate_id, platform),
+            CONSTRAINT fk_affiliate_platforms_affiliate
+                FOREIGN KEY (affiliate_id) REFERENCES affiliates(id)
+                ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+    );
 
-function analyticsWriteJsonFile(string $storageFile, array $payload): void
-{
-    analyticsEnsureStorage($storageFile);
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS live_state (
+            state_key VARCHAR(32) NOT NULL PRIMARY KEY,
+            sequence BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            reason VARCHAR(80) NOT NULL DEFAULT "init",
+            updated_at DATETIME(6) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+    );
 
-    $handle = fopen($storageFile, 'c+');
-    if ($handle === false) {
-        analyticsJsonResponse(['error' => 'Unable to open analytics storage.'], 500);
-    }
-
-    flock($handle, LOCK_EX);
-    rewind($handle);
-    ftruncate($handle, 0);
-    fwrite($handle, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-    fflush($handle);
-    flock($handle, LOCK_UN);
-    fclose($handle);
+    $stmt = $pdo->prepare(
+        'INSERT INTO live_state (state_key, sequence, reason, updated_at)
+         VALUES ("analytics", 0, "init", UTC_TIMESTAMP(6))
+         ON DUPLICATE KEY UPDATE state_key = state_key'
+    );
+    $stmt->execute();
 }
 
 function analyticsTouchLiveState(string $reason = 'update'): array
 {
-    $storageFile = analyticsResolveLiveStateFile();
-    analyticsEnsureStorage($storageFile);
-    $current = analyticsReadJsonFile($storageFile);
-    $sequence = max(0, (int) ($current['sequence'] ?? 0)) + 1;
-    $state = [
-        'sequence' => $sequence,
-        'reason' => substr($reason, 0, 80),
-        'updated_at' => gmdate(DATE_ATOM),
-    ];
-    analyticsWriteJsonFile($storageFile, $state);
-    return $state;
+    $pdo = analyticsDb();
+    $normalizedReason = substr($reason, 0, 80);
+    $stmt = $pdo->prepare(
+        'UPDATE live_state
+         SET sequence = sequence + 1,
+             reason = :reason,
+             updated_at = UTC_TIMESTAMP(6)
+         WHERE state_key = "analytics"'
+    );
+    $stmt->execute(['reason' => $normalizedReason]);
+    return analyticsReadLiveState();
 }
 
 function analyticsReadLiveState(): array
 {
-    $storageFile = analyticsResolveLiveStateFile();
-    analyticsEnsureStorage($storageFile);
-    $state = analyticsReadJsonFile($storageFile);
-    if (!is_array($state) || empty($state['updated_at'])) {
-        $state = [
+    $pdo = analyticsDb();
+    $stmt = $pdo->query(
+        'SELECT sequence, reason, updated_at
+         FROM live_state
+         WHERE state_key = "analytics"
+         LIMIT 1'
+    );
+    $state = $stmt->fetch();
+    if (!is_array($state)) {
+        return [
             'sequence' => 0,
             'reason' => 'init',
             'updated_at' => gmdate(DATE_ATOM),
         ];
-        analyticsWriteJsonFile($storageFile, $state);
     }
-    $state['sequence'] = max(0, (int) ($state['sequence'] ?? 0));
-    $state['reason'] = substr((string) ($state['reason'] ?? 'update'), 0, 80);
-    $state['updated_at'] = substr((string) ($state['updated_at'] ?? gmdate(DATE_ATOM)), 0, 80);
-    return $state;
+    return [
+        'sequence' => max(0, (int) ($state['sequence'] ?? 0)),
+        'reason' => substr((string) ($state['reason'] ?? 'update'), 0, 80),
+        'updated_at' => (new DateTimeImmutable((string) $state['updated_at'], new DateTimeZone('UTC')))->format(DATE_ATOM),
+    ];
 }
 
-function analyticsAppendEvent(string $storageFile, array $event): void
+function analyticsNormalizeOccurredAt(string $value): string
 {
-    analyticsEnsureStorage($storageFile);
-
-    $handle = fopen($storageFile, 'c+');
-    if ($handle === false) {
-        analyticsJsonResponse(['error' => 'Unable to open analytics storage.'], 500);
+    try {
+        return (new DateTimeImmutable($value))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
+    } catch (Throwable) {
+        return (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s.u');
     }
+}
 
-    flock($handle, LOCK_EX);
-    $contents = stream_get_contents($handle);
-    $events = $contents ? json_decode($contents, true) : [];
-    if (!is_array($events)) {
-        $events = [];
-    }
-    $events[] = $event;
-
-    rewind($handle);
-    ftruncate($handle, 0);
-    fwrite($handle, json_encode($events, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-    fflush($handle);
-    flock($handle, LOCK_UN);
-    fclose($handle);
+function analyticsAppendEvent(array $event): void
+{
+    $pdo = analyticsDb();
+    $stmt = $pdo->prepare(
+        'INSERT INTO analytics_events (
+            event_type, session_id, source, traffic_kind, affiliate_code, affiliate_name,
+            page_path, page_url, page_title, referrer, cta_location, product_code, product_label,
+            flavor_label, flavor_code, package_label, package_size, package_price, order_code,
+            conversion_status, external_id, notes, customer_name, customer_wa_id, business_phone,
+            elapsed_ms, occurred_at
+        ) VALUES (
+            :event_type, :session_id, :source, :traffic_kind, :affiliate_code, :affiliate_name,
+            :page_path, :page_url, :page_title, :referrer, :cta_location, :product_code, :product_label,
+            :flavor_label, :flavor_code, :package_label, :package_size, :package_price, :order_code,
+            :conversion_status, :external_id, :notes, :customer_name, :customer_wa_id, :business_phone,
+            :elapsed_ms, :occurred_at
+        )'
+    );
+    $stmt->execute([
+        'event_type' => substr((string) ($event['event_type'] ?? 'unknown'), 0, 80),
+        'session_id' => substr((string) ($event['session_id'] ?? ''), 0, 120),
+        'source' => substr((string) ($event['source'] ?? 'unknown'), 0, 50),
+        'traffic_kind' => substr((string) ($event['traffic_kind'] ?? 'landing'), 0, 20),
+        'affiliate_code' => strtoupper(substr((string) ($event['affiliate_code'] ?? ''), 0, 16)),
+        'affiliate_name' => substr((string) ($event['affiliate_name'] ?? ''), 0, 120),
+        'page_path' => substr((string) ($event['page_path'] ?? ''), 0, 255),
+        'page_url' => substr((string) ($event['page_url'] ?? ''), 0, 500),
+        'page_title' => substr((string) ($event['page_title'] ?? ''), 0, 255),
+        'referrer' => substr((string) ($event['referrer'] ?? ''), 0, 500),
+        'cta_location' => substr((string) ($event['cta_location'] ?? ''), 0, 120),
+        'product_code' => substr((string) ($event['product_code'] ?? ''), 0, 20),
+        'product_label' => substr((string) ($event['product_label'] ?? ''), 0, 120),
+        'flavor_label' => substr((string) ($event['flavor_label'] ?? ''), 0, 120),
+        'flavor_code' => substr((string) ($event['flavor_code'] ?? ''), 0, 20),
+        'package_label' => substr((string) ($event['package_label'] ?? ''), 0, 120),
+        'package_size' => substr((string) ($event['package_size'] ?? ''), 0, 20),
+        'package_price' => substr((string) ($event['package_price'] ?? ''), 0, 40),
+        'order_code' => substr((string) ($event['order_code'] ?? ''), 0, 40),
+        'conversion_status' => substr((string) ($event['conversion_status'] ?? ''), 0, 40),
+        'external_id' => substr((string) ($event['external_id'] ?? ''), 0, 120),
+        'notes' => substr((string) ($event['notes'] ?? ''), 0, 255),
+        'customer_name' => substr((string) ($event['customer_name'] ?? ''), 0, 120),
+        'customer_wa_id' => substr((string) ($event['customer_wa_id'] ?? ''), 0, 120),
+        'business_phone' => substr((string) ($event['business_phone'] ?? ''), 0, 50),
+        'elapsed_ms' => max(0, (int) ($event['elapsed_ms'] ?? 0)),
+        'occurred_at' => analyticsNormalizeOccurredAt((string) ($event['occurred_at'] ?? gmdate(DATE_ATOM))),
+    ]);
     analyticsTouchLiveState('analytics_event');
 }
 
@@ -387,18 +487,183 @@ function analyticsDeleteAffiliateLandingPages(array $affiliate): void
     }
 }
 
-function analyticsLoadAffiliates(): array
+function analyticsLoadEvents(?DateTimeImmutable $rangeStart = null): array
 {
-    $storageFile = analyticsResolveAffiliateStorageFile();
-    analyticsEnsureStorage($storageFile);
-    $affiliates = analyticsReadJsonFile($storageFile);
-    return array_values(array_filter($affiliates, 'is_array'));
+    $pdo = analyticsDb();
+    $sql = 'SELECT
+                event_type, session_id, source, traffic_kind, affiliate_code, affiliate_name,
+                page_path, page_url, page_title, referrer, cta_location, product_code, product_label,
+                flavor_label, flavor_code, package_label, package_size, package_price, order_code,
+                conversion_status, external_id, notes, customer_name, customer_wa_id, business_phone,
+                elapsed_ms, occurred_at
+            FROM analytics_events';
+    $params = [];
+
+    if ($rangeStart !== null) {
+        $sql .= ' WHERE occurred_at >= :range_start';
+        $params['range_start'] = $rangeStart->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
+    }
+
+    $sql .= ' ORDER BY occurred_at DESC';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll();
+
+    return array_map(static function (array $row): array {
+        $row['occurred_at'] = (new DateTimeImmutable((string) $row['occurred_at'], new DateTimeZone('UTC')))->format(DATE_ATOM);
+        return $row;
+    }, $rows);
 }
 
-function analyticsSaveAffiliates(array $affiliates): void
+function analyticsLoadAffiliates(): array
 {
-    $storageFile = analyticsResolveAffiliateStorageFile();
-    analyticsEnsureStorage($storageFile);
-    analyticsWriteJsonFile($storageFile, array_values($affiliates));
+    $pdo = analyticsDb();
+    $stmt = $pdo->query(
+        'SELECT a.id, a.code, a.name, a.slug, a.created_at, a.updated_at, ap.platform
+         FROM affiliates a
+         LEFT JOIN affiliate_platforms ap ON ap.affiliate_id = a.id
+         ORDER BY a.name ASC, ap.platform ASC'
+    );
+
+    $affiliatesByCode = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $code = strtoupper((string) ($row['code'] ?? ''));
+        if (!isset($affiliatesByCode[$code])) {
+            $affiliatesByCode[$code] = [
+                'id' => (int) ($row['id'] ?? 0),
+                'code' => $code,
+                'name' => (string) ($row['name'] ?? ''),
+                'slug' => (string) ($row['slug'] ?? ''),
+                'platforms' => [],
+                'created_at' => (new DateTimeImmutable((string) $row['created_at'], new DateTimeZone('UTC')))->format(DATE_ATOM),
+                'updated_at' => (new DateTimeImmutable((string) $row['updated_at'], new DateTimeZone('UTC')))->format(DATE_ATOM),
+            ];
+        }
+        $platform = strtolower(trim((string) ($row['platform'] ?? '')));
+        if ($platform !== '') {
+            $affiliatesByCode[$code]['platforms'][] = $platform;
+        }
+    }
+
+    $affiliates = [];
+    foreach ($affiliatesByCode as $affiliate) {
+        $affiliate['platforms'] = analyticsNormalizePlatforms($affiliate['platforms']);
+        $affiliate['urls'] = [];
+        foreach ($affiliate['platforms'] as $platform) {
+            $affiliate['urls'][$platform] = analyticsBuildAffiliateLandingUrl($platform, (string) $affiliate['code']);
+        }
+        $affiliates[] = $affiliate;
+    }
+
+    return $affiliates;
+}
+
+function analyticsCreateAffiliateRecord(array $affiliate): array
+{
+    $pdo = analyticsDb();
+    $pdo->beginTransaction();
+
+    try {
+        $stmt = $pdo->prepare(
+            'INSERT INTO affiliates (code, name, slug, created_at, updated_at)
+             VALUES (:code, :name, :slug, :created_at, :updated_at)'
+        );
+        $stmt->execute([
+            'code' => strtoupper((string) ($affiliate['code'] ?? '')),
+            'name' => (string) ($affiliate['name'] ?? ''),
+            'slug' => (string) ($affiliate['slug'] ?? ''),
+            'created_at' => analyticsNormalizeOccurredAt((string) ($affiliate['created_at'] ?? gmdate(DATE_ATOM))),
+            'updated_at' => analyticsNormalizeOccurredAt((string) ($affiliate['updated_at'] ?? gmdate(DATE_ATOM))),
+        ]);
+
+        $affiliateId = (int) $pdo->lastInsertId();
+        $platformStmt = $pdo->prepare(
+            'INSERT INTO affiliate_platforms (affiliate_id, platform) VALUES (:affiliate_id, :platform)'
+        );
+        foreach (analyticsNormalizePlatforms((array) ($affiliate['platforms'] ?? [])) as $platform) {
+            $platformStmt->execute([
+                'affiliate_id' => $affiliateId,
+                'platform' => $platform,
+            ]);
+        }
+
+        $pdo->commit();
+    } catch (Throwable $error) {
+        $pdo->rollBack();
+        analyticsJsonResponse(['error' => 'Unable to create affiliate record.', 'details' => $error->getMessage()], 500);
+    }
+
     analyticsTouchLiveState('affiliate_update');
+    return analyticsFindAffiliateByCode((string) ($affiliate['code'] ?? '')) ?? $affiliate;
+}
+
+function analyticsUpdateAffiliateRecord(string $code, array $affiliate): array
+{
+    $existing = analyticsFindAffiliateByCode($code);
+    if ($existing === null) {
+        analyticsJsonResponse(['error' => 'Affiliate not found.'], 404);
+    }
+
+    $pdo = analyticsDb();
+    $pdo->beginTransaction();
+
+    try {
+        $stmt = $pdo->prepare(
+            'UPDATE affiliates
+             SET name = :name, slug = :slug, updated_at = :updated_at
+             WHERE code = :code'
+        );
+        $stmt->execute([
+            'code' => strtoupper($code),
+            'name' => (string) ($affiliate['name'] ?? $existing['name']),
+            'slug' => (string) ($affiliate['slug'] ?? $existing['slug']),
+            'updated_at' => analyticsNormalizeOccurredAt((string) ($affiliate['updated_at'] ?? gmdate(DATE_ATOM))),
+        ]);
+
+        $affiliateId = (int) ($existing['id'] ?? 0);
+        $pdo->prepare('DELETE FROM affiliate_platforms WHERE affiliate_id = :affiliate_id')
+            ->execute(['affiliate_id' => $affiliateId]);
+
+        $platformStmt = $pdo->prepare(
+            'INSERT INTO affiliate_platforms (affiliate_id, platform) VALUES (:affiliate_id, :platform)'
+        );
+        foreach (analyticsNormalizePlatforms((array) ($affiliate['platforms'] ?? [])) as $platform) {
+            $platformStmt->execute([
+                'affiliate_id' => $affiliateId,
+                'platform' => $platform,
+            ]);
+        }
+
+        $pdo->commit();
+    } catch (Throwable $error) {
+        $pdo->rollBack();
+        analyticsJsonResponse(['error' => 'Unable to update affiliate record.', 'details' => $error->getMessage()], 500);
+    }
+
+    analyticsTouchLiveState('affiliate_update');
+    return analyticsFindAffiliateByCode($code) ?? $affiliate;
+}
+
+function analyticsDeleteAffiliateRecord(string $code): void
+{
+    $existing = analyticsFindAffiliateByCode($code);
+    if ($existing === null) {
+        analyticsJsonResponse(['error' => 'Affiliate not found.'], 404);
+    }
+
+    $pdo = analyticsDb();
+    $stmt = $pdo->prepare('DELETE FROM affiliates WHERE code = :code');
+    $stmt->execute(['code' => strtoupper($code)]);
+    analyticsTouchLiveState('affiliate_update');
+}
+
+function analyticsFindAffiliateByCode(string $code): ?array
+{
+    $normalizedCode = strtoupper(trim($code));
+    foreach (analyticsLoadAffiliates() as $affiliate) {
+        if (strtoupper((string) ($affiliate['code'] ?? '')) === $normalizedCode) {
+            return $affiliate;
+        }
+    }
+    return null;
 }

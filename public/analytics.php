@@ -30,20 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit;
 }
 
-$storageFile = analyticsResolveStorageFile();
-analyticsEnsureStorage($storageFile);
-
-function readEvents(string $storageFile): array
-{
-    $raw = file_get_contents($storageFile);
-    if ($raw === false || trim($raw) === '') {
-        return [];
-    }
-
-    $decoded = json_decode($raw, true);
-    return is_array($decoded) ? $decoded : [];
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payload = json_decode(file_get_contents('php://input') ?: '', true);
     if (!is_array($payload)) {
@@ -77,11 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'occurred_at' => substr((string) ($payload['occurred_at'] ?? gmdate(DATE_ATOM)), 0, 80),
     ];
 
-    analyticsAppendEvent($storageFile, $event);
+    analyticsAppendEvent($event);
     analyticsJsonResponse(['ok' => true], 201);
 }
 
-$events = readEvents($storageFile);
+$events = analyticsLoadEvents();
 $byUrl = [];
 $bySource = [];
 $sessionTimeByUrl = [];

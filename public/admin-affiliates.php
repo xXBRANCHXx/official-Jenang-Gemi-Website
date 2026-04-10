@@ -75,8 +75,7 @@ if ($method === 'POST') {
         'created_at' => gmdate(DATE_ATOM),
     ]);
 
-    $affiliates[] = $affiliate;
-    analyticsSaveAffiliates($affiliates);
+    $affiliate = analyticsCreateAffiliateRecord($affiliate);
     analyticsJsonResponse(['affiliate' => $affiliate], 201);
 }
 
@@ -104,12 +103,12 @@ if ($method === 'PATCH' || $method === 'PUT') {
         }
 
         analyticsDeleteAffiliateLandingPages($affiliate);
-        $affiliates[$index] = affiliateHydrate(array_merge($affiliate, [
+        $updatedAffiliate = affiliateHydrate(array_merge($affiliate, [
             'name' => $nextName,
             'platforms' => $nextPlatforms,
         ]));
-        analyticsSaveAffiliates($affiliates);
-        analyticsJsonResponse(['affiliate' => $affiliates[$index]]);
+        $updatedAffiliate = analyticsUpdateAffiliateRecord($code, $updatedAffiliate);
+        analyticsJsonResponse(['affiliate' => $updatedAffiliate]);
     }
 
     analyticsJsonResponse(['error' => 'Affiliate not found.'], 404);
@@ -129,8 +128,7 @@ if ($method === 'DELETE') {
         }
 
         analyticsDeleteAffiliateLandingPages($affiliate);
-        array_splice($affiliates, $index, 1);
-        analyticsSaveAffiliates($affiliates);
+        analyticsDeleteAffiliateRecord($code);
         analyticsJsonResponse(['deleted' => true]);
     }
 

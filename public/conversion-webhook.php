@@ -41,9 +41,6 @@ if (!is_array($payload)) {
     analyticsJsonResponse(['error' => 'Invalid JSON payload.'], 400);
 }
 
-$storageFile = analyticsResolveStorageFile();
-analyticsEnsureStorage($storageFile);
-
 $event = [
     'event_type' => 'conversion_confirmed',
     'session_id' => substr((string) ($payload['session_id'] ?? ''), 0, 120),
@@ -68,7 +65,7 @@ $event = [
     'occurred_at' => substr((string) ($payload['occurred_at'] ?? gmdate(DATE_ATOM)), 0, 80),
 ];
 
-analyticsAppendEvent($storageFile, $event);
+analyticsAppendEvent($event);
 
 analyticsJsonResponse([
     'ok' => true,

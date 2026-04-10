@@ -50,13 +50,15 @@ function analyticsEnvValue(string $key): string
 
 function analyticsResolveDatabaseConfig(): array
 {
+    $localConfig = analyticsLoadLocalConfig();
+
     return [
-        'host' => analyticsEnvValue('JG_DB_HOST'),
-        'port' => analyticsEnvValue('JG_DB_PORT') ?: '3306',
-        'name' => analyticsEnvValue('JG_DB_NAME') ?: 'u558678012_Bign',
-        'user' => analyticsEnvValue('JG_DB_USER'),
-        'pass' => analyticsEnvValue('JG_DB_PASSWORD'),
-        'charset' => analyticsEnvValue('JG_DB_CHARSET') ?: 'utf8mb4',
+        'host' => analyticsEnvValue('JG_DB_HOST') ?: trim((string) ($localConfig['db_host'] ?? '')),
+        'port' => analyticsEnvValue('JG_DB_PORT') ?: trim((string) ($localConfig['db_port'] ?? '')) ?: '3306',
+        'name' => analyticsEnvValue('JG_DB_NAME') ?: trim((string) ($localConfig['db_name'] ?? '')) ?: 'u558678012_Bign',
+        'user' => analyticsEnvValue('JG_DB_USER') ?: trim((string) ($localConfig['db_user'] ?? '')),
+        'pass' => analyticsEnvValue('JG_DB_PASSWORD') ?: (string) ($localConfig['db_password'] ?? ''),
+        'charset' => analyticsEnvValue('JG_DB_CHARSET') ?: trim((string) ($localConfig['db_charset'] ?? '')) ?: 'utf8mb4',
     ];
 }
 

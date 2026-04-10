@@ -28,15 +28,35 @@ function analyticsJsonResponse(array $payload, int $status = 200): void
     exit;
 }
 
+function analyticsEnvValue(string $key): string
+{
+    $value = getenv($key);
+    if (is_string($value) && trim($value) !== '') {
+        return trim($value);
+    }
+
+    $serverValue = $_SERVER[$key] ?? null;
+    if (is_string($serverValue) && trim($serverValue) !== '') {
+        return trim($serverValue);
+    }
+
+    $envValue = $_ENV[$key] ?? null;
+    if (is_string($envValue) && trim($envValue) !== '') {
+        return trim($envValue);
+    }
+
+    return '';
+}
+
 function analyticsResolveDatabaseConfig(): array
 {
     return [
-        'host' => trim((string) getenv('JG_DB_HOST')),
-        'port' => trim((string) getenv('JG_DB_PORT')) ?: '3306',
-        'name' => trim((string) getenv('JG_DB_NAME')) ?: 'u558678012_Bign',
-        'user' => trim((string) getenv('JG_DB_USER')),
-        'pass' => (string) getenv('JG_DB_PASSWORD'),
-        'charset' => trim((string) getenv('JG_DB_CHARSET')) ?: 'utf8mb4',
+        'host' => analyticsEnvValue('JG_DB_HOST'),
+        'port' => analyticsEnvValue('JG_DB_PORT') ?: '3306',
+        'name' => analyticsEnvValue('JG_DB_NAME') ?: 'u558678012_Bign',
+        'user' => analyticsEnvValue('JG_DB_USER'),
+        'pass' => analyticsEnvValue('JG_DB_PASSWORD'),
+        'charset' => analyticsEnvValue('JG_DB_CHARSET') ?: 'utf8mb4',
     ];
 }
 

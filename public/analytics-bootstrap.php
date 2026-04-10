@@ -49,6 +49,16 @@ function analyticsResolveStorageFile(): string
     return $defaultFile;
 }
 
+function analyticsResolveStorageDir(): string
+{
+    return dirname(analyticsResolveStorageFile());
+}
+
+function analyticsResolveAffiliateStorageFile(): string
+{
+    return analyticsResolveStorageDir() . '/affiliates.json';
+}
+
 function analyticsEnsureStorage(string $storageFile): void
 {
     $storageDir = dirname($storageFile);
@@ -61,8 +71,43 @@ function analyticsEnsureStorage(string $storageFile): void
     }
 }
 
+function analyticsReadJsonFile(string $storageFile): array
+{
+    if (!file_exists($storageFile)) {
+        return [];
+    }
+
+    $raw = file_get_contents($storageFile);
+    if ($raw === false || trim($raw) === '') {
+        return [];
+    }
+
+    $decoded = json_decode($raw, true);
+    return is_array($decoded) ? $decoded : [];
+}
+
+function analyticsWriteJsonFile(string $storageFile, array $payload): void
+{
+    analyticsEnsureStorage($storageFile);
+
+    $handle = fopen($storageFile, 'c+');
+    if ($handle === false) {
+        analyticsJsonResponse(['error' => 'Unable to open analytics storage.'], 500);
+    }
+
+    flock($handle, LOCK_EX);
+    rewind($handle);
+    ftruncate($handle, 0);
+    fwrite($handle, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    fflush($handle);
+    flock($handle, LOCK_UN);
+    fclose($handle);
+}
+
 function analyticsAppendEvent(string $storageFile, array $event): void
 {
+    analyticsEnsureStorage($storageFile);
+
     $handle = fopen($storageFile, 'c+');
     if ($handle === false) {
         analyticsJsonResponse(['error' => 'Unable to open analytics storage.'], 500);
@@ -74,7 +119,6 @@ function analyticsAppendEvent(string $storageFile, array $event): void
     if (!is_array($events)) {
         $events = [];
     }
-
     $events[] = $event;
 
     rewind($handle);
@@ -170,4 +214,150 @@ function analyticsExtractOrderCode(string $message): ?array
         'flavor_code' => $flavorCode,
         'flavor_label' => $flavorMap[$flavorCode] ?? $flavorCode,
     ];
+}
+
+function analyticsGetSupportedPlatforms(): array
+{
+    return ['youtube', 'facebook', 'instagram', 'tiktok'];
+}
+
+function analyticsNormalizePlatforms(array $platforms): array
+{
+    $allowed = analyticsGetSupportedPlatforms();
+    $normalized = [];
+
+    foreach ($platforms as $platform) {
+        $candidate = strtolower(trim((string) $platform));
+        if ($candidate !== '' && in_array($candidate, $allowed, true)) {
+            $normalized[] = $candidate;
+        }
+    }
+
+    $normalized = array_values(array_unique($normalized));
+    sort($normalized);
+
+    return $normalized;
+}
+
+function analyticsSlugify(string $value): string
+{
+    $slug = strtolower(trim($value));
+    $slug = preg_replace('/[^a-z0-9]+/', '-', $slug) ?? '';
+    $slug = trim($slug, '-');
+    return $slug !== '' ? $slug : 'affiliate';
+}
+
+function analyticsGenerateAffiliateCode(array $existingAffiliates): string
+{
+    $existingCodes = array_map(
+        static fn(array $affiliate): string => strtoupper((string) ($affiliate['code'] ?? '')),
+        $existingAffiliates
+    );
+
+    do {
+        $code = 'AFF' . strtoupper(bin2hex(random_bytes(3)));
+    } while (in_array($code, $existingCodes, true));
+
+    return $code;
+}
+
+function analyticsResolveSiteRoot(): string
+{
+    if (file_exists(__DIR__ . '/bubur-youtube.html')) {
+        return __DIR__;
+    }
+
+    return dirname(__DIR__);
+}
+
+function analyticsResolveBaseLandingFile(string $platform): string
+{
+    return analyticsResolveSiteRoot() . '/bubur-' . $platform . '.html';
+}
+
+function analyticsBuildAffiliateLandingFilename(string $platform, string $affiliateCode): string
+{
+    return sprintf('bubur-%s-aff-%s.html', $platform, strtolower($affiliateCode));
+}
+
+function analyticsResolveAffiliateLandingFile(string $platform, string $affiliateCode): string
+{
+    return analyticsResolveSiteRoot() . '/' . analyticsBuildAffiliateLandingFilename($platform, $affiliateCode);
+}
+
+function analyticsBuildAffiliateLandingUrl(string $platform, string $affiliateCode): string
+{
+    return '/' . analyticsBuildAffiliateLandingFilename($platform, $affiliateCode);
+}
+
+function analyticsRenderAffiliateLandingPage(string $platform, array $affiliate): string
+{
+    $templatePath = analyticsResolveBaseLandingFile($platform);
+    if (!file_exists($templatePath)) {
+        analyticsJsonResponse([
+            'error' => 'Missing base landing page template.',
+            'platform' => $platform,
+        ], 500);
+    }
+
+    $html = file_get_contents($templatePath);
+    if ($html === false) {
+        analyticsJsonResponse([
+            'error' => 'Unable to read base landing page template.',
+            'platform' => $platform,
+        ], 500);
+    }
+
+    $rootMarker = sprintf(
+        '<div class="landing-shell" data-landing-page data-source="%s" data-analytics-endpoint="/analytics.php">',
+        $platform
+    );
+    $replacement = sprintf(
+        '<div class="landing-shell" data-landing-page data-source="%s" data-analytics-endpoint="/analytics.php" data-traffic-kind="affiliate" data-affiliate-code="%s" data-affiliate-name="%s">',
+        htmlspecialchars($platform, ENT_QUOTES),
+        htmlspecialchars((string) ($affiliate['code'] ?? ''), ENT_QUOTES),
+        htmlspecialchars((string) ($affiliate['name'] ?? ''), ENT_QUOTES)
+    );
+
+    return str_replace($rootMarker, $replacement, $html);
+}
+
+function analyticsWriteAffiliateLandingPages(array $affiliate): array
+{
+    $platforms = analyticsNormalizePlatforms((array) ($affiliate['platforms'] ?? []));
+    $urls = [];
+
+    foreach ($platforms as $platform) {
+        $targetFile = analyticsResolveAffiliateLandingFile($platform, (string) $affiliate['code']);
+        file_put_contents($targetFile, analyticsRenderAffiliateLandingPage($platform, $affiliate));
+        $urls[$platform] = analyticsBuildAffiliateLandingUrl($platform, (string) $affiliate['code']);
+    }
+
+    ksort($urls);
+    return $urls;
+}
+
+function analyticsDeleteAffiliateLandingPages(array $affiliate): void
+{
+    foreach (analyticsGetSupportedPlatforms() as $platform) {
+        $targetFile = analyticsResolveAffiliateLandingFile($platform, (string) ($affiliate['code'] ?? ''));
+        if (file_exists($targetFile)) {
+            @unlink($targetFile);
+        }
+    }
+}
+
+function analyticsLoadAffiliates(): array
+{
+    $storageFile = analyticsResolveAffiliateStorageFile();
+    analyticsEnsureStorage($storageFile);
+    $affiliates = analyticsReadJsonFile($storageFile);
+    return array_values(array_filter($affiliates, 'is_array'));
+}
+
+function analyticsSaveAffiliates(array $affiliates): void
+{
+    $storageFile = analyticsResolveAffiliateStorageFile();
+    analyticsEnsureStorage($storageFile);
+    analyticsWriteJsonFile($storageFile, array_values($affiliates));
 }

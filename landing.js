@@ -55,6 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!root) return;
 
   const sourceKey = root.dataset.source || 'youtube';
+  const affiliateCode = (root.dataset.affiliateCode || '').trim().toUpperCase();
+  const affiliateName = (root.dataset.affiliateName || '').trim();
+  const trafficKind = affiliateCode ? 'affiliate' : ((root.dataset.trafficKind || 'landing').trim().toLowerCase() || 'landing');
   const sourceConfig = LANDING_DEFAULTS[sourceKey] || {
     label: sourceKey,
     badge: `Pengunjung ${sourceKey}`,
@@ -88,6 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
       event_type: eventType,
       session_id: sessionId,
       source: sourceKey,
+      traffic_kind: trafficKind,
+      affiliate_code: affiliateCode,
+      affiliate_name: affiliateName,
       page_path: window.location.pathname,
       page_url: window.location.href,
       page_title: document.title,
@@ -268,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const lines = [
       `Halo Admin Jenang Gemi, saya ingin order ${productMeta.label}.`,
       '',
+      ...(affiliateCode ? [`Kode affiliate: ${affiliateCode}${affiliateName ? ` (${affiliateName})` : ''}`] : []),
       `Kode order: ${orderCode}`,
       `Sumber traffic: ${sourceConfig.label}`,
       `Landing page: ${window.location.pathname}`,

@@ -19,9 +19,14 @@ $storageFile = analyticsResolveStorageFile();
 analyticsEnsureStorage($storageFile);
 $timeframe = (string) ($_GET['timeframe'] ?? '7d');
 $recentLimit = max(15, min(300, (int) ($_GET['recent_limit'] ?? 180)));
+$dataset = strtolower(trim((string) ($_GET['dataset'] ?? 'landing')));
+$affiliateCodeFilter = strtoupper(trim((string) ($_GET['affiliate_code'] ?? '')));
 $allowedTimeframes = ['1h', '24h', '7d', '30d', '90d', 'all'];
 if (!in_array($timeframe, $allowedTimeframes, true)) {
     $timeframe = '7d';
+}
+if (!in_array($dataset, ['landing', 'affiliate'], true)) {
+    $dataset = 'landing';
 }
 
 $now = new DateTimeImmutable('now', $displayTimezone);
@@ -64,9 +69,12 @@ if (!file_exists($storageFile)) {
         ],
         'meta' => [
             'timeframe' => $timeframe,
+            'dataset' => $dataset,
+            'affiliate_code' => $affiliateCodeFilter,
             'generated_at' => $now->format(DATE_ATOM),
             'timezone' => $displayTimezone->getName(),
         ],
+        'affiliates' => analyticsLoadAffiliates(),
         'by_url' => [],
         'by_source' => [],
         'recent_events' => [],
@@ -76,11 +84,8 @@ if (!file_exists($storageFile)) {
     exit;
 }
 
-$raw = file_get_contents($storageFile);
-$events = $raw ? json_decode($raw, true) : [];
-if (!is_array($events)) {
-    $events = [];
-}
+$events = analyticsReadJsonFile($storageFile);
+$affiliates = analyticsLoadAffiliates();
 
 $filteredEvents = [];
 foreach ($events as $event) {
@@ -94,6 +99,22 @@ foreach ($events as $event) {
 
     if ($rangeStart && $occurredAt < $rangeStart) {
         continue;
+    }
+
+    $trafficKind = strtolower(trim((string) ($event['traffic_kind'] ?? 'landing')));
+    $eventAffiliateCode = strtoupper(trim((string) ($event['affiliate_code'] ?? '')));
+
+    if ($dataset === 'landing' && $trafficKind === 'affiliate') {
+        continue;
+    }
+
+    if ($dataset === 'affiliate') {
+        if ($eventAffiliateCode === '') {
+            continue;
+        }
+        if ($affiliateCodeFilter !== '' && $eventAffiliateCode !== $affiliateCodeFilter) {
+            continue;
+        }
     }
 
     $event['_occurred_at_dt'] = $occurredAt;
@@ -180,6 +201,8 @@ foreach ($filteredEvents as $event) {
     $occurredAt = $event['_occurred_at_dt'];
     $pagePath = (string) ($event['page_path'] ?? '/');
     $source = (string) ($event['source'] ?? 'unknown');
+    $affiliateCode = strtoupper(trim((string) ($event['affiliate_code'] ?? '')));
+    $affiliateName = trim((string) ($event['affiliate_name'] ?? ''));
     $sessionId = (string) ($event['session_id'] ?? 'no-session');
     $eventType = (string) ($event['event_type'] ?? 'unknown');
     $elapsedMs = (int) ($event['elapsed_ms'] ?? 0);
@@ -191,6 +214,8 @@ foreach ($filteredEvents as $event) {
         $byUrl[$urlKey] = [
             'page_path' => $pagePath,
             'source' => $source,
+            'affiliate_code' => $affiliateCode,
+            'affiliate_name' => $affiliateName,
             'views' => 0,
             'order_now_clicks' => 0,
             'checkout_clicks' => 0,
@@ -282,11 +307,14 @@ $recentEvents = array_map(static function (array $event): array {
 echo json_encode([
     'meta' => [
         'timeframe' => $timeframe,
+        'dataset' => $dataset,
+        'affiliate_code' => $affiliateCodeFilter,
         'generated_at' => $now->format(DATE_ATOM),
         'timezone' => $displayTimezone->getName(),
         'range_start' => $rangeStart?->format(DATE_ATOM),
     ],
     'summary' => $summary,
+    'affiliates' => $affiliates,
     'by_url' => $byUrl,
     'by_source' => $bySource,
     'recent_events' => $recentEvents,

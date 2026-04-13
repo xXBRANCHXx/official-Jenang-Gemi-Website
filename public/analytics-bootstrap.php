@@ -112,7 +112,8 @@ function analyticsDb(): PDO
 
 function analyticsEnsureDatabaseSchema(PDO $pdo): void
 {
-    $pdo->exec(
+    analyticsTryExec(
+        $pdo,
         'CREATE TABLE IF NOT EXISTS analytics_events (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             event_type VARCHAR(80) NOT NULL,
@@ -160,7 +161,8 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
     );
 
-    $pdo->exec(
+    analyticsTryExec(
+        $pdo,
         'CREATE TABLE IF NOT EXISTS affiliates (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             code VARCHAR(16) NOT NULL,
@@ -172,7 +174,8 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
     );
 
-    $pdo->exec(
+    analyticsTryExec(
+        $pdo,
         'CREATE TABLE IF NOT EXISTS affiliate_platforms (
             affiliate_id BIGINT UNSIGNED NOT NULL,
             platform VARCHAR(20) NOT NULL,
@@ -183,7 +186,8 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
     );
 
-    $pdo->exec(
+    analyticsTryExec(
+        $pdo,
         'CREATE TABLE IF NOT EXISTS live_state (
             state_key VARCHAR(32) NOT NULL PRIMARY KEY,
             sequence BIGINT UNSIGNED NOT NULL DEFAULT 0,
@@ -192,7 +196,8 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
     );
 
-    $pdo->exec(
+    analyticsTryExec(
+        $pdo,
         'CREATE TABLE IF NOT EXISTS analytics_ip_exclusions (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             ip_address VARCHAR(45) NOT NULL,
@@ -208,65 +213,126 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
     analyticsEnsureTableColumn($pdo, 'analytics_events', 'region_name', 'VARCHAR(160) NOT NULL DEFAULT ""');
     analyticsEnsureTableColumn($pdo, 'analytics_events', 'city_name', 'VARCHAR(160) NOT NULL DEFAULT ""');
 
-    $stmt = $pdo->prepare(
-        'INSERT INTO live_state (state_key, sequence, reason, updated_at)
-         VALUES ("analytics", 0, "init", UTC_TIMESTAMP(6))
-         ON DUPLICATE KEY UPDATE state_key = state_key'
-    );
-    $stmt->execute();
+    try {
+        $stmt = $pdo->prepare(
+            'INSERT INTO live_state (state_key, sequence, reason, updated_at)
+             VALUES ("analytics", 0, "init", UTC_TIMESTAMP(6))
+             ON DUPLICATE KEY UPDATE state_key = state_key'
+        );
+        $stmt->execute();
+    } catch (Throwable) {
+    }
+}
+
+function analyticsTryExec(PDO $pdo, string $sql): bool
+{
+    try {
+        $pdo->exec($sql);
+        return true;
+    } catch (Throwable) {
+        return false;
+    }
+}
+
+function analyticsListTableColumns(PDO $pdo, string $tableName): array
+{
+    $cache = $GLOBALS['analytics_table_column_cache'] ?? [];
+
+    if (array_key_exists($tableName, $cache)) {
+        return $cache[$tableName];
+    }
+
+    try {
+        $stmt = $pdo->query(sprintf(
+            'SHOW COLUMNS FROM `%s`',
+            str_replace('`', '``', $tableName)
+        ));
+        $columns = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $field = strtolower(trim((string) ($row['Field'] ?? '')));
+            if ($field !== '') {
+                $columns[$field] = true;
+            }
+        }
+        $cache[$tableName] = $columns;
+    } catch (Throwable) {
+        $cache[$tableName] = [];
+    }
+
+    $GLOBALS['analytics_table_column_cache'] = $cache;
+    return $cache[$tableName];
 }
 
 function analyticsEnsureTableColumn(PDO $pdo, string $tableName, string $columnName, string $definition): void
 {
-    $stmt = $pdo->prepare(
-        'SELECT COUNT(*)
-         FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE()
-           AND TABLE_NAME = :table_name
-           AND COLUMN_NAME = :column_name'
-    );
-    $stmt->execute([
-        'table_name' => $tableName,
-        'column_name' => $columnName,
-    ]);
-
-    if ((int) $stmt->fetchColumn() > 0) {
+    $columns = analyticsListTableColumns($pdo, $tableName);
+    if (isset($columns[strtolower($columnName)])) {
         return;
     }
 
-    $pdo->exec(sprintf(
+    if (!analyticsTryExec($pdo, sprintf(
         'ALTER TABLE `%s` ADD COLUMN `%s` %s',
         str_replace('`', '``', $tableName),
         str_replace('`', '``', $columnName),
         $definition
-    ));
+    ))) {
+        return;
+    }
+
+    analyticsListTableColumnsReset($tableName);
+}
+
+function analyticsListTableColumnsReset(?string $tableName = null): void
+{
+    if (!isset($GLOBALS['analytics_table_column_cache']) || !is_array($GLOBALS['analytics_table_column_cache'])) {
+        $GLOBALS['analytics_table_column_cache'] = [];
+    }
+
+    if ($tableName === null) {
+        $GLOBALS['analytics_table_column_cache'] = [];
+        return;
+    }
+
+    unset($GLOBALS['analytics_table_column_cache'][$tableName]);
 }
 
 function analyticsTouchLiveState(string $reason = 'update'): array
 {
     $pdo = analyticsDb();
     $normalizedReason = substr($reason, 0, 80);
-    $stmt = $pdo->prepare(
-        'UPDATE live_state
-         SET sequence = sequence + 1,
-             reason = :reason,
-             updated_at = UTC_TIMESTAMP(6)
-         WHERE state_key = "analytics"'
-    );
-    $stmt->execute(['reason' => $normalizedReason]);
+    try {
+        $stmt = $pdo->prepare(
+            'UPDATE live_state
+             SET sequence = sequence + 1,
+                 reason = :reason,
+                 updated_at = UTC_TIMESTAMP(6)
+             WHERE state_key = "analytics"'
+        );
+        $stmt->execute(['reason' => $normalizedReason]);
+    } catch (Throwable) {
+        return [
+            'sequence' => 0,
+            'reason' => $normalizedReason,
+            'updated_at' => gmdate(DATE_ATOM),
+        ];
+    }
     return analyticsReadLiveState();
 }
 
 function analyticsReadLiveState(): array
 {
     $pdo = analyticsDb();
-    $stmt = $pdo->query(
-        'SELECT sequence, reason, updated_at
-         FROM live_state
-         WHERE state_key = "analytics"
-         LIMIT 1'
-    );
-    $state = $stmt->fetch();
+    try {
+        $stmt = $pdo->query(
+            'SELECT sequence, reason, updated_at
+             FROM live_state
+             WHERE state_key = "analytics"
+             LIMIT 1'
+        );
+        $state = $stmt->fetch();
+    } catch (Throwable) {
+        $state = false;
+    }
     if (!is_array($state)) {
         return [
             'sequence' => 0,
@@ -375,26 +441,14 @@ function analyticsResolveGeoContext(): array
 function analyticsAppendEvent(array $event): void
 {
     $pdo = analyticsDb();
+    $availableColumns = analyticsListTableColumns($pdo, 'analytics_events');
+    if ($availableColumns === []) {
+        return;
+    }
+
     $geoContext = analyticsResolveGeoContext();
     $ipAddress = analyticsNormalizeIp((string) ($event['ip_address'] ?? '')) ?: analyticsResolveClientIp();
-    $stmt = $pdo->prepare(
-        'INSERT INTO analytics_events (
-            event_type, session_id, source, traffic_kind, affiliate_code, affiliate_name,
-            page_path, page_url, page_title, referrer, cta_location, product_code, product_label,
-            flavor_label, flavor_code, package_label, package_size, package_price, order_code,
-            conversion_status, external_id, notes, customer_name, customer_wa_id, business_phone,
-            ip_address, country_code, region_name, city_name,
-            elapsed_ms, occurred_at
-        ) VALUES (
-            :event_type, :session_id, :source, :traffic_kind, :affiliate_code, :affiliate_name,
-            :page_path, :page_url, :page_title, :referrer, :cta_location, :product_code, :product_label,
-            :flavor_label, :flavor_code, :package_label, :package_size, :package_price, :order_code,
-            :conversion_status, :external_id, :notes, :customer_name, :customer_wa_id, :business_phone,
-            :ip_address, :country_code, :region_name, :city_name,
-            :elapsed_ms, :occurred_at
-        )'
-    );
-    $stmt->execute([
+    $payload = [
         'event_type' => substr((string) ($event['event_type'] ?? 'unknown'), 0, 80),
         'session_id' => substr((string) ($event['session_id'] ?? ''), 0, 120),
         'source' => substr((string) ($event['source'] ?? 'unknown'), 0, 50),
@@ -426,7 +480,35 @@ function analyticsAppendEvent(array $event): void
         'city_name' => substr((string) ($event['city_name'] ?? $geoContext['city_name']), 0, 160),
         'elapsed_ms' => max(0, (int) ($event['elapsed_ms'] ?? 0)),
         'occurred_at' => analyticsNormalizeOccurredAt((string) ($event['occurred_at'] ?? gmdate(DATE_ATOM))),
-    ]);
+    ];
+
+    $insertColumns = [];
+    $insertPlaceholders = [];
+    $insertParams = [];
+    foreach ($payload as $column => $value) {
+        if (!isset($availableColumns[$column])) {
+            continue;
+        }
+        $insertColumns[] = sprintf('`%s`', str_replace('`', '``', $column));
+        $insertPlaceholders[] = ':' . $column;
+        $insertParams[$column] = $value;
+    }
+
+    if ($insertColumns === []) {
+        return;
+    }
+
+    try {
+        $stmt = $pdo->prepare(sprintf(
+            'INSERT INTO analytics_events (%s) VALUES (%s)',
+            implode(', ', $insertColumns),
+            implode(', ', $insertPlaceholders)
+        ));
+        $stmt->execute($insertParams);
+    } catch (Throwable) {
+        return;
+    }
+
     analyticsTouchLiveState('analytics_event');
 }
 
@@ -651,14 +733,55 @@ function analyticsDeleteAffiliateLandingPages(array $affiliate): void
 function analyticsLoadEvents(?DateTimeImmutable $rangeStart = null): array
 {
     $pdo = analyticsDb();
-    $sql = 'SELECT
-                event_type, session_id, source, traffic_kind, affiliate_code, affiliate_name,
-                page_path, page_url, page_title, referrer, cta_location, product_code, product_label,
-                flavor_label, flavor_code, package_label, package_size, package_price, order_code,
-                conversion_status, external_id, notes, customer_name, customer_wa_id, business_phone,
-                ip_address, country_code, region_name, city_name,
-                elapsed_ms, occurred_at
-            FROM analytics_events';
+    $availableColumns = analyticsListTableColumns($pdo, 'analytics_events');
+    if ($availableColumns === []) {
+        return [];
+    }
+
+    $expectedColumns = [
+        'event_type' => "''",
+        'session_id' => "''",
+        'source' => "''",
+        'traffic_kind' => "'landing'",
+        'affiliate_code' => "''",
+        'affiliate_name' => "''",
+        'page_path' => "''",
+        'page_url' => "''",
+        'page_title' => "''",
+        'referrer' => "''",
+        'cta_location' => "''",
+        'product_code' => "''",
+        'product_label' => "''",
+        'flavor_label' => "''",
+        'flavor_code' => "''",
+        'package_label' => "''",
+        'package_size' => "''",
+        'package_price' => "''",
+        'order_code' => "''",
+        'conversion_status' => "''",
+        'external_id' => "''",
+        'notes' => "''",
+        'customer_name' => "''",
+        'customer_wa_id' => "''",
+        'business_phone' => "''",
+        'ip_address' => "''",
+        'country_code' => "''",
+        'region_name' => "''",
+        'city_name' => "''",
+        'elapsed_ms' => '0',
+        'occurred_at' => 'UTC_TIMESTAMP(6)',
+    ];
+
+    $selectColumns = [];
+    foreach ($expectedColumns as $column => $fallback) {
+        if (isset($availableColumns[$column])) {
+            $selectColumns[] = sprintf('`%s`', str_replace('`', '``', $column));
+            continue;
+        }
+        $selectColumns[] = sprintf('%s AS `%s`', $fallback, str_replace('`', '``', $column));
+    }
+
+    $sql = 'SELECT ' . implode(",\n                ", $selectColumns) . "\n            FROM analytics_events";
     $params = [];
 
     if ($rangeStart !== null) {
@@ -667,9 +790,13 @@ function analyticsLoadEvents(?DateTimeImmutable $rangeStart = null): array
     }
 
     $sql .= ' ORDER BY occurred_at DESC';
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    $rows = $stmt->fetchAll();
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll();
+    } catch (Throwable) {
+        return [];
+    }
 
     return array_map(static function (array $row): array {
         $row['occurred_at'] = (new DateTimeImmutable((string) $row['occurred_at'], new DateTimeZone('UTC')))->format(DATE_ATOM);
@@ -680,15 +807,20 @@ function analyticsLoadEvents(?DateTimeImmutable $rangeStart = null): array
 function analyticsLoadAffiliates(): array
 {
     $pdo = analyticsDb();
-    $stmt = $pdo->query(
-        'SELECT a.id, a.code, a.name, a.slug, a.created_at, a.updated_at, ap.platform
-         FROM affiliates a
-         LEFT JOIN affiliate_platforms ap ON ap.affiliate_id = a.id
-         ORDER BY a.name ASC, ap.platform ASC'
-    );
+    try {
+        $stmt = $pdo->query(
+            'SELECT a.id, a.code, a.name, a.slug, a.created_at, a.updated_at, ap.platform
+             FROM affiliates a
+             LEFT JOIN affiliate_platforms ap ON ap.affiliate_id = a.id
+             ORDER BY a.name ASC, ap.platform ASC'
+        );
+        $rows = $stmt->fetchAll();
+    } catch (Throwable) {
+        return [];
+    }
 
     $affiliatesByCode = [];
-    foreach ($stmt->fetchAll() as $row) {
+    foreach ($rows as $row) {
         $code = strtoupper((string) ($row['code'] ?? ''));
         if (!isset($affiliatesByCode[$code])) {
             $affiliatesByCode[$code] = [
@@ -833,11 +965,20 @@ function analyticsFindAffiliateByCode(string $code): ?array
 function analyticsLoadIpExclusions(): array
 {
     $pdo = analyticsDb();
-    $stmt = $pdo->query(
-        'SELECT id, ip_address, label, created_at, updated_at
-         FROM analytics_ip_exclusions
-         ORDER BY updated_at DESC, id DESC'
-    );
+    if (analyticsListTableColumns($pdo, 'analytics_ip_exclusions') === []) {
+        return [];
+    }
+
+    try {
+        $stmt = $pdo->query(
+            'SELECT id, ip_address, label, created_at, updated_at
+             FROM analytics_ip_exclusions
+             ORDER BY updated_at DESC, id DESC'
+        );
+        $rows = $stmt->fetchAll();
+    } catch (Throwable) {
+        return [];
+    }
 
     return array_map(static function (array $row): array {
         return [
@@ -847,7 +988,7 @@ function analyticsLoadIpExclusions(): array
             'created_at' => (new DateTimeImmutable((string) $row['created_at'], new DateTimeZone('UTC')))->format(DATE_ATOM),
             'updated_at' => (new DateTimeImmutable((string) $row['updated_at'], new DateTimeZone('UTC')))->format(DATE_ATOM),
         ];
-    }, $stmt->fetchAll());
+    }, $rows);
 }
 
 function analyticsLoadExcludedIpLookup(): array
@@ -870,19 +1011,29 @@ function analyticsCreateIpExclusion(string $ipAddress, string $label = ''): arra
     }
 
     $pdo = analyticsDb();
-    $stmt = $pdo->prepare(
-        'INSERT INTO analytics_ip_exclusions (ip_address, label, created_at, updated_at)
-         VALUES (:ip_address, :label, :created_at, :updated_at)
-         ON DUPLICATE KEY UPDATE label = VALUES(label), updated_at = VALUES(updated_at)'
-    );
+    if (analyticsListTableColumns($pdo, 'analytics_ip_exclusions') === []) {
+        analyticsJsonResponse([
+            'error' => 'IP exclusions table is unavailable in the analytics database.',
+            'details' => 'Create or grant access to analytics_ip_exclusions in BigN.',
+        ], 503);
+    }
 
     $timestamp = analyticsNormalizeOccurredAt(gmdate(DATE_ATOM));
-    $stmt->execute([
-        'ip_address' => $normalizedIp,
-        'label' => substr(trim($label), 0, 120),
-        'created_at' => $timestamp,
-        'updated_at' => $timestamp,
-    ]);
+    try {
+        $stmt = $pdo->prepare(
+            'INSERT INTO analytics_ip_exclusions (ip_address, label, created_at, updated_at)
+             VALUES (:ip_address, :label, :created_at, :updated_at)
+             ON DUPLICATE KEY UPDATE label = VALUES(label), updated_at = VALUES(updated_at)'
+        );
+        $stmt->execute([
+            'ip_address' => $normalizedIp,
+            'label' => substr(trim($label), 0, 120),
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ]);
+    } catch (Throwable $error) {
+        analyticsJsonResponse(['error' => 'Unable to save excluded IP.', 'details' => $error->getMessage()], 500);
+    }
 
     analyticsTouchLiveState('website_settings');
 
@@ -898,16 +1049,31 @@ function analyticsCreateIpExclusion(string $ipAddress, string $label = ''): arra
 function analyticsDeleteIpExclusion(int $id = 0, string $ipAddress = ''): void
 {
     $pdo = analyticsDb();
+    if (analyticsListTableColumns($pdo, 'analytics_ip_exclusions') === []) {
+        analyticsJsonResponse([
+            'error' => 'IP exclusions table is unavailable in the analytics database.',
+            'details' => 'Create or grant access to analytics_ip_exclusions in BigN.',
+        ], 503);
+    }
+
     if ($id > 0) {
-        $stmt = $pdo->prepare('DELETE FROM analytics_ip_exclusions WHERE id = :id');
-        $stmt->execute(['id' => $id]);
+        try {
+            $stmt = $pdo->prepare('DELETE FROM analytics_ip_exclusions WHERE id = :id');
+            $stmt->execute(['id' => $id]);
+        } catch (Throwable $error) {
+            analyticsJsonResponse(['error' => 'Unable to delete excluded IP.', 'details' => $error->getMessage()], 500);
+        }
     } else {
         $normalizedIp = analyticsNormalizeIp($ipAddress);
         if ($normalizedIp === '') {
             analyticsJsonResponse(['error' => 'Missing excluded IP identifier.'], 422);
         }
-        $stmt = $pdo->prepare('DELETE FROM analytics_ip_exclusions WHERE ip_address = :ip_address');
-        $stmt->execute(['ip_address' => $normalizedIp]);
+        try {
+            $stmt = $pdo->prepare('DELETE FROM analytics_ip_exclusions WHERE ip_address = :ip_address');
+            $stmt->execute(['ip_address' => $normalizedIp]);
+        } catch (Throwable $error) {
+            analyticsJsonResponse(['error' => 'Unable to delete excluded IP.', 'details' => $error->getMessage()], 500);
+        }
     }
 
     analyticsTouchLiveState('website_settings');

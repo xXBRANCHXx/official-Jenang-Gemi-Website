@@ -15,4 +15,3 @@ dist-ssr/
 *.sw?
 analytics-storage/
 public/analytics-data/*.json
-public/whatsapp-config.local.php

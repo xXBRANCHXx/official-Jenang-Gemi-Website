@@ -2,9 +2,6 @@
 declare(strict_types=1);
 
 return [
-    'whatsapp_verify_token' => 'replace-with-your-verify-token',
-    'whatsapp_app_secret' => 'replace-with-your-meta-app-secret',
-    'conversion_webhook_secret' => 'replace-with-your-internal-webhook-secret',
     'db_host' => 'localhost',
     'db_port' => '3306',
     'db_name' => 'u558678012_BigN02',

@@ -17,7 +17,101 @@ const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
     : `<span class="price-current">${formatIdr(price)}</span>`
 );
 
+const createAnalyticsSessionId = () => {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+};
+
+const getWebsiteAnalyticsSessionId = () => {
+  const storageKey = 'jg-website-session-id';
+  try {
+    const existing = window.sessionStorage.getItem(storageKey);
+    if (existing) return existing;
+    const next = createAnalyticsSessionId();
+    window.sessionStorage.setItem(storageKey, next);
+    return next;
+  } catch (_) {
+    return createAnalyticsSessionId();
+  }
+};
+
+const detectWebsiteSource = () => {
+  const referrer = document.referrer || '';
+  if (!referrer) return 'direct';
+
+  try {
+    const referrerUrl = new URL(referrer);
+    const host = referrerUrl.hostname.replace(/^www\./, '').toLowerCase();
+    const currentHost = window.location.hostname.replace(/^www\./, '').toLowerCase();
+
+    if (host === currentHost) return 'internal';
+    if (host.includes('google.')) return 'google';
+    if (host.includes('instagram.')) return 'instagram';
+    if (host.includes('facebook.')) return 'facebook';
+    if (host.includes('tiktok.')) return 'tiktok';
+    if (host.includes('youtube.')) return 'youtube';
+    return host || 'referral';
+  } catch (_) {
+    return 'referral';
+  }
+};
+
+const initWebsiteAnalytics = () => {
+  if (document.querySelector('[data-landing-page]')) return;
+  if (window.location.pathname.startsWith('/admin')) return;
+
+  const endpoint = `${window.location.origin}/analytics.php`;
+  const sessionId = getWebsiteAnalyticsSessionId();
+  const visitStartedAt = Date.now();
+  const source = detectWebsiteSource();
+  let lastTrackedElapsedMs = 0;
+
+  const trackWebsiteEvent = (eventType, extra = {}, useBeacon = false) => {
+    const payload = {
+      event_type: eventType,
+      session_id: sessionId,
+      source,
+      traffic_kind: 'website',
+      page_path: window.location.pathname,
+      page_url: window.location.href,
+      page_title: document.title,
+      referrer: document.referrer || '',
+      occurred_at: new Date().toISOString(),
+      ...extra
+    };
+
+    if (useBeacon && navigator.sendBeacon) {
+      const body = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+      navigator.sendBeacon(endpoint, body);
+      return;
+    }
+
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true
+    }).catch(() => {});
+  };
+
+  const trackElapsedTime = (force = false) => {
+    const elapsedMs = Date.now() - visitStartedAt;
+    if (!force && elapsedMs - lastTrackedElapsedMs < 15000) return;
+    lastTrackedElapsedMs = elapsedMs;
+    trackWebsiteEvent('time_spent', { elapsed_ms: elapsedMs }, true);
+  };
+
+  trackWebsiteEvent('page_view');
+  window.setInterval(() => trackElapsedTime(false), 15000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) trackElapsedTime(true);
+  });
+  window.addEventListener('beforeunload', () => trackElapsedTime(true));
+  window.addEventListener('pagehide', () => trackElapsedTime(true));
+};
+
 document.addEventListener('DOMContentLoaded', () => {
+  initWebsiteAnalytics();
   // --- Cart System ---
   let cart = JSON.parse(localStorage.getItem('gemi_cart_v10')) || [];
   const sidebar = document.getElementById('sidebar-v9');

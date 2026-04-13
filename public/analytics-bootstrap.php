@@ -140,6 +140,10 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
             customer_name VARCHAR(120) NOT NULL DEFAULT "",
             customer_wa_id VARCHAR(120) NOT NULL DEFAULT "",
             business_phone VARCHAR(50) NOT NULL DEFAULT "",
+            ip_address VARCHAR(45) NOT NULL DEFAULT "",
+            country_code VARCHAR(8) NOT NULL DEFAULT "",
+            region_name VARCHAR(160) NOT NULL DEFAULT "",
+            city_name VARCHAR(160) NOT NULL DEFAULT "",
             elapsed_ms INT UNSIGNED NOT NULL DEFAULT 0,
             occurred_at DATETIME(6) NOT NULL,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -149,7 +153,10 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
             INDEX idx_analytics_source (source),
             INDEX idx_analytics_session_id (session_id),
             INDEX idx_analytics_order_code (order_code),
-            INDEX idx_analytics_page_path (page_path)
+            INDEX idx_analytics_page_path (page_path),
+            INDEX idx_analytics_ip_address (ip_address),
+            INDEX idx_analytics_country_code (country_code),
+            INDEX idx_analytics_region_name (region_name)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
     );
 
@@ -185,12 +192,54 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
     );
 
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS analytics_ip_exclusions (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            ip_address VARCHAR(45) NOT NULL,
+            label VARCHAR(120) NOT NULL DEFAULT "",
+            created_at DATETIME(6) NOT NULL,
+            updated_at DATETIME(6) NOT NULL,
+            UNIQUE KEY uniq_analytics_ip_exclusions_ip_address (ip_address)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+    );
+
+    analyticsEnsureTableColumn($pdo, 'analytics_events', 'ip_address', 'VARCHAR(45) NOT NULL DEFAULT ""');
+    analyticsEnsureTableColumn($pdo, 'analytics_events', 'country_code', 'VARCHAR(8) NOT NULL DEFAULT ""');
+    analyticsEnsureTableColumn($pdo, 'analytics_events', 'region_name', 'VARCHAR(160) NOT NULL DEFAULT ""');
+    analyticsEnsureTableColumn($pdo, 'analytics_events', 'city_name', 'VARCHAR(160) NOT NULL DEFAULT ""');
+
     $stmt = $pdo->prepare(
         'INSERT INTO live_state (state_key, sequence, reason, updated_at)
          VALUES ("analytics", 0, "init", UTC_TIMESTAMP(6))
          ON DUPLICATE KEY UPDATE state_key = state_key'
     );
     $stmt->execute();
+}
+
+function analyticsEnsureTableColumn(PDO $pdo, string $tableName, string $columnName, string $definition): void
+{
+    $stmt = $pdo->prepare(
+        'SELECT COUNT(*)
+         FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = :table_name
+           AND COLUMN_NAME = :column_name'
+    );
+    $stmt->execute([
+        'table_name' => $tableName,
+        'column_name' => $columnName,
+    ]);
+
+    if ((int) $stmt->fetchColumn() > 0) {
+        return;
+    }
+
+    $pdo->exec(sprintf(
+        'ALTER TABLE `%s` ADD COLUMN `%s` %s',
+        str_replace('`', '``', $tableName),
+        str_replace('`', '``', $columnName),
+        $definition
+    ));
 }
 
 function analyticsTouchLiveState(string $reason = 'update'): array
@@ -241,21 +290,107 @@ function analyticsNormalizeOccurredAt(string $value): string
     }
 }
 
+function analyticsNormalizeIp(string $value): string
+{
+    $candidate = trim($value);
+    if ($candidate === '') {
+        return '';
+    }
+
+    if (str_contains($candidate, ',')) {
+        foreach (explode(',', $candidate) as $segment) {
+            $normalized = analyticsNormalizeIp($segment);
+            if ($normalized !== '') {
+                return $normalized;
+            }
+        }
+        return '';
+    }
+
+    $candidate = trim($candidate, " \t\n\r\0\x0B[]");
+    if ($candidate === '' || !filter_var($candidate, FILTER_VALIDATE_IP)) {
+        return '';
+    }
+
+    $packed = @inet_pton($candidate);
+    if ($packed === false) {
+        return $candidate;
+    }
+
+    $normalized = @inet_ntop($packed);
+    return is_string($normalized) ? $normalized : $candidate;
+}
+
+function analyticsResolveClientIp(): string
+{
+    $candidates = [
+        $_SERVER['HTTP_CF_CONNECTING_IP'] ?? '',
+        $_SERVER['HTTP_TRUE_CLIENT_IP'] ?? '',
+        $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '',
+        $_SERVER['HTTP_X_REAL_IP'] ?? '',
+        $_SERVER['REMOTE_ADDR'] ?? '',
+    ];
+
+    foreach ($candidates as $candidate) {
+        $normalized = analyticsNormalizeIp((string) $candidate);
+        if ($normalized !== '') {
+            return $normalized;
+        }
+    }
+
+    return '';
+}
+
+function analyticsResolveGeoContext(): array
+{
+    $countryCode = strtoupper(trim((string) (
+        $_SERVER['HTTP_CF_IPCOUNTRY']
+        ?? $_SERVER['GEOIP_COUNTRY_CODE']
+        ?? $_SERVER['HTTP_X_COUNTRY_CODE']
+        ?? ''
+    )));
+    if ($countryCode === 'XX') {
+        $countryCode = '';
+    }
+
+    $regionName = trim((string) (
+        $_SERVER['GEOIP_REGION_NAME']
+        ?? $_SERVER['HTTP_X_REGION_NAME']
+        ?? $_SERVER['HTTP_X_REGION']
+        ?? ''
+    ));
+    $cityName = trim((string) (
+        $_SERVER['GEOIP_CITY']
+        ?? $_SERVER['HTTP_X_CITY']
+        ?? ''
+    ));
+
+    return [
+        'country_code' => substr($countryCode, 0, 8),
+        'region_name' => substr($regionName, 0, 160),
+        'city_name' => substr($cityName, 0, 160),
+    ];
+}
+
 function analyticsAppendEvent(array $event): void
 {
     $pdo = analyticsDb();
+    $geoContext = analyticsResolveGeoContext();
+    $ipAddress = analyticsNormalizeIp((string) ($event['ip_address'] ?? '')) ?: analyticsResolveClientIp();
     $stmt = $pdo->prepare(
         'INSERT INTO analytics_events (
             event_type, session_id, source, traffic_kind, affiliate_code, affiliate_name,
             page_path, page_url, page_title, referrer, cta_location, product_code, product_label,
             flavor_label, flavor_code, package_label, package_size, package_price, order_code,
             conversion_status, external_id, notes, customer_name, customer_wa_id, business_phone,
+            ip_address, country_code, region_name, city_name,
             elapsed_ms, occurred_at
         ) VALUES (
             :event_type, :session_id, :source, :traffic_kind, :affiliate_code, :affiliate_name,
             :page_path, :page_url, :page_title, :referrer, :cta_location, :product_code, :product_label,
             :flavor_label, :flavor_code, :package_label, :package_size, :package_price, :order_code,
             :conversion_status, :external_id, :notes, :customer_name, :customer_wa_id, :business_phone,
+            :ip_address, :country_code, :region_name, :city_name,
             :elapsed_ms, :occurred_at
         )'
     );
@@ -285,6 +420,10 @@ function analyticsAppendEvent(array $event): void
         'customer_name' => substr((string) ($event['customer_name'] ?? ''), 0, 120),
         'customer_wa_id' => substr((string) ($event['customer_wa_id'] ?? ''), 0, 120),
         'business_phone' => substr((string) ($event['business_phone'] ?? ''), 0, 50),
+        'ip_address' => substr($ipAddress, 0, 45),
+        'country_code' => substr((string) ($event['country_code'] ?? $geoContext['country_code']), 0, 8),
+        'region_name' => substr((string) ($event['region_name'] ?? $geoContext['region_name']), 0, 160),
+        'city_name' => substr((string) ($event['city_name'] ?? $geoContext['city_name']), 0, 160),
         'elapsed_ms' => max(0, (int) ($event['elapsed_ms'] ?? 0)),
         'occurred_at' => analyticsNormalizeOccurredAt((string) ($event['occurred_at'] ?? gmdate(DATE_ATOM))),
     ]);
@@ -517,6 +656,7 @@ function analyticsLoadEvents(?DateTimeImmutable $rangeStart = null): array
                 page_path, page_url, page_title, referrer, cta_location, product_code, product_label,
                 flavor_label, flavor_code, package_label, package_size, package_price, order_code,
                 conversion_status, external_id, notes, customer_name, customer_wa_id, business_phone,
+                ip_address, country_code, region_name, city_name,
                 elapsed_ms, occurred_at
             FROM analytics_events';
     $params = [];
@@ -688,4 +828,87 @@ function analyticsFindAffiliateByCode(string $code): ?array
         }
     }
     return null;
+}
+
+function analyticsLoadIpExclusions(): array
+{
+    $pdo = analyticsDb();
+    $stmt = $pdo->query(
+        'SELECT id, ip_address, label, created_at, updated_at
+         FROM analytics_ip_exclusions
+         ORDER BY updated_at DESC, id DESC'
+    );
+
+    return array_map(static function (array $row): array {
+        return [
+            'id' => (int) ($row['id'] ?? 0),
+            'ip_address' => (string) ($row['ip_address'] ?? ''),
+            'label' => (string) ($row['label'] ?? ''),
+            'created_at' => (new DateTimeImmutable((string) $row['created_at'], new DateTimeZone('UTC')))->format(DATE_ATOM),
+            'updated_at' => (new DateTimeImmutable((string) $row['updated_at'], new DateTimeZone('UTC')))->format(DATE_ATOM),
+        ];
+    }, $stmt->fetchAll());
+}
+
+function analyticsLoadExcludedIpLookup(): array
+{
+    $lookup = [];
+    foreach (analyticsLoadIpExclusions() as $item) {
+        $normalizedIp = analyticsNormalizeIp((string) ($item['ip_address'] ?? ''));
+        if ($normalizedIp !== '') {
+            $lookup[$normalizedIp] = true;
+        }
+    }
+    return $lookup;
+}
+
+function analyticsCreateIpExclusion(string $ipAddress, string $label = ''): array
+{
+    $normalizedIp = analyticsNormalizeIp($ipAddress);
+    if ($normalizedIp === '') {
+        analyticsJsonResponse(['error' => 'Invalid IP address.'], 422);
+    }
+
+    $pdo = analyticsDb();
+    $stmt = $pdo->prepare(
+        'INSERT INTO analytics_ip_exclusions (ip_address, label, created_at, updated_at)
+         VALUES (:ip_address, :label, :created_at, :updated_at)
+         ON DUPLICATE KEY UPDATE label = VALUES(label), updated_at = VALUES(updated_at)'
+    );
+
+    $timestamp = analyticsNormalizeOccurredAt(gmdate(DATE_ATOM));
+    $stmt->execute([
+        'ip_address' => $normalizedIp,
+        'label' => substr(trim($label), 0, 120),
+        'created_at' => $timestamp,
+        'updated_at' => $timestamp,
+    ]);
+
+    analyticsTouchLiveState('website_settings');
+
+    foreach (analyticsLoadIpExclusions() as $item) {
+        if ((string) ($item['ip_address'] ?? '') === $normalizedIp) {
+            return $item;
+        }
+    }
+
+    analyticsJsonResponse(['error' => 'Unable to save excluded IP.'], 500);
+}
+
+function analyticsDeleteIpExclusion(int $id = 0, string $ipAddress = ''): void
+{
+    $pdo = analyticsDb();
+    if ($id > 0) {
+        $stmt = $pdo->prepare('DELETE FROM analytics_ip_exclusions WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+    } else {
+        $normalizedIp = analyticsNormalizeIp($ipAddress);
+        if ($normalizedIp === '') {
+            analyticsJsonResponse(['error' => 'Missing excluded IP identifier.'], 422);
+        }
+        $stmt = $pdo->prepare('DELETE FROM analytics_ip_exclusions WHERE ip_address = :ip_address');
+        $stmt->execute(['ip_address' => $normalizedIp]);
+    }
+
+    analyticsTouchLiveState('website_settings');
 }

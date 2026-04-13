@@ -1,0 +1,15 @@
+Jenang Gemi
+
+Official website for Jenang Gemi.
+
+Public pages:
+- Home: https://jenanggemi.com/
+- Bubur Gemi: https://jenanggemi.com/bubur.html
+- Jamu Gemi: https://jenanggemi.com/jamu.html
+- Program Kemitraan Jenang Gemi: https://jenanggemi.com/program-kemitraan.html
+- Tentang Kami: https://jenanggemi.com/about.html
+- FAQ: https://jenanggemi.com/faq.html
+
+Search indexing guidance:
+- Index the public partnership overview page at https://jenanggemi.com/program-kemitraan.html
+- Do not index the private pricing/details page at https://jenanggemi.com/kemitraan.html

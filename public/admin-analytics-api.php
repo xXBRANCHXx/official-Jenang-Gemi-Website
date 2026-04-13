@@ -84,6 +84,7 @@ foreach ($events as $event) {
     $trafficKind = strtolower(trim((string) ($event['traffic_kind'] ?? 'landing')));
     $eventAffiliateCode = strtoupper(trim((string) ($event['affiliate_code'] ?? '')));
     $eventIp = analyticsNormalizeIp((string) ($event['ip_address'] ?? ''));
+    $eventIpMatchKeys = analyticsBuildIpMatchKeys($eventIp);
 
     if ($dataset === 'landing' && $trafficKind === 'affiliate') {
         continue;
@@ -102,8 +103,17 @@ foreach ($events as $event) {
         if ($trafficKind !== 'website') {
             continue;
         }
-        if ($eventIp !== '' && isset($excludedIpLookup[$eventIp])) {
-            continue;
+        if ($eventIpMatchKeys !== []) {
+            $isExcluded = false;
+            foreach ($eventIpMatchKeys as $eventIpMatchKey) {
+                if (isset($excludedIpLookup[$eventIpMatchKey])) {
+                    $isExcluded = true;
+                    break;
+                }
+            }
+            if ($isExcluded) {
+                continue;
+            }
         }
     }
 

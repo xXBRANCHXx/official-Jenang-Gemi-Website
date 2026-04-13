@@ -9,21 +9,16 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-$timeframe = (string) ($_GET['timeframe'] ?? '7d');
-$timezone = (string) ($_GET['timezone'] ?? '');
-$recentLimit = max(15, min(300, (int) ($_GET['recent_limit'] ?? 180)));
-$dataset = (string) ($_GET['dataset'] ?? 'landing');
-$affiliateCode = (string) ($_GET['affiliate_code'] ?? '');
+$action = strtolower(trim((string) ($_GET['action'] ?? 'website_settings')));
+$allowedActions = ['website_settings', 'website_exclusion_add', 'website_exclusion_delete'];
+if (!in_array($action, $allowedActions, true)) {
+    http_response_code(404);
+    echo json_encode(['error' => 'Unknown settings action.'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+$endpoint = 'https://jenanggemi.com/admin-analytics-api.php?action=' . rawurlencode($action);
 $cacheBust = (string) ($_GET['_ts'] ?? '');
-$endpoint = 'https://jenanggemi.com/admin-analytics-api.php?timeframe=' . rawurlencode($timeframe);
-if ($timezone !== '') {
-    $endpoint .= '&timezone=' . rawurlencode($timezone);
-}
-$endpoint .= '&recent_limit=' . rawurlencode((string) $recentLimit);
-$endpoint .= '&dataset=' . rawurlencode($dataset);
-if ($affiliateCode !== '') {
-    $endpoint .= '&affiliate_code=' . rawurlencode($affiliateCode);
-}
 if ($cacheBust !== '') {
     $endpoint .= '&_ts=' . rawurlencode($cacheBust);
 }
@@ -33,6 +28,13 @@ $headers = [
     'Accept: application/json',
     'X-JG-Admin-Token: ' . $token,
 ];
+
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$body = null;
+if ($method === 'POST') {
+    $body = file_get_contents('php://input') ?: '';
+    $headers[] = 'Content-Type: application/json';
+}
 
 $responseBody = false;
 $statusCode = 0;
@@ -45,15 +47,20 @@ if (function_exists('curl_init')) {
         CURLOPT_TIMEOUT => 15,
         CURLOPT_CONNECTTIMEOUT => 10,
         CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_CUSTOMREQUEST => $method,
     ]);
+    if ($method === 'POST') {
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    }
     $responseBody = curl_exec($ch);
     $statusCode = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
     curl_close($ch);
 } else {
     $context = stream_context_create([
         'http' => [
-            'method' => 'GET',
+            'method' => $method,
             'header' => implode("\r\n", $headers),
+            'content' => $method === 'POST' ? (string) $body : '',
             'timeout' => 15,
         ],
     ]);
@@ -64,9 +71,9 @@ if (function_exists('curl_init')) {
 }
 
 if ($responseBody === false || $statusCode >= 400 || $statusCode === 0) {
-    http_response_code(502);
+    http_response_code($statusCode >= 400 ? $statusCode : 502);
     echo json_encode([
-        'error' => 'Unable to fetch analytics from primary site.',
+        'error' => 'Unable to fetch settings from primary site.',
         'upstream_status' => $statusCode,
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     exit;

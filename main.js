@@ -58,7 +58,9 @@ const detectWebsiteSource = () => {
 
 const initWebsiteAnalytics = () => {
   if (document.querySelector('[data-landing-page]')) return;
-  if (window.location.pathname.startsWith('/admin')) return;
+  const currentPath = window.location.pathname.toLowerCase();
+  const currentHost = window.location.hostname.replace(/^www\./, '').toLowerCase();
+  if (currentPath.startsWith('/admin') || currentPath.startsWith('/dashboard') || currentHost === 'admin.jenanggemi.com') return;
 
   const endpoint = `${window.location.origin}/analytics.php`;
   const sessionId = getWebsiteAnalyticsSessionId();

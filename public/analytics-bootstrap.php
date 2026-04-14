@@ -118,6 +118,7 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             event_type VARCHAR(80) NOT NULL,
             session_id VARCHAR(120) NOT NULL DEFAULT "",
+            device_id VARCHAR(120) NOT NULL DEFAULT "",
             source VARCHAR(50) NOT NULL DEFAULT "unknown",
             traffic_kind VARCHAR(20) NOT NULL DEFAULT "landing",
             affiliate_code VARCHAR(16) NOT NULL DEFAULT "",
@@ -153,6 +154,7 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
             INDEX idx_analytics_traffic_kind (traffic_kind),
             INDEX idx_analytics_source (source),
             INDEX idx_analytics_session_id (session_id),
+            INDEX idx_analytics_device_id (device_id),
             INDEX idx_analytics_order_code (order_code),
             INDEX idx_analytics_page_path (page_path),
             INDEX idx_analytics_ip_address (ip_address),
@@ -209,6 +211,7 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
     );
 
     analyticsEnsureTableColumn($pdo, 'analytics_events', 'ip_address', 'VARCHAR(45) NOT NULL DEFAULT ""');
+    analyticsEnsureTableColumn($pdo, 'analytics_events', 'device_id', 'VARCHAR(120) NOT NULL DEFAULT ""');
     analyticsEnsureTableColumn($pdo, 'analytics_events', 'country_code', 'VARCHAR(8) NOT NULL DEFAULT ""');
     analyticsEnsureTableColumn($pdo, 'analytics_events', 'region_name', 'VARCHAR(160) NOT NULL DEFAULT ""');
     analyticsEnsureTableColumn($pdo, 'analytics_events', 'city_name', 'VARCHAR(160) NOT NULL DEFAULT ""');
@@ -399,6 +402,21 @@ function analyticsNormalizeIp(string $value): string
     return is_string($normalized) ? $normalized : $candidate;
 }
 
+function analyticsNormalizeDeviceId(string $value): string
+{
+    $candidate = trim($value);
+    if ($candidate === '') {
+        return '';
+    }
+
+    $candidate = substr($candidate, 0, 120);
+    if (!preg_match('/^[A-Za-z0-9._:-]+$/', $candidate)) {
+        return '';
+    }
+
+    return $candidate;
+}
+
 function analyticsExtractForwardedIps(string $forwardedHeader): array
 {
     $matches = [];
@@ -545,6 +563,7 @@ function analyticsAppendEvent(array $event): void
     $payload = [
         'event_type' => substr((string) ($event['event_type'] ?? 'unknown'), 0, 80),
         'session_id' => substr((string) ($event['session_id'] ?? ''), 0, 120),
+        'device_id' => analyticsNormalizeDeviceId((string) ($event['device_id'] ?? '')),
         'source' => substr((string) ($event['source'] ?? 'unknown'), 0, 50),
         'traffic_kind' => substr((string) ($event['traffic_kind'] ?? 'landing'), 0, 20),
         'affiliate_code' => strtoupper(substr((string) ($event['affiliate_code'] ?? ''), 0, 16)),
@@ -835,6 +854,7 @@ function analyticsLoadEvents(?DateTimeImmutable $rangeStart = null): array
     $expectedColumns = [
         'event_type' => "''",
         'session_id' => "''",
+        'device_id' => "''",
         'source' => "''",
         'traffic_kind' => "'landing'",
         'affiliate_code' => "''",

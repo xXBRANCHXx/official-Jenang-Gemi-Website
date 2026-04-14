@@ -29,6 +29,49 @@ const createSessionId = () => {
   return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 };
 
+const ANALYTICS_DEVICE_COOKIE = 'jg_analytics_device_id';
+const ANALYTICS_DEVICE_MAX_AGE = 60 * 60 * 24 * 365 * 2;
+
+const createAnalyticsDeviceId = () => {
+  if (window.crypto?.randomUUID) return `device-${window.crypto.randomUUID()}`;
+  return `device-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+};
+
+const readCookie = (name) => {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : '';
+};
+
+const resolveAnalyticsCookieDomain = () => {
+  const host = window.location.hostname.toLowerCase();
+  if (host === 'jenanggemi.com' || host.endsWith('.jenanggemi.com')) {
+    return '.jenanggemi.com';
+  }
+  return '';
+};
+
+const writeCookie = (name, value, maxAgeSeconds) => {
+  const parts = [
+    `${name}=${encodeURIComponent(value)}`,
+    'Path=/',
+    'SameSite=Lax',
+    `Max-Age=${maxAgeSeconds}`
+  ];
+  const domain = resolveAnalyticsCookieDomain();
+  if (domain) parts.push(`Domain=${domain}`);
+  if (window.location.protocol === 'https:') parts.push('Secure');
+  document.cookie = parts.join('; ');
+};
+
+const getAnalyticsDeviceId = () => {
+  const existing = readCookie(ANALYTICS_DEVICE_COOKIE);
+  if (existing) return existing;
+  const next = createAnalyticsDeviceId();
+  writeCookie(ANALYTICS_DEVICE_COOKIE, next, ANALYTICS_DEVICE_MAX_AGE);
+  return next;
+};
+
 const formatCurrency = (value) => `Rp ${Number(value).toLocaleString('id-ID')}`;
 const getPackQuantity = (label = '') => {
   const match = label.match(/\d+/);
@@ -65,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   const analyticsEndpoint = root.dataset.analyticsEndpoint || `${window.location.origin}/analytics.php`;
   const sessionId = createSessionId();
+  const deviceId = getAnalyticsDeviceId();
   const visitStartedAt = Date.now();
   let lastTrackedElapsedMs = 0;
   const pathname = window.location.pathname.toLowerCase();
@@ -90,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const payload = {
       event_type: eventType,
       session_id: sessionId,
+      device_id: deviceId,
       source: sourceKey,
       traffic_kind: trafficKind,
       affiliate_code: affiliateCode,

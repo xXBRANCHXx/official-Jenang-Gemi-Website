@@ -39,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $event = [
         'event_type' => substr((string) ($payload['event_type'] ?? 'unknown'), 0, 80),
         'session_id' => substr((string) ($payload['session_id'] ?? ''), 0, 120),
+        'device_id' => substr((string) ($payload['device_id'] ?? ''), 0, 120),
         'source' => substr((string) ($payload['source'] ?? 'unknown'), 0, 50),
         'traffic_kind' => substr((string) ($payload['traffic_kind'] ?? 'landing'), 0, 20),
         'affiliate_code' => strtoupper(substr((string) ($payload['affiliate_code'] ?? ''), 0, 16)),

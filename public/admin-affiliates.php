@@ -37,6 +37,11 @@ function affiliateParseJsonBody(): array
 
 function affiliateListResponse(array $affiliates): void
 {
+    foreach ($affiliates as &$affiliate) {
+        $affiliate['urls'] = analyticsWriteAffiliateLandingPages($affiliate);
+    }
+    unset($affiliate);
+
     usort($affiliates, static function (array $a, array $b): int {
         return strcmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
     });

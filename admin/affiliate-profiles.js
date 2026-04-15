@@ -29,6 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
     .replace(/"/g, '&quot;');
 
   const toTitleCase = (value) => String(value || '').toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+  const formatUrlLabel = (value) => {
+    const [product = '', platform = ''] = String(value || '').split('_');
+    if (product && platform) return `${toTitleCase(product)} • ${toTitleCase(platform)}`;
+    return toTitleCase(value || 'unknown');
+  };
 
   const applyTheme = (theme) => {
     document.documentElement.dataset.adminTheme = theme;
@@ -114,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const urls = affiliate.urls && typeof affiliate.urls === 'object' ? affiliate.urls : {};
       const urlLinks = Object.entries(urls).map(([platform, url]) => `
         <a class="admin-affiliate-url" href="https://jenanggemi.com${escapeHtml(String(url || ''))}" target="_blank" rel="noopener">
-          <strong>${escapeHtml(toTitleCase(platform))}</strong>
+          <strong>${escapeHtml(formatUrlLabel(platform))}</strong>
           <span>${escapeHtml(String(url || ''))}</span>
         </a>
       `).join('');

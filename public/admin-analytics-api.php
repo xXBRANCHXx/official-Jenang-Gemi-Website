@@ -257,6 +257,16 @@ function buildTrafficAnalyticsPayload(
     int $recentLimit
 ): array {
     [$timeBuckets, $findBucketKey] = buildBucketCollection($filteredEvents, $timeframe, $now, $rangeStart, $bucketInterval, $bucketLabelFormat);
+    $resolveProductKey = static function (string $pagePath): string {
+        $normalized = strtolower($pagePath);
+        if (str_contains($normalized, 'jamu')) {
+            return 'jamu';
+        }
+        if (str_contains($normalized, 'bubur')) {
+            return 'bubur';
+        }
+        return 'other';
+    };
 
     $byUrl = [];
     $bySource = [];
@@ -292,6 +302,14 @@ function buildTrafficAnalyticsPayload(
         $urlKey = $pagePath . '|' . $source;
         $bucketKey = $findBucketKey($occurredAt);
         $hourIndex = (int) $occurredAt->format('G');
+        $productKey = $resolveProductKey($pagePath);
+
+        if (!isset($timeBuckets[$bucketKey]['products'])) {
+            $timeBuckets[$bucketKey]['products'] = [
+                'bubur' => ['views' => 0, 'order_now_clicks' => 0, 'checkout_clicks' => 0],
+                'jamu' => ['views' => 0, 'order_now_clicks' => 0, 'checkout_clicks' => 0],
+            ];
+        }
 
         if (!isset($byUrl[$urlKey])) {
             $byUrl[$urlKey] = [
@@ -321,6 +339,9 @@ function buildTrafficAnalyticsPayload(
             $bySource[$source]['views']++;
             $summary['total_views']++;
             $timeBuckets[$bucketKey]['views'] = ($timeBuckets[$bucketKey]['views'] ?? 0) + 1;
+            if ($productKey === 'bubur' || $productKey === 'jamu') {
+                $timeBuckets[$bucketKey]['products'][$productKey]['views']++;
+            }
             $hourOfDay[$hourIndex]['views']++;
         }
 
@@ -329,6 +350,9 @@ function buildTrafficAnalyticsPayload(
             $bySource[$source]['order_now_clicks']++;
             $summary['order_now_clicks']++;
             $timeBuckets[$bucketKey]['order_now_clicks'] = ($timeBuckets[$bucketKey]['order_now_clicks'] ?? 0) + 1;
+            if ($productKey === 'bubur' || $productKey === 'jamu') {
+                $timeBuckets[$bucketKey]['products'][$productKey]['order_now_clicks']++;
+            }
             $hourOfDay[$hourIndex]['order_now_clicks']++;
         }
 
@@ -337,6 +361,9 @@ function buildTrafficAnalyticsPayload(
             $bySource[$source]['checkout_clicks']++;
             $summary['checkout_clicks']++;
             $timeBuckets[$bucketKey]['checkout_clicks'] = ($timeBuckets[$bucketKey]['checkout_clicks'] ?? 0) + 1;
+            if ($productKey === 'bubur' || $productKey === 'jamu') {
+                $timeBuckets[$bucketKey]['products'][$productKey]['checkout_clicks']++;
+            }
             $hourOfDay[$hourIndex]['checkout_clicks']++;
         }
 
@@ -367,6 +394,28 @@ function buildTrafficAnalyticsPayload(
     $byUrl = array_values($byUrl);
     $bySource = array_values($bySource);
     $timeseries = array_values($timeBuckets);
+    $timeseriesByProduct = array_map(static function (array $bucket): array {
+        $products = is_array($bucket['products'] ?? null) ? $bucket['products'] : [];
+        return [
+            'bucket_start' => $bucket['bucket_start'] ?? '',
+            'label' => $bucket['label'] ?? '',
+            'total' => [
+                'views' => (int) ($bucket['views'] ?? 0),
+                'order_now_clicks' => (int) ($bucket['order_now_clicks'] ?? 0),
+                'checkout_clicks' => (int) ($bucket['checkout_clicks'] ?? 0),
+            ],
+            'bubur' => [
+                'views' => (int) ($products['bubur']['views'] ?? 0),
+                'order_now_clicks' => (int) ($products['bubur']['order_now_clicks'] ?? 0),
+                'checkout_clicks' => (int) ($products['bubur']['checkout_clicks'] ?? 0),
+            ],
+            'jamu' => [
+                'views' => (int) ($products['jamu']['views'] ?? 0),
+                'order_now_clicks' => (int) ($products['jamu']['order_now_clicks'] ?? 0),
+                'checkout_clicks' => (int) ($products['jamu']['checkout_clicks'] ?? 0),
+            ],
+        ];
+    }, $timeseries);
 
     usort($byUrl, static function (array $a, array $b): int {
         return ($b['views'] <=> $a['views']) ?: strcmp((string) $a['page_path'], (string) $b['page_path']);
@@ -402,6 +451,7 @@ function buildTrafficAnalyticsPayload(
         'by_source' => $bySource,
         'recent_events' => $recentEvents,
         'timeseries' => $timeseries,
+        'timeseries_by_product' => $timeseriesByProduct,
         'hour_of_day' => $hourOfDay,
     ];
 }

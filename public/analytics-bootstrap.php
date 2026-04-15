@@ -766,32 +766,53 @@ function analyticsResolveSiteRoot(): string
     return dirname(__DIR__);
 }
 
-function analyticsResolveBaseLandingFile(string $platform): string
+function analyticsGetSupportedProducts(): array
 {
-    return analyticsResolveSiteRoot() . '/bubur-' . $platform . '.html';
+    return ['bubur', 'jamu'];
 }
 
-function analyticsBuildAffiliateLandingFilename(string $platform, string $affiliateCode): string
+function analyticsResolveBaseLandingFile(string $product, string $platform): string
 {
-    return sprintf('bubur-%s-aff-%s.html', $platform, strtolower($affiliateCode));
+    return analyticsResolveSiteRoot() . '/' . $product . '-' . $platform . '.html';
 }
 
-function analyticsResolveAffiliateLandingFile(string $platform, string $affiliateCode): string
+function analyticsBuildAffiliateLandingFilename(string $product, string $platform, string $affiliateCode): string
 {
-    return analyticsResolveSiteRoot() . '/' . analyticsBuildAffiliateLandingFilename($platform, $affiliateCode);
+    return sprintf('%s-%s-aff-%s.html', $product, $platform, strtolower($affiliateCode));
 }
 
-function analyticsBuildAffiliateLandingUrl(string $platform, string $affiliateCode): string
+function analyticsResolveAffiliateLandingFile(string $product, string $platform, string $affiliateCode): string
 {
-    return '/' . analyticsBuildAffiliateLandingFilename($platform, $affiliateCode);
+    return analyticsResolveSiteRoot() . '/' . analyticsBuildAffiliateLandingFilename($product, $platform, $affiliateCode);
 }
 
-function analyticsRenderAffiliateLandingPage(string $platform, array $affiliate): string
+function analyticsBuildAffiliateLandingUrl(string $product, string $platform, string $affiliateCode): string
 {
-    $templatePath = analyticsResolveBaseLandingFile($platform);
+    return '/' . analyticsBuildAffiliateLandingFilename($product, $platform, $affiliateCode);
+}
+
+function analyticsBuildAffiliateLandingUrls(array $affiliate): array
+{
+    $platforms = analyticsNormalizePlatforms((array) ($affiliate['platforms'] ?? []));
+    $urls = [];
+
+    foreach (analyticsGetSupportedProducts() as $product) {
+        foreach ($platforms as $platform) {
+            $urls[$product . '_' . $platform] = analyticsBuildAffiliateLandingUrl($product, $platform, (string) ($affiliate['code'] ?? ''));
+        }
+    }
+
+    ksort($urls);
+    return $urls;
+}
+
+function analyticsRenderAffiliateLandingPage(string $product, string $platform, array $affiliate): string
+{
+    $templatePath = analyticsResolveBaseLandingFile($product, $platform);
     if (!file_exists($templatePath)) {
         analyticsJsonResponse([
             'error' => 'Missing base landing page template.',
+            'product' => $product,
             'platform' => $platform,
         ], 500);
     }
@@ -800,6 +821,7 @@ function analyticsRenderAffiliateLandingPage(string $platform, array $affiliate)
     if ($html === false) {
         analyticsJsonResponse([
             'error' => 'Unable to read base landing page template.',
+            'product' => $product,
             'platform' => $platform,
         ], 500);
     }
@@ -823,10 +845,12 @@ function analyticsWriteAffiliateLandingPages(array $affiliate): array
     $platforms = analyticsNormalizePlatforms((array) ($affiliate['platforms'] ?? []));
     $urls = [];
 
-    foreach ($platforms as $platform) {
-        $targetFile = analyticsResolveAffiliateLandingFile($platform, (string) $affiliate['code']);
-        file_put_contents($targetFile, analyticsRenderAffiliateLandingPage($platform, $affiliate));
-        $urls[$platform] = analyticsBuildAffiliateLandingUrl($platform, (string) $affiliate['code']);
+    foreach (analyticsGetSupportedProducts() as $product) {
+        foreach ($platforms as $platform) {
+            $targetFile = analyticsResolveAffiliateLandingFile($product, $platform, (string) $affiliate['code']);
+            file_put_contents($targetFile, analyticsRenderAffiliateLandingPage($product, $platform, $affiliate));
+            $urls[$product . '_' . $platform] = analyticsBuildAffiliateLandingUrl($product, $platform, (string) $affiliate['code']);
+        }
     }
 
     ksort($urls);
@@ -835,10 +859,12 @@ function analyticsWriteAffiliateLandingPages(array $affiliate): array
 
 function analyticsDeleteAffiliateLandingPages(array $affiliate): void
 {
-    foreach (analyticsGetSupportedPlatforms() as $platform) {
-        $targetFile = analyticsResolveAffiliateLandingFile($platform, (string) ($affiliate['code'] ?? ''));
-        if (file_exists($targetFile)) {
-            @unlink($targetFile);
+    foreach (analyticsGetSupportedProducts() as $product) {
+        foreach (analyticsGetSupportedPlatforms() as $platform) {
+            $targetFile = analyticsResolveAffiliateLandingFile($product, $platform, (string) ($affiliate['code'] ?? ''));
+            if (file_exists($targetFile)) {
+                @unlink($targetFile);
+            }
         }
     }
 }
@@ -956,10 +982,7 @@ function analyticsLoadAffiliates(): array
     $affiliates = [];
     foreach ($affiliatesByCode as $affiliate) {
         $affiliate['platforms'] = analyticsNormalizePlatforms($affiliate['platforms']);
-        $affiliate['urls'] = [];
-        foreach ($affiliate['platforms'] as $platform) {
-            $affiliate['urls'][$platform] = analyticsBuildAffiliateLandingUrl($platform, (string) $affiliate['code']);
-        }
+        $affiliate['urls'] = analyticsBuildAffiliateLandingUrls($affiliate);
         $affiliates[] = $affiliate;
     }
 

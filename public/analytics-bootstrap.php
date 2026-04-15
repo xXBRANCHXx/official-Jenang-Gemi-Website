@@ -190,6 +190,18 @@ function analyticsEnsureDatabaseSchema(PDO $pdo): void
 
     analyticsTryExec(
         $pdo,
+        'CREATE TABLE IF NOT EXISTS affiliate_products (
+            affiliate_id BIGINT UNSIGNED NOT NULL,
+            product VARCHAR(20) NOT NULL,
+            PRIMARY KEY (affiliate_id, product),
+            CONSTRAINT fk_affiliate_products_affiliate
+                FOREIGN KEY (affiliate_id) REFERENCES affiliates(id)
+                ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+    );
+
+    analyticsTryExec(
+        $pdo,
         'CREATE TABLE IF NOT EXISTS live_state (
             state_key VARCHAR(32) NOT NULL PRIMARY KEY,
             sequence BIGINT UNSIGNED NOT NULL DEFAULT 0,
@@ -717,6 +729,23 @@ function analyticsGetSupportedPlatforms(): array
     return ['youtube', 'facebook', 'instagram', 'tiktok'];
 }
 
+function analyticsNormalizeProducts(array $products): array
+{
+    $allowed = analyticsGetSupportedProducts();
+    $normalized = [];
+
+    foreach ($products as $product) {
+        $candidate = strtolower(trim((string) $product));
+        if ($candidate !== '' && in_array($candidate, $allowed, true)) {
+            $normalized[] = $candidate;
+        }
+    }
+
+    $normalized = array_values(array_unique($normalized));
+    sort($normalized);
+    return $normalized;
+}
+
 function analyticsNormalizePlatforms(array $platforms): array
 {
     $allowed = analyticsGetSupportedPlatforms();
@@ -794,9 +823,10 @@ function analyticsBuildAffiliateLandingUrl(string $product, string $platform, st
 function analyticsBuildAffiliateLandingUrls(array $affiliate): array
 {
     $platforms = analyticsNormalizePlatforms((array) ($affiliate['platforms'] ?? []));
+    $products = analyticsNormalizeProducts((array) ($affiliate['products'] ?? [])) ?: analyticsGetSupportedProducts();
     $urls = [];
 
-    foreach (analyticsGetSupportedProducts() as $product) {
+    foreach ($products as $product) {
         foreach ($platforms as $platform) {
             $urls[$product . '_' . $platform] = analyticsBuildAffiliateLandingUrl($product, $platform, (string) ($affiliate['code'] ?? ''));
         }
@@ -843,9 +873,10 @@ function analyticsRenderAffiliateLandingPage(string $product, string $platform, 
 function analyticsWriteAffiliateLandingPages(array $affiliate): array
 {
     $platforms = analyticsNormalizePlatforms((array) ($affiliate['platforms'] ?? []));
+    $products = analyticsNormalizeProducts((array) ($affiliate['products'] ?? [])) ?: analyticsGetSupportedProducts();
     $urls = [];
 
-    foreach (analyticsGetSupportedProducts() as $product) {
+    foreach ($products as $product) {
         foreach ($platforms as $platform) {
             $targetFile = analyticsResolveAffiliateLandingFile($product, $platform, (string) $affiliate['code']);
             file_put_contents($targetFile, analyticsRenderAffiliateLandingPage($product, $platform, $affiliate));
@@ -969,6 +1000,7 @@ function analyticsLoadAffiliates(): array
                 'name' => (string) ($row['name'] ?? ''),
                 'slug' => (string) ($row['slug'] ?? ''),
                 'platforms' => [],
+                'products' => [],
                 'created_at' => (new DateTimeImmutable((string) $row['created_at'], new DateTimeZone('UTC')))->format(DATE_ATOM),
                 'updated_at' => (new DateTimeImmutable((string) $row['updated_at'], new DateTimeZone('UTC')))->format(DATE_ATOM),
             ];
@@ -979,9 +1011,30 @@ function analyticsLoadAffiliates(): array
         }
     }
 
+    try {
+        $stmt = $pdo->query(
+            'SELECT a.code, ap.product
+             FROM affiliates a
+             LEFT JOIN affiliate_products ap ON ap.affiliate_id = a.id
+             ORDER BY a.name ASC, ap.product ASC'
+        );
+        $productRows = $stmt->fetchAll();
+    } catch (Throwable) {
+        $productRows = [];
+    }
+
+    foreach ($productRows as $row) {
+        $code = strtoupper((string) ($row['code'] ?? ''));
+        $product = strtolower(trim((string) ($row['product'] ?? '')));
+        if ($code !== '' && $product !== '' && isset($affiliatesByCode[$code])) {
+            $affiliatesByCode[$code]['products'][] = $product;
+        }
+    }
+
     $affiliates = [];
     foreach ($affiliatesByCode as $affiliate) {
         $affiliate['platforms'] = analyticsNormalizePlatforms($affiliate['platforms']);
+        $affiliate['products'] = analyticsNormalizeProducts($affiliate['products']) ?: analyticsGetSupportedProducts();
         $affiliate['urls'] = analyticsBuildAffiliateLandingUrls($affiliate);
         $affiliates[] = $affiliate;
     }
@@ -1015,6 +1068,16 @@ function analyticsCreateAffiliateRecord(array $affiliate): array
             $platformStmt->execute([
                 'affiliate_id' => $affiliateId,
                 'platform' => $platform,
+            ]);
+        }
+
+        $productStmt = $pdo->prepare(
+            'INSERT INTO affiliate_products (affiliate_id, product) VALUES (:affiliate_id, :product)'
+        );
+        foreach (analyticsNormalizeProducts((array) ($affiliate['products'] ?? [])) as $product) {
+            $productStmt->execute([
+                'affiliate_id' => $affiliateId,
+                'product' => $product,
             ]);
         }
 
@@ -1054,6 +1117,8 @@ function analyticsUpdateAffiliateRecord(string $code, array $affiliate): array
         $affiliateId = (int) ($existing['id'] ?? 0);
         $pdo->prepare('DELETE FROM affiliate_platforms WHERE affiliate_id = :affiliate_id')
             ->execute(['affiliate_id' => $affiliateId]);
+        $pdo->prepare('DELETE FROM affiliate_products WHERE affiliate_id = :affiliate_id')
+            ->execute(['affiliate_id' => $affiliateId]);
 
         $platformStmt = $pdo->prepare(
             'INSERT INTO affiliate_platforms (affiliate_id, platform) VALUES (:affiliate_id, :platform)'
@@ -1062,6 +1127,16 @@ function analyticsUpdateAffiliateRecord(string $code, array $affiliate): array
             $platformStmt->execute([
                 'affiliate_id' => $affiliateId,
                 'platform' => $platform,
+            ]);
+        }
+
+        $productStmt = $pdo->prepare(
+            'INSERT INTO affiliate_products (affiliate_id, product) VALUES (:affiliate_id, :product)'
+        );
+        foreach (analyticsNormalizeProducts((array) ($affiliate['products'] ?? [])) as $product) {
+            $productStmt->execute([
+                'affiliate_id' => $affiliateId,
+                'product' => $product,
             ]);
         }
 

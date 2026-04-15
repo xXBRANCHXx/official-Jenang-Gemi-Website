@@ -18,6 +18,7 @@ function affiliateHydrate(array $affiliate): array
     $affiliate['name'] = trim(substr((string) ($affiliate['name'] ?? ''), 0, 120));
     $affiliate['slug'] = analyticsSlugify((string) ($affiliate['slug'] ?? $affiliate['name']));
     $affiliate['platforms'] = analyticsNormalizePlatforms((array) ($affiliate['platforms'] ?? []));
+    $affiliate['products'] = analyticsNormalizeProducts((array) ($affiliate['products'] ?? []));
     $affiliate['urls'] = analyticsWriteAffiliateLandingPages($affiliate);
     $affiliate['updated_at'] = gmdate(DATE_ATOM);
     if (empty($affiliate['created_at'])) {
@@ -63,6 +64,7 @@ if ($method === 'POST') {
     $payload = affiliateParseJsonBody();
     $name = trim((string) ($payload['name'] ?? ''));
     $platforms = analyticsNormalizePlatforms((array) ($payload['platforms'] ?? []));
+    $products = analyticsNormalizeProducts((array) ($payload['products'] ?? []));
 
     if ($name === '') {
         analyticsJsonResponse(['error' => 'Affiliate name is required.'], 422);
@@ -72,11 +74,16 @@ if ($method === 'POST') {
         analyticsJsonResponse(['error' => 'Select at least one platform.'], 422);
     }
 
+    if ($products === []) {
+        analyticsJsonResponse(['error' => 'Select at least one product.'], 422);
+    }
+
     $affiliate = affiliateHydrate([
         'code' => analyticsGenerateAffiliateCode($affiliates),
         'name' => $name,
         'slug' => analyticsSlugify($name),
         'platforms' => $platforms,
+        'products' => $products,
         'created_at' => gmdate(DATE_ATOM),
     ]);
 
@@ -98,8 +105,12 @@ if ($method === 'PATCH' || $method === 'PUT') {
         }
 
         $nextPlatforms = analyticsNormalizePlatforms((array) ($payload['platforms'] ?? $affiliate['platforms'] ?? []));
+        $nextProducts = analyticsNormalizeProducts((array) ($payload['products'] ?? $affiliate['products'] ?? []));
         if ($nextPlatforms === []) {
             analyticsJsonResponse(['error' => 'Select at least one platform.'], 422);
+        }
+        if ($nextProducts === []) {
+            analyticsJsonResponse(['error' => 'Select at least one product.'], 422);
         }
 
         $nextName = trim((string) ($payload['name'] ?? $affiliate['name'] ?? ''));
@@ -111,6 +122,7 @@ if ($method === 'PATCH' || $method === 'PUT') {
         $updatedAffiliate = affiliateHydrate(array_merge($affiliate, [
             'name' => $nextName,
             'platforms' => $nextPlatforms,
+            'products' => $nextProducts,
         ]));
         $updatedAffiliate = analyticsUpdateAffiliateRecord($code, $updatedAffiliate);
         analyticsJsonResponse(['affiliate' => $updatedAffiliate]);

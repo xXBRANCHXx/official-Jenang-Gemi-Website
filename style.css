@@ -5531,6 +5531,20 @@ h1, h2, h3, h4 { color: var(--text-dark); line-height: 1.1; letter-spacing: -0.0
     linear-gradient(35deg, #f3efe8, #ece7de);
 }
 
+.landing-prep-section .container {
+  text-align: center;
+}
+
+.landing-prep-section .prep-grid {
+  grid-template-columns: repeat(2, minmax(0, 360px));
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.landing-prep-section .prep-card {
+  text-align: left;
+}
+
 .landing-package-card {
   text-align: left;
   padding: 24px;

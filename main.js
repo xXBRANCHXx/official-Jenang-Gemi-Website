@@ -17,6 +17,101 @@ const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
     : `<span class="price-current">${formatIdr(price)}</span>`
 );
 const CHECKOUT_ADDRESS_STORAGE_KEY = 'gemi_checkout_address';
+const CHECKOUT_LOCATION_TARGET_ACCURACY_METERS = 35;
+const CHECKOUT_LOCATION_MAX_WAIT_MS = 25000;
+
+const getPositionAccuracy = (position) => (
+  Number.isFinite(position?.coords?.accuracy) ? position.coords.accuracy : Number.POSITIVE_INFINITY
+);
+
+const formatLocationAccuracy = (accuracy) => {
+  if (!Number.isFinite(accuracy)) return '';
+  return accuracy >= 1000
+    ? `${(accuracy / 1000).toFixed(1)} km`
+    : `${Math.round(accuracy)} m`;
+};
+
+const buildCheckoutMapsUrl = ({ latitude, longitude }) => {
+  const lat = Number(latitude).toFixed(7);
+  const lng = Number(longitude).toFixed(7);
+  return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+};
+
+const buildCheckoutLocationValue = (coords) => {
+  const accuracy = Number.isFinite(coords.accuracy) ? coords.accuracy : null;
+  const lines = [
+    `Lokasi saya: ${buildCheckoutMapsUrl(coords)}`
+  ];
+
+  if (accuracy !== null) {
+    lines.push(`Akurasi perangkat: sekitar ${formatLocationAccuracy(accuracy)}`);
+  }
+
+  lines.push('Nomor rumah / patokan: ');
+  return lines.join('\n');
+};
+
+const getHighAccuracyCheckoutLocation = ({ onUpdate, onSuccess, onError }) => {
+  let bestPosition = null;
+  let watchId = null;
+  let timeoutId = null;
+  let finished = false;
+
+  const cleanup = () => {
+    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+    if (timeoutId !== null) window.clearTimeout(timeoutId);
+    watchId = null;
+    timeoutId = null;
+  };
+
+  const finish = (callback, value) => {
+    if (finished) return;
+    finished = true;
+    cleanup();
+    callback(value);
+  };
+
+  const handlePosition = (position) => {
+    const accuracy = getPositionAccuracy(position);
+    if (!bestPosition || accuracy < getPositionAccuracy(bestPosition)) {
+      bestPosition = position;
+    }
+
+    onUpdate?.(accuracy);
+
+    if (accuracy <= CHECKOUT_LOCATION_TARGET_ACCURACY_METERS) {
+      finish(onSuccess, position);
+    }
+  };
+
+  const handleError = (error) => {
+    if (bestPosition) {
+      finish(onSuccess, bestPosition);
+      return;
+    }
+    finish(onError, error);
+  };
+
+  try {
+    watchId = navigator.geolocation.watchPosition(handlePosition, handleError, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: CHECKOUT_LOCATION_MAX_WAIT_MS
+    });
+  } catch (error) {
+    handleError(error);
+  }
+
+  timeoutId = window.setTimeout(() => {
+    if (bestPosition) {
+      finish(onSuccess, bestPosition);
+      return;
+    }
+    finish(onError, new Error('Location lookup timed out'));
+  }, CHECKOUT_LOCATION_MAX_WAIT_MS);
+
+  return cleanup;
+};
 
 const readSavedCheckoutAddress = () => {
   try {
@@ -88,8 +183,13 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
   const locationBtn = modal.querySelector('[data-use-current-location]');
   const status = modal.querySelector('[data-address-status]');
   const closers = modal.querySelectorAll('[data-close-address-modal]');
+  let cancelLocationLookup = null;
 
   const closeModal = () => {
+    if (cancelLocationLookup) {
+      cancelLocationLookup();
+      cancelLocationLookup = null;
+    }
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
@@ -114,23 +214,36 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
       return;
     }
 
-    if (status) status.textContent = 'Mengambil lokasi...';
+    if (cancelLocationLookup) cancelLocationLookup();
+    if (status) status.textContent = 'Mengambil GPS akurat. Pastikan izin lokasi aktif dan tunggu beberapa detik...';
     locationBtn.disabled = true;
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        input.value = `Lokasi saya: https://www.google.com/maps?q=${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+    cancelLocationLookup = getHighAccuracyCheckoutLocation({
+      onUpdate: (accuracy) => {
+        if (!status) return;
+        const accuracyText = formatLocationAccuracy(accuracy);
+        status.textContent = accuracyText
+          ? `Mencari titik rumah paling akurat... sementara sekitar ${accuracyText}.`
+          : 'Mencari titik rumah paling akurat...';
+      },
+      onSuccess: (position) => {
+        cancelLocationLookup = null;
+        const accuracy = getPositionAccuracy(position);
+        input.value = buildCheckoutLocationValue(position.coords);
         locationBtn.disabled = false;
-        if (status) status.textContent = 'Lokasi sudah masuk. Tambahkan patokan rumah jika perlu.';
+        if (status) {
+          status.textContent = accuracy <= CHECKOUT_LOCATION_TARGET_ACCURACY_METERS
+            ? 'Lokasi sudah masuk dengan akurasi dekat titik rumah. Lengkapi nomor rumah atau patokan.'
+            : `Lokasi terbaik sudah masuk, tapi akurasinya masih sekitar ${formatLocationAccuracy(accuracy)}. Tambahkan nomor rumah atau share pin Google Maps manual jika belum tepat.`;
+        }
         syncSubmit();
         input.focus();
       },
-      () => {
+      onError: () => {
+        cancelLocationLookup = null;
         locationBtn.disabled = false;
-        if (status) status.textContent = 'Lokasi tidak bisa diambil. Paste alamat lengkap atau share location Google Maps.';
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-    );
+        if (status) status.textContent = 'Lokasi tidak bisa diambil. Aktifkan izin lokasi/GPS, atau paste alamat lengkap dan share pin Google Maps.';
+      }
+    });
   };
 
   submitBtn.onclick = () => {

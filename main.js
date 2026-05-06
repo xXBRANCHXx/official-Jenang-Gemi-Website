@@ -16,6 +16,7 @@ const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
     ? `<span class="price-compare">${formatIdr(comparisonPrice)}</span><span class="price-current">${formatIdr(price)}</span>`
     : `<span class="price-current">${formatIdr(price)}</span>`
 );
+const checkoutAddressPrompt = '*Alamat pengiriman:* [isi alamat lengkap / paste share location Google Maps]';
 
 const createAnalyticsSessionId = () => {
   if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -249,16 +250,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  document.querySelector('.checkout-v9')?.addEventListener('click', () => {
-    if (cart.length === 0) return;
-    let msg = 'Halo Admin Jenang Gemi, pemesanan baru saya:\n\n';
-    let subtotal = 0;
-    cart.forEach((it, i) => {
-      subtotal += it.price * it.quantity;
-      msg += `${i + 1}. *${it.name}* ${it.flavor ? `(Rasa: ${it.flavor}) ` : ''}(${it.qtyLabel})\n   Harga: Rp ${it.price.toLocaleString('id-ID')}\n   Jumlah: ${it.quantity}\n\n`;
+  document.querySelectorAll('.checkout-v9').forEach((checkoutButton) => {
+    checkoutButton.addEventListener('click', () => {
+      if (cart.length === 0) return;
+      let msg = 'Halo Admin Jenang Gemi, pemesanan baru saya:\n\n';
+      let subtotal = 0;
+      cart.forEach((it, i) => {
+        subtotal += it.price * it.quantity;
+        msg += `${i + 1}. *${it.name}* ${it.flavor ? `(Rasa: ${it.flavor}) ` : ''}(${it.qtyLabel})\n   Harga: Rp ${it.price.toLocaleString('id-ID')}\n   Jumlah: ${it.quantity}\n\n`;
+      });
+      msg += `${checkoutAddressPrompt}\n\n`;
+      msg += `*Total Keseluruhan: Rp ${subtotal.toLocaleString('id-ID')}*`;
+      window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`, '_blank');
     });
-    msg += `*Total Keseluruhan: Rp ${subtotal.toLocaleString('id-ID')}*`;
-    window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`, '_blank');
   });
 
   const partnerModal = document.getElementById('partner-form-modal');

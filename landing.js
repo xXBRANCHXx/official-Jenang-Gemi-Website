@@ -88,6 +88,7 @@ const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
     ? `<span class="price-compare">${formatCurrency(comparisonPrice)}</span><span class="price-current">${formatCurrency(price)}</span>`
     : `<span class="price-current">${formatCurrency(price)}</span>`
 );
+const CHECKOUT_ADDRESS_PROMPT = 'Alamat pengiriman: [isi alamat lengkap / paste share location Google Maps]';
 const testimonialImageModules = import.meta.glob('./Media/Testimonials/*.png', {
   eager: true,
   import: 'default'
@@ -326,6 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `Rasa yang dipilih: ${flavorState.label}`,
       `Paket yang dipilih: ${packageState.label}`,
       `Harga: ${formatCurrency(packageState.price)}`,
+      CHECKOUT_ADDRESS_PROMPT,
       `Tombol checkout: ${buttonLabel}`
     ];
 

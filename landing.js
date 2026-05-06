@@ -89,8 +89,8 @@ const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
     : `<span class="price-current">${formatCurrency(price)}</span>`
 );
 const CHECKOUT_STORED_ADDRESS_KEYS = ['gemi_checkout_address_v2', 'gemi_checkout_address'];
-const CHECKOUT_LOCATION_TARGET_ACCURACY_METERS = 35;
-const CHECKOUT_LOCATION_MAX_WAIT_MS = 25000;
+const CHECKOUT_LOCATION_TARGET_ACCURACY_METERS = 10;
+const CHECKOUT_LOCATION_MAX_WAIT_MS = 45000;
 const CHECKOUT_REVERSE_GEOCODE_ENDPOINT = 'https://nominatim.openstreetmap.org/reverse';
 const CHECKOUT_REVERSE_GEOCODE_TIMEOUT_MS = 10000;
 
@@ -104,6 +104,11 @@ const formatLocationAccuracy = (accuracy) => {
     ? `${(accuracy / 1000).toFixed(1)} km`
     : `${Math.round(accuracy)} m`;
 };
+
+const buildCheckoutAccuracyError = (position) => ({
+  code: 'LOW_ACCURACY',
+  accuracy: getPositionAccuracy(position)
+});
 
 const clearSavedCheckoutAddress = () => {
   try {
@@ -207,7 +212,7 @@ const getHighAccuracyCheckoutLocation = ({ onUpdate, onSuccess, onError }) => {
   };
 
   const handleError = (error) => {
-    if (bestPosition) {
+    if (bestPosition && getPositionAccuracy(bestPosition) <= CHECKOUT_LOCATION_TARGET_ACCURACY_METERS) {
       finish(onSuccess, bestPosition);
       return;
     }
@@ -225,11 +230,11 @@ const getHighAccuracyCheckoutLocation = ({ onUpdate, onSuccess, onError }) => {
   }
 
   timeoutId = window.setTimeout(() => {
-    if (bestPosition) {
+    if (bestPosition && getPositionAccuracy(bestPosition) <= CHECKOUT_LOCATION_TARGET_ACCURACY_METERS) {
       finish(onSuccess, bestPosition);
       return;
     }
-    finish(onError, new Error('Location lookup timed out'));
+    finish(onError, bestPosition ? buildCheckoutAccuracyError(bestPosition) : new Error('Location lookup timed out'));
   }, CHECKOUT_LOCATION_MAX_WAIT_MS);
 
   return cleanup;
@@ -258,7 +263,10 @@ const ensureCheckoutAddressModal = () => {
         <textarea id="checkout-address-input" rows="4" autocomplete="off" placeholder="Nama jalan, nomor rumah, patokan, kecamatan, kota"></textarea>
       </label>
       <div class="checkout-address-actions">
-        <button class="btn btn-outline" type="button" data-use-current-location>Pakai lokasi saya</button>
+        <button class="btn btn-outline" type="button" data-use-current-location>
+          <span class="checkout-location-spinner" aria-hidden="true"></span>
+          <span data-location-button-label>Pakai lokasi saya</span>
+        </button>
         <button class="btn btn-primary" type="button" data-submit-address disabled>Lanjut ke WhatsApp</button>
       </div>
       <small data-address-status></small>
@@ -283,6 +291,9 @@ const ensureCheckoutAddressModal = () => {
     .checkout-address-actions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
     .checkout-address-actions .btn { flex: 1 1 180px; justify-content: center; }
     .checkout-address-actions .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .checkout-location-spinner { display: none; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: checkout-location-spin 0.8s linear infinite; }
+    .checkout-address-actions .btn.is-loading .checkout-location-spinner { display: inline-block; }
+    @keyframes checkout-location-spin { to { transform: rotate(360deg); } }
     .checkout-address-close { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 999px; border: 1px solid rgba(69, 55, 39, 0.14); background: #fff; color: inherit; font-weight: 800; cursor: pointer; }
     .checkout-address-card small { display: block; min-height: 18px; margin-top: 12px; color: var(--muted, #6f6255); }
     @media (max-width: 560px) {
@@ -302,6 +313,7 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
   const addressInput = modal.querySelector('#checkout-address-input');
   const submitBtn = modal.querySelector('[data-submit-address]');
   const locationBtn = modal.querySelector('[data-use-current-location]');
+  const locationButtonLabel = modal.querySelector('[data-location-button-label]');
   const status = modal.querySelector('[data-address-status]');
   const closers = modal.querySelectorAll('[data-close-address-modal]');
   let cancelLocationLookup = null;
@@ -313,6 +325,7 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
       cancelLocationLookup();
       cancelLocationLookup = null;
     }
+    setLocationLoading(false);
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
@@ -322,10 +335,19 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
     submitBtn.disabled = !(nameInput.value || '').trim() || !(addressInput.value || '').trim();
   };
 
+  const setLocationLoading = (isLoading) => {
+    locationBtn.disabled = isLoading;
+    locationBtn.classList.toggle('is-loading', isLoading);
+    if (locationButtonLabel) {
+      locationButtonLabel.textContent = isLoading ? 'Mencari alamat...' : 'Pakai lokasi saya';
+    }
+  };
+
   clearSavedCheckoutAddress();
   nameInput.value = '';
   addressInput.value = '';
   if (status) status.textContent = '';
+  setLocationLoading(false);
   syncSubmit();
 
   nameInput.oninput = syncSubmit;
@@ -343,16 +365,16 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
     if (cancelLocationLookup) cancelLocationLookup();
     const runId = locationLookupRun + 1;
     locationLookupRun = runId;
-    if (status) status.textContent = 'Mengambil GPS akurat. Pastikan izin lokasi aktif dan tunggu beberapa detik...';
-    locationBtn.disabled = true;
+    if (status) status.textContent = 'Mengambil GPS akurat dalam 10 m. Pastikan izin lokasi aktif dan tunggu beberapa detik...';
+    setLocationLoading(true);
     cancelLocationLookup = getHighAccuracyCheckoutLocation({
       onUpdate: (accuracy) => {
         if (runId !== locationLookupRun) return;
         if (!status) return;
         const accuracyText = formatLocationAccuracy(accuracy);
         status.textContent = accuracyText
-          ? `Mencari titik rumah paling akurat... sementara sekitar ${accuracyText}.`
-          : 'Mencari titik rumah paling akurat...';
+          ? `Mencari titik rumah dalam 10 m... sementara sekitar ${accuracyText}.`
+          : 'Mencari titik rumah dalam 10 m...';
       },
       onSuccess: async (position) => {
         cancelLocationLookup = null;
@@ -364,9 +386,7 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
           if (runId !== locationLookupRun) return;
           addressInput.value = buildCheckoutAddressValue({ address, accuracy });
           if (status) {
-            status.textContent = accuracy <= CHECKOUT_LOCATION_TARGET_ACCURACY_METERS
-              ? 'Alamat dari lokasi sudah masuk. Cek kembali nomor rumah dan patokan.'
-              : `Alamat dari lokasi sudah masuk, tapi GPS masih sekitar ${formatLocationAccuracy(accuracy)}. Cek kembali sebelum lanjut.`;
+            status.textContent = 'Alamat dari lokasi sudah masuk. Cek kembali nomor rumah dan patokan.';
           }
           syncSubmit();
           addressInput.focus();
@@ -375,15 +395,19 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
           if (status) status.textContent = 'Alamat dari lokasi tidak bisa ditemukan. Tulis alamat lengkap manual.';
         } finally {
           if (runId === locationLookupRun) {
-            locationBtn.disabled = false;
+            setLocationLoading(false);
           }
         }
       },
-      onError: () => {
+      onError: (error) => {
         if (runId !== locationLookupRun) return;
         cancelLocationLookup = null;
-        locationBtn.disabled = false;
-        if (status) status.textContent = 'Lokasi tidak bisa diambil. Aktifkan izin lokasi/GPS, atau tulis alamat lengkap manual.';
+        setLocationLoading(false);
+        if (status) {
+          status.textContent = Number.isFinite(error?.accuracy)
+            ? `GPS hanya akurat sekitar ${formatLocationAccuracy(error.accuracy)}, jadi belum cukup untuk alamat pengiriman. Tulis alamat lengkap manual.`
+            : 'Lokasi tidak bisa diambil dengan akurasi 10 m. Aktifkan izin lokasi/GPS, atau tulis alamat lengkap manual.';
+        }
       }
     });
   };

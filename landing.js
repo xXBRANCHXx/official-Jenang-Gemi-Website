@@ -88,10 +88,11 @@ const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
     ? `<span class="price-compare">${formatCurrency(comparisonPrice)}</span><span class="price-current">${formatCurrency(price)}</span>`
     : `<span class="price-current">${formatCurrency(price)}</span>`
 );
-const CHECKOUT_ADDRESS_STORAGE_KEY = 'gemi_checkout_address_v2';
-const LEGACY_CHECKOUT_ADDRESS_STORAGE_KEYS = ['gemi_checkout_address'];
+const CHECKOUT_STORED_ADDRESS_KEYS = ['gemi_checkout_address_v2', 'gemi_checkout_address'];
 const CHECKOUT_LOCATION_TARGET_ACCURACY_METERS = 35;
 const CHECKOUT_LOCATION_MAX_WAIT_MS = 25000;
+const CHECKOUT_REVERSE_GEOCODE_ENDPOINT = 'https://nominatim.openstreetmap.org/reverse';
+const CHECKOUT_REVERSE_GEOCODE_TIMEOUT_MS = 10000;
 
 const getPositionAccuracy = (position) => (
   Number.isFinite(position?.coords?.accuracy) ? position.coords.accuracy : Number.POSITIVE_INFINITY
@@ -104,19 +105,67 @@ const formatLocationAccuracy = (accuracy) => {
     : `${Math.round(accuracy)} m`;
 };
 
-const buildCheckoutMapsUrl = ({ latitude, longitude }) => {
-  const lat = Number(latitude).toFixed(7);
-  const lng = Number(longitude).toFixed(7);
-  return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+const clearSavedCheckoutAddress = () => {
+  try {
+    CHECKOUT_STORED_ADDRESS_KEYS.forEach((key) => {
+      window.localStorage.removeItem(key);
+    });
+  } catch (_) {}
 };
 
-const buildCheckoutLocationValue = (coords) => {
-  const accuracy = Number.isFinite(coords.accuracy) ? coords.accuracy : null;
+const formatReverseGeocodeAddress = (result) => {
+  const displayName = typeof result?.display_name === 'string' ? result.display_name.trim() : '';
+  if (displayName) return displayName;
+
+  const address = result?.address || {};
+  const street = [
+    address.road || address.pedestrian || address.footway || address.residential || address.path,
+    address.house_number
+  ].filter(Boolean).join(' ');
+  const area = [
+    address.neighbourhood || address.suburb || address.village || address.town_district,
+    address.city || address.town || address.municipality || address.county,
+    address.state,
+    address.postcode
+  ].filter(Boolean);
+
+  return [street, ...area].filter(Boolean).join(', ');
+};
+
+const reverseGeocodeCheckoutLocation = async ({ latitude, longitude }) => {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), CHECKOUT_REVERSE_GEOCODE_TIMEOUT_MS);
+
+  try {
+    const url = new URL(CHECKOUT_REVERSE_GEOCODE_ENDPOINT);
+    url.searchParams.set('format', 'jsonv2');
+    url.searchParams.set('lat', latitude);
+    url.searchParams.set('lon', longitude);
+    url.searchParams.set('zoom', '18');
+    url.searchParams.set('addressdetails', '1');
+    url.searchParams.set('accept-language', 'id');
+
+    const response = await fetch(url.toString(), {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' }
+    });
+    if (!response.ok) throw new Error('Reverse geocode failed');
+
+    const result = await response.json();
+    const address = formatReverseGeocodeAddress(result);
+    if (!address) throw new Error('No address returned');
+    return address;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+};
+
+const buildCheckoutAddressValue = ({ address, accuracy }) => {
   const lines = [
-    `Lokasi saya: ${buildCheckoutMapsUrl(coords)}`
+    address
   ];
 
-  if (accuracy !== null) {
+  if (Number.isFinite(accuracy)) {
     lines.push(`Akurasi perangkat: sekitar ${formatLocationAccuracy(accuracy)}`);
   }
 
@@ -186,23 +235,6 @@ const getHighAccuracyCheckoutLocation = ({ onUpdate, onSuccess, onError }) => {
   return cleanup;
 };
 
-const readSavedCheckoutAddress = () => {
-  try {
-    LEGACY_CHECKOUT_ADDRESS_STORAGE_KEYS.forEach((key) => {
-      window.localStorage.removeItem(key);
-    });
-    return window.localStorage.getItem(CHECKOUT_ADDRESS_STORAGE_KEY) || '';
-  } catch (_) {
-    return '';
-  }
-};
-
-const saveCheckoutAddress = (address) => {
-  try {
-    window.localStorage.setItem(CHECKOUT_ADDRESS_STORAGE_KEY, address);
-  } catch (_) {}
-};
-
 const ensureCheckoutAddressModal = () => {
   let modal = document.getElementById('checkout-address-modal');
   if (modal) return modal;
@@ -216,8 +248,15 @@ const ensureCheckoutAddressModal = () => {
       <button class="checkout-address-close" type="button" aria-label="Tutup" data-close-address-modal>x</button>
       <span class="eyebrow">Alamat Pengiriman</span>
       <h2 id="checkout-address-title">Mau dikirim ke mana?</h2>
-      <p>Tulis alamat lengkap, paste link Google Maps, atau pakai lokasi saat ini.</p>
-      <textarea id="checkout-address-input" rows="4" placeholder="Nama jalan, nomor rumah, patokan, kecamatan, kota / link Google Maps"></textarea>
+      <p>Tulis nama penerima dan alamat lengkap, atau pakai lokasi saat ini.</p>
+      <label class="checkout-address-field" for="checkout-full-name-input">
+        <span>Nama lengkap penerima</span>
+        <input id="checkout-full-name-input" type="text" autocomplete="name" placeholder="Nama lengkap penerima paket">
+      </label>
+      <label class="checkout-address-field" for="checkout-address-input">
+        <span>Alamat lengkap</span>
+        <textarea id="checkout-address-input" rows="4" autocomplete="off" placeholder="Nama jalan, nomor rumah, patokan, kecamatan, kota"></textarea>
+      </label>
       <div class="checkout-address-actions">
         <button class="btn btn-outline" type="button" data-use-current-location>Pakai lokasi saya</button>
         <button class="btn btn-primary" type="button" data-submit-address disabled>Lanjut ke WhatsApp</button>
@@ -234,7 +273,12 @@ const ensureCheckoutAddressModal = () => {
     .checkout-address-card { position: relative; z-index: 1; width: min(100%, 520px); background: #fffaf3; border: 1px solid rgba(69, 55, 39, 0.16); border-radius: 18px; box-shadow: 0 24px 70px rgba(35, 27, 18, 0.22); padding: 28px; color: var(--text, #241b12); }
     .checkout-address-card h2 { margin: 8px 0 10px; font-size: 26px; line-height: 1.15; }
     .checkout-address-card p { margin: 0 0 18px; color: var(--muted, #6f6255); line-height: 1.5; }
-    .checkout-address-card textarea { width: 100%; min-height: 118px; resize: vertical; border: 1px solid rgba(69, 55, 39, 0.22); border-radius: 12px; padding: 14px; font: inherit; line-height: 1.45; background: #fff; color: inherit; box-sizing: border-box; }
+    .checkout-address-field { display: block; margin-top: 12px; }
+    .checkout-address-field span { display: block; margin-bottom: 7px; font-weight: 800; font-size: 13px; }
+    .checkout-address-card input,
+    .checkout-address-card textarea { width: 100%; border: 1px solid rgba(69, 55, 39, 0.22); border-radius: 12px; padding: 14px; font: inherit; line-height: 1.45; background: #fff; color: inherit; box-sizing: border-box; }
+    .checkout-address-card textarea { min-height: 118px; resize: vertical; }
+    .checkout-address-card input:focus,
     .checkout-address-card textarea:focus { outline: 2px solid rgba(99, 191, 71, 0.38); border-color: rgba(99, 191, 71, 0.75); }
     .checkout-address-actions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
     .checkout-address-actions .btn { flex: 1 1 180px; justify-content: center; }
@@ -254,14 +298,17 @@ const ensureCheckoutAddressModal = () => {
 
 const openCheckoutAddressModal = ({ onSubmit }) => {
   const modal = ensureCheckoutAddressModal();
-  const input = modal.querySelector('#checkout-address-input');
+  const nameInput = modal.querySelector('#checkout-full-name-input');
+  const addressInput = modal.querySelector('#checkout-address-input');
   const submitBtn = modal.querySelector('[data-submit-address]');
   const locationBtn = modal.querySelector('[data-use-current-location]');
   const status = modal.querySelector('[data-address-status]');
   const closers = modal.querySelectorAll('[data-close-address-modal]');
   let cancelLocationLookup = null;
+  let locationLookupRun = 0;
 
   const closeModal = () => {
+    locationLookupRun += 1;
     if (cancelLocationLookup) {
       cancelLocationLookup();
       cancelLocationLookup = null;
@@ -272,14 +319,17 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
   };
 
   const syncSubmit = () => {
-    submitBtn.disabled = !(input.value || '').trim();
+    submitBtn.disabled = !(nameInput.value || '').trim() || !(addressInput.value || '').trim();
   };
 
-  input.value = readSavedCheckoutAddress();
+  clearSavedCheckoutAddress();
+  nameInput.value = '';
+  addressInput.value = '';
   if (status) status.textContent = '';
   syncSubmit();
 
-  input.oninput = syncSubmit;
+  nameInput.oninput = syncSubmit;
+  addressInput.oninput = syncSubmit;
   closers.forEach((closer) => {
     closer.onclick = closeModal;
   });
@@ -291,53 +341,69 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
     }
 
     if (cancelLocationLookup) cancelLocationLookup();
+    const runId = locationLookupRun + 1;
+    locationLookupRun = runId;
     if (status) status.textContent = 'Mengambil GPS akurat. Pastikan izin lokasi aktif dan tunggu beberapa detik...';
     locationBtn.disabled = true;
     cancelLocationLookup = getHighAccuracyCheckoutLocation({
       onUpdate: (accuracy) => {
+        if (runId !== locationLookupRun) return;
         if (!status) return;
         const accuracyText = formatLocationAccuracy(accuracy);
         status.textContent = accuracyText
           ? `Mencari titik rumah paling akurat... sementara sekitar ${accuracyText}.`
           : 'Mencari titik rumah paling akurat...';
       },
-      onSuccess: (position) => {
+      onSuccess: async (position) => {
         cancelLocationLookup = null;
         const accuracy = getPositionAccuracy(position);
-        input.value = buildCheckoutLocationValue(position.coords);
-        locationBtn.disabled = false;
-        if (status) {
-          status.textContent = accuracy <= CHECKOUT_LOCATION_TARGET_ACCURACY_METERS
-            ? 'Lokasi sudah masuk dengan akurasi dekat titik rumah. Lengkapi nomor rumah atau patokan.'
-            : `Lokasi terbaik sudah masuk, tapi akurasinya masih sekitar ${formatLocationAccuracy(accuracy)}. Tambahkan nomor rumah atau share pin Google Maps manual jika belum tepat.`;
+        if (status) status.textContent = 'Mencari alamat lengkap dari lokasi Anda...';
+
+        try {
+          const address = await reverseGeocodeCheckoutLocation(position.coords);
+          if (runId !== locationLookupRun) return;
+          addressInput.value = buildCheckoutAddressValue({ address, accuracy });
+          if (status) {
+            status.textContent = accuracy <= CHECKOUT_LOCATION_TARGET_ACCURACY_METERS
+              ? 'Alamat dari lokasi sudah masuk. Cek kembali nomor rumah dan patokan.'
+              : `Alamat dari lokasi sudah masuk, tapi GPS masih sekitar ${formatLocationAccuracy(accuracy)}. Cek kembali sebelum lanjut.`;
+          }
+          syncSubmit();
+          addressInput.focus();
+        } catch (_) {
+          if (runId !== locationLookupRun) return;
+          if (status) status.textContent = 'Alamat dari lokasi tidak bisa ditemukan. Tulis alamat lengkap manual.';
+        } finally {
+          if (runId === locationLookupRun) {
+            locationBtn.disabled = false;
+          }
         }
-        syncSubmit();
-        input.focus();
       },
       onError: () => {
+        if (runId !== locationLookupRun) return;
         cancelLocationLookup = null;
         locationBtn.disabled = false;
-        if (status) status.textContent = 'Lokasi tidak bisa diambil. Aktifkan izin lokasi/GPS, atau paste alamat lengkap dan share pin Google Maps.';
+        if (status) status.textContent = 'Lokasi tidak bisa diambil. Aktifkan izin lokasi/GPS, atau tulis alamat lengkap manual.';
       }
     });
   };
 
   submitBtn.onclick = () => {
-    const address = (input.value || '').trim();
-    if (!address) {
+    const fullName = (nameInput.value || '').trim();
+    const address = (addressInput.value || '').trim();
+    if (!fullName || !address) {
       syncSubmit();
-      input.focus();
+      (fullName ? addressInput : nameInput).focus();
       return;
     }
-    saveCheckoutAddress(address);
     closeModal();
-    onSubmit(address);
+    onSubmit({ fullName, address });
   };
 
   modal.classList.add('active');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
-  window.setTimeout(() => input.focus(), 50);
+  window.setTimeout(() => nameInput.focus(), 50);
 };
 const testimonialImageModules = import.meta.glob('./Media/Testimonials/*.png', {
   eager: true,
@@ -565,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const buildWhatsappMessage = ({ buttonLabel, address }) => {
+  const buildWhatsappMessage = ({ buttonLabel, fullName, address }) => {
     const orderCode = buildOrderCode();
     const lines = [
       `Halo Admin Jenang Gemi, saya ingin order ${productMeta.label}.`,
@@ -577,6 +643,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `Rasa yang dipilih: ${flavorState.label}`,
       `Paket yang dipilih: ${packageState.label}`,
       `Harga: ${formatCurrency(packageState.price)}`,
+      `Nama penerima: ${fullName}`,
       `Alamat pengiriman: ${address}`,
       `Tombol checkout: ${buttonLabel}`
     ];
@@ -588,8 +655,8 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', () => {
       const buttonLabel = button.dataset.buttonLabel || button.textContent?.trim() || 'Checkout';
       openCheckoutAddressModal({
-        onSubmit: (address) => {
-          const message = buildWhatsappMessage({ buttonLabel, address });
+        onSubmit: ({ fullName, address }) => {
+          const message = buildWhatsappMessage({ buttonLabel, fullName, address });
           const orderCode = buildOrderCode();
           trackEvent('checkout_click', {
             cta_location: button.dataset.ctaLocation || 'unknown',

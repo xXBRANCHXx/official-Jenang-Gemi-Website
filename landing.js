@@ -88,7 +88,140 @@ const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
     ? `<span class="price-compare">${formatCurrency(comparisonPrice)}</span><span class="price-current">${formatCurrency(price)}</span>`
     : `<span class="price-current">${formatCurrency(price)}</span>`
 );
-const CHECKOUT_ADDRESS_PROMPT = 'Alamat pengiriman: [isi alamat lengkap / paste share location Google Maps]';
+const CHECKOUT_ADDRESS_STORAGE_KEY = 'gemi_checkout_address';
+
+const readSavedCheckoutAddress = () => {
+  try {
+    return window.localStorage.getItem(CHECKOUT_ADDRESS_STORAGE_KEY) || '';
+  } catch (_) {
+    return '';
+  }
+};
+
+const saveCheckoutAddress = (address) => {
+  try {
+    window.localStorage.setItem(CHECKOUT_ADDRESS_STORAGE_KEY, address);
+  } catch (_) {}
+};
+
+const ensureCheckoutAddressModal = () => {
+  let modal = document.getElementById('checkout-address-modal');
+  if (modal) return modal;
+
+  modal = document.createElement('div');
+  modal.id = 'checkout-address-modal';
+  modal.setAttribute('aria-hidden', 'true');
+  modal.innerHTML = `
+    <div class="checkout-address-backdrop" data-close-address-modal></div>
+    <div class="checkout-address-card" role="dialog" aria-modal="true" aria-labelledby="checkout-address-title">
+      <button class="checkout-address-close" type="button" aria-label="Tutup" data-close-address-modal>x</button>
+      <span class="eyebrow">Alamat Pengiriman</span>
+      <h2 id="checkout-address-title">Mau dikirim ke mana?</h2>
+      <p>Tulis alamat lengkap, paste link Google Maps, atau pakai lokasi saat ini.</p>
+      <textarea id="checkout-address-input" rows="4" placeholder="Nama jalan, nomor rumah, patokan, kecamatan, kota / link Google Maps"></textarea>
+      <div class="checkout-address-actions">
+        <button class="btn btn-outline" type="button" data-use-current-location>Pakai lokasi saya</button>
+        <button class="btn btn-primary" type="button" data-submit-address disabled>Lanjut ke WhatsApp</button>
+      </div>
+      <small data-address-status></small>
+    </div>
+  `;
+
+  const style = document.createElement('style');
+  style.textContent = `
+    #checkout-address-modal { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    #checkout-address-modal.active { display: flex; }
+    .checkout-address-backdrop { position: absolute; inset: 0; background: rgba(20, 18, 14, 0.58); backdrop-filter: blur(8px); }
+    .checkout-address-card { position: relative; z-index: 1; width: min(100%, 520px); background: #fffaf3; border: 1px solid rgba(69, 55, 39, 0.16); border-radius: 18px; box-shadow: 0 24px 70px rgba(35, 27, 18, 0.22); padding: 28px; color: var(--text, #241b12); }
+    .checkout-address-card h2 { margin: 8px 0 10px; font-size: 26px; line-height: 1.15; }
+    .checkout-address-card p { margin: 0 0 18px; color: var(--muted, #6f6255); line-height: 1.5; }
+    .checkout-address-card textarea { width: 100%; min-height: 118px; resize: vertical; border: 1px solid rgba(69, 55, 39, 0.22); border-radius: 12px; padding: 14px; font: inherit; line-height: 1.45; background: #fff; color: inherit; box-sizing: border-box; }
+    .checkout-address-card textarea:focus { outline: 2px solid rgba(99, 191, 71, 0.38); border-color: rgba(99, 191, 71, 0.75); }
+    .checkout-address-actions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+    .checkout-address-actions .btn { flex: 1 1 180px; justify-content: center; }
+    .checkout-address-actions .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .checkout-address-close { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 999px; border: 1px solid rgba(69, 55, 39, 0.14); background: #fff; color: inherit; font-weight: 800; cursor: pointer; }
+    .checkout-address-card small { display: block; min-height: 18px; margin-top: 12px; color: var(--muted, #6f6255); }
+    @media (max-width: 560px) {
+      #checkout-address-modal { align-items: flex-end; padding: 12px; }
+      .checkout-address-card { padding: 24px 18px 18px; border-radius: 18px; }
+      .checkout-address-card h2 { font-size: 22px; }
+    }
+  `;
+  document.head.appendChild(style);
+  document.body.appendChild(modal);
+  return modal;
+};
+
+const openCheckoutAddressModal = ({ onSubmit }) => {
+  const modal = ensureCheckoutAddressModal();
+  const input = modal.querySelector('#checkout-address-input');
+  const submitBtn = modal.querySelector('[data-submit-address]');
+  const locationBtn = modal.querySelector('[data-use-current-location]');
+  const status = modal.querySelector('[data-address-status]');
+  const closers = modal.querySelectorAll('[data-close-address-modal]');
+
+  const closeModal = () => {
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  };
+
+  const syncSubmit = () => {
+    submitBtn.disabled = !(input.value || '').trim();
+  };
+
+  input.value = readSavedCheckoutAddress();
+  if (status) status.textContent = '';
+  syncSubmit();
+
+  input.oninput = syncSubmit;
+  closers.forEach((closer) => {
+    closer.onclick = closeModal;
+  });
+
+  locationBtn.onclick = () => {
+    if (!navigator.geolocation) {
+      if (status) status.textContent = 'Browser ini belum mendukung lokasi otomatis. Paste alamat atau link Google Maps saja.';
+      return;
+    }
+
+    if (status) status.textContent = 'Mengambil lokasi...';
+    locationBtn.disabled = true;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        input.value = `Lokasi saya: https://www.google.com/maps?q=${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+        locationBtn.disabled = false;
+        if (status) status.textContent = 'Lokasi sudah masuk. Tambahkan patokan rumah jika perlu.';
+        syncSubmit();
+        input.focus();
+      },
+      () => {
+        locationBtn.disabled = false;
+        if (status) status.textContent = 'Lokasi tidak bisa diambil. Paste alamat lengkap atau share location Google Maps.';
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
+  submitBtn.onclick = () => {
+    const address = (input.value || '').trim();
+    if (!address) {
+      syncSubmit();
+      input.focus();
+      return;
+    }
+    saveCheckoutAddress(address);
+    closeModal();
+    onSubmit(address);
+  };
+
+  modal.classList.add('active');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  window.setTimeout(() => input.focus(), 50);
+};
 const testimonialImageModules = import.meta.glob('./Media/Testimonials/*.png', {
   eager: true,
   import: 'default'
@@ -315,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const buildWhatsappMessage = ({ buttonLabel }) => {
+  const buildWhatsappMessage = ({ buttonLabel, address }) => {
     const orderCode = buildOrderCode();
     const lines = [
       `Halo Admin Jenang Gemi, saya ingin order ${productMeta.label}.`,
@@ -327,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `Rasa yang dipilih: ${flavorState.label}`,
       `Paket yang dipilih: ${packageState.label}`,
       `Harga: ${formatCurrency(packageState.price)}`,
-      CHECKOUT_ADDRESS_PROMPT,
+      `Alamat pengiriman: ${address}`,
       `Tombol checkout: ${buttonLabel}`
     ];
 
@@ -337,24 +470,28 @@ document.addEventListener('DOMContentLoaded', () => {
   checkoutButtons.forEach((button) => {
     button.addEventListener('click', () => {
       const buttonLabel = button.dataset.buttonLabel || button.textContent?.trim() || 'Checkout';
-      const message = buildWhatsappMessage({ buttonLabel });
-      const orderCode = buildOrderCode();
-      trackEvent('checkout_click', {
-        cta_location: button.dataset.ctaLocation || 'unknown',
-        product_code: productMeta.code,
-        product_label: productMeta.label,
-        flavor_label: flavorState.label,
-        flavor_code: getFlavorCode(),
-        package_label: packageState.label,
-        package_size: getPackageSize(),
-        package_price: packageState.price,
-        order_code: orderCode
+      openCheckoutAddressModal({
+        onSubmit: (address) => {
+          const message = buildWhatsappMessage({ buttonLabel, address });
+          const orderCode = buildOrderCode();
+          trackEvent('checkout_click', {
+            cta_location: button.dataset.ctaLocation || 'unknown',
+            product_code: productMeta.code,
+            product_label: productMeta.label,
+            flavor_label: flavorState.label,
+            flavor_code: getFlavorCode(),
+            package_label: packageState.label,
+            package_size: getPackageSize(),
+            package_price: packageState.price,
+            order_code: orderCode
+          });
+          window.open(
+            `https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(message)}`,
+            '_blank',
+            'noopener'
+          );
+        }
       });
-      window.open(
-        `https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(message)}`,
-        '_blank',
-        'noopener'
-      );
     });
   });
 

@@ -89,11 +89,6 @@ const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
     : `<span class="price-current">${formatCurrency(price)}</span>`
 );
 const CHECKOUT_STORED_ADDRESS_KEYS = ['gemi_checkout_address_v2', 'gemi_checkout_address'];
-const CHECKOUT_ORIGIN_COORDS = { latitude: -7.7486369, longitude: 110.3634612 };
-const CHECKOUT_GEOCODE_ENDPOINT = 'https://nominatim.openstreetmap.org/search';
-const CHECKOUT_FALLBACK_GEOCODE_ENDPOINT = 'https://photon.komoot.io/api/';
-const CHECKOUT_ROUTE_ENDPOINT = 'https://router.project-osrm.org/route/v1/driving';
-const CHECKOUT_ONLINE_LOOKUP_TIMEOUT_MS = 10000;
 
 const clearSavedCheckoutAddress = () => {
   try {
@@ -101,143 +96,6 @@ const clearSavedCheckoutAddress = () => {
       window.localStorage.removeItem(key);
     });
   } catch (_) {}
-};
-
-const fetchCheckoutJson = async (url) => {
-  const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), CHECKOUT_ONLINE_LOOKUP_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(url.toString(), {
-      signal: controller.signal,
-      headers: { Accept: 'application/json' }
-    });
-    if (!response.ok) throw new Error('Checkout lookup failed');
-    return response.json();
-  } finally {
-    window.clearTimeout(timeoutId);
-  }
-};
-
-const geocodeCheckoutAddressWithNominatim = async (address) => {
-  const url = new URL(CHECKOUT_GEOCODE_ENDPOINT);
-  url.searchParams.set('format', 'jsonv2');
-  url.searchParams.set('q', `${address}, Indonesia`);
-  url.searchParams.set('limit', '1');
-  url.searchParams.set('countrycodes', 'id');
-  url.searchParams.set('addressdetails', '1');
-  url.searchParams.set('accept-language', 'id');
-
-  const results = await fetchCheckoutJson(url);
-  const match = Array.isArray(results) ? results[0] : null;
-  const latitude = Number(match?.lat);
-  const longitude = Number(match?.lon);
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-    throw new Error('Address could not be found');
-  }
-
-  return {
-    latitude,
-    longitude,
-    matchedAddress: match.display_name || ''
-  };
-};
-
-const geocodeCheckoutAddressWithPhoton = async (address) => {
-  const url = new URL(CHECKOUT_FALLBACK_GEOCODE_ENDPOINT);
-  url.searchParams.set('q', `${address}, Indonesia`);
-  url.searchParams.set('limit', '1');
-
-  const results = await fetchCheckoutJson(url);
-  const feature = Array.isArray(results?.features) ? results.features[0] : null;
-  const coordinates = feature?.geometry?.coordinates || [];
-  const longitude = Number(coordinates[0]);
-  const latitude = Number(coordinates[1]);
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-    throw new Error('Address could not be found');
-  }
-
-  return {
-    latitude,
-    longitude,
-    matchedAddress: [
-      feature?.properties?.name,
-      feature?.properties?.street,
-      feature?.properties?.city,
-      feature?.properties?.state,
-      feature?.properties?.postcode,
-      feature?.properties?.country
-    ].filter(Boolean).join(', ')
-  };
-};
-
-const geocodeCheckoutAddress = async (address) => {
-  try {
-    return await geocodeCheckoutAddressWithNominatim(address);
-  } catch (_) {
-    return geocodeCheckoutAddressWithPhoton(address);
-  }
-};
-
-const getCheckoutStraightDistanceKm = (from, to) => {
-  const radiusKm = 6371;
-  const toRadians = (value) => value * Math.PI / 180;
-  const latDistance = toRadians(to.latitude - from.latitude);
-  const lonDistance = toRadians(to.longitude - from.longitude);
-  const fromLat = toRadians(from.latitude);
-  const toLat = toRadians(to.latitude);
-  const angle = Math.sin(latDistance / 2) ** 2
-    + Math.cos(fromLat) * Math.cos(toLat) * Math.sin(lonDistance / 2) ** 2;
-
-  return radiusKm * 2 * Math.atan2(Math.sqrt(angle), Math.sqrt(1 - angle));
-};
-
-const getCheckoutRouteDistanceKm = async (destination) => {
-  const routeUrl = `${CHECKOUT_ROUTE_ENDPOINT}/${CHECKOUT_ORIGIN_COORDS.longitude},${CHECKOUT_ORIGIN_COORDS.latitude};${destination.longitude},${destination.latitude}?overview=false`;
-
-  try {
-    const route = await fetchCheckoutJson(routeUrl);
-    const distanceMeters = Number(route?.routes?.[0]?.distance);
-    if (Number.isFinite(distanceMeters) && distanceMeters > 0) {
-      return distanceMeters / 1000;
-    }
-  } catch (_) {}
-
-  return getCheckoutStraightDistanceKm(CHECKOUT_ORIGIN_COORDS, destination) * 1.25;
-};
-
-const estimateCheckoutCostFromDistance = ({ distanceKm, shippingUnits = 1 }) => {
-  const safeDistance = Math.max(0, Number(distanceKm) || 0);
-  const units = Math.max(1, Math.ceil(Number(shippingUnits) || 1));
-  let baseCost = 12000;
-
-  if (safeDistance > 30) baseCost = 18000;
-  if (safeDistance > 100) baseCost = 24000;
-  if (safeDistance > 300) baseCost = 34000;
-  if (safeDistance > 600) baseCost = 45000;
-  if (safeDistance > 1000) baseCost = 65000 + Math.ceil((safeDistance - 1000) / 500) * 12000;
-
-  const extraUnitCost = Math.max(0, units - 1) * Math.round(baseCost * 0.45);
-  return Math.ceil((baseCost + extraUnitCost) / 1000) * 1000;
-};
-
-const estimateCheckoutShipping = async ({ address, shippingUnits = 1 }) => {
-  const destination = await geocodeCheckoutAddress(address);
-  const distanceKm = await getCheckoutRouteDistanceKm(destination);
-
-  return {
-    cost: estimateCheckoutCostFromDistance({ distanceKm, shippingUnits }),
-    distanceKm,
-    matchedAddress: destination.matchedAddress
-  };
-};
-
-const formatCheckoutShippingEstimate = (estimate) => {
-  if (!estimate?.cost) return 'Belum bisa dihitung otomatis - konfirmasi admin';
-  const distanceText = Number.isFinite(estimate.distanceKm)
-    ? `, estimasi jarak ${Math.round(estimate.distanceKm)} km`
-    : '';
-  return `${formatCurrency(estimate.cost)}${distanceText}`;
 };
 
 const ensureCheckoutAddressModal = () => {
@@ -253,7 +111,7 @@ const ensureCheckoutAddressModal = () => {
       <button class="checkout-address-close" type="button" aria-label="Tutup" data-close-address-modal>x</button>
       <span class="eyebrow">Alamat Pengiriman</span>
       <h2 id="checkout-address-title">Mau dikirim ke mana?</h2>
-      <p>Tulis nama penerima dan alamat lengkap. Ongkir akan diestimasi otomatis sebelum masuk WhatsApp.</p>
+      <p>Tulis nama penerima dan alamat lengkap.</p>
       <label class="checkout-address-field" for="checkout-full-name-input">
         <span>Nama lengkap penerima</span>
         <input id="checkout-full-name-input" type="text" autocomplete="name" placeholder="Nama lengkap penerima paket">
@@ -263,12 +121,9 @@ const ensureCheckoutAddressModal = () => {
         <textarea id="checkout-address-input" rows="4" autocomplete="off" placeholder="Nama jalan, nomor rumah, patokan, kecamatan, kota, kode pos"></textarea>
       </label>
       <div class="checkout-address-actions">
-        <button class="btn btn-primary" type="button" data-submit-address disabled>
-          <span class="checkout-submit-spinner" aria-hidden="true"></span>
-          <span data-submit-address-label>Lanjut ke WhatsApp</span>
-        </button>
+        <button class="btn btn-primary" type="button" data-submit-address disabled>Lanjut ke WhatsApp</button>
       </div>
-      <small data-address-status>Estimasi ongkir memakai pencarian alamat online dan akan dikonfirmasi admin.</small>
+      <small data-address-status></small>
     </div>
   `;
 
@@ -290,9 +145,6 @@ const ensureCheckoutAddressModal = () => {
     .checkout-address-actions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
     .checkout-address-actions .btn { flex: 1 1 180px; justify-content: center; }
     .checkout-address-actions .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .checkout-submit-spinner { display: none; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: checkout-submit-spin 0.8s linear infinite; }
-    .checkout-address-actions .btn.is-loading .checkout-submit-spinner { display: inline-block; }
-    @keyframes checkout-submit-spin { to { transform: rotate(360deg); } }
     .checkout-address-close { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 999px; border: 1px solid rgba(69, 55, 39, 0.14); background: #fff; color: inherit; font-weight: 800; cursor: pointer; }
     .checkout-address-card small { display: block; min-height: 18px; margin-top: 12px; color: var(--muted, #6f6255); }
     @media (max-width: 560px) {
@@ -306,17 +158,15 @@ const ensureCheckoutAddressModal = () => {
   return modal;
 };
 
-const openCheckoutAddressModal = ({ onSubmit, getShippingUnits = () => 1 }) => {
+const openCheckoutAddressModal = ({ onSubmit }) => {
   const modal = ensureCheckoutAddressModal();
   const nameInput = modal.querySelector('#checkout-full-name-input');
   const addressInput = modal.querySelector('#checkout-address-input');
   const submitBtn = modal.querySelector('[data-submit-address]');
-  const submitLabel = modal.querySelector('[data-submit-address-label]');
   const status = modal.querySelector('[data-address-status]');
   const closers = modal.querySelectorAll('[data-close-address-modal]');
 
   const closeModal = () => {
-    setCheckoutSubmitting(false);
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
@@ -326,19 +176,10 @@ const openCheckoutAddressModal = ({ onSubmit, getShippingUnits = () => 1 }) => {
     submitBtn.disabled = !(nameInput.value || '').trim() || !(addressInput.value || '').trim();
   };
 
-  const setCheckoutSubmitting = (isSubmitting) => {
-    submitBtn.disabled = isSubmitting || !(nameInput.value || '').trim() || !(addressInput.value || '').trim();
-    submitBtn.classList.toggle('is-loading', isSubmitting);
-    if (submitLabel) {
-      submitLabel.textContent = isSubmitting ? 'Menghitung ongkir...' : 'Lanjut ke WhatsApp';
-    }
-  };
-
   clearSavedCheckoutAddress();
   nameInput.value = '';
   addressInput.value = '';
-  if (status) status.textContent = 'Estimasi ongkir memakai pencarian alamat online dan akan dikonfirmasi admin.';
-  setCheckoutSubmitting(false);
+  if (status) status.textContent = '';
   syncSubmit();
 
   nameInput.oninput = syncSubmit;
@@ -347,7 +188,7 @@ const openCheckoutAddressModal = ({ onSubmit, getShippingUnits = () => 1 }) => {
     closer.onclick = closeModal;
   });
 
-  submitBtn.onclick = async () => {
+  submitBtn.onclick = () => {
     const fullName = (nameInput.value || '').trim();
     const address = (addressInput.value || '').trim();
     if (!fullName || !address) {
@@ -355,22 +196,8 @@ const openCheckoutAddressModal = ({ onSubmit, getShippingUnits = () => 1 }) => {
       (fullName ? addressInput : nameInput).focus();
       return;
     }
-
-    let shippingEstimate = null;
-    setCheckoutSubmitting(true);
-    if (status) status.textContent = 'Mencari alamat online dan menghitung estimasi ongkir...';
-
-    try {
-      shippingEstimate = await estimateCheckoutShipping({
-        address,
-        shippingUnits: getShippingUnits()
-      });
-    } catch (_) {
-      if (status) status.textContent = 'Ongkir belum bisa dihitung otomatis. Admin akan konfirmasi di WhatsApp.';
-    }
-
     closeModal();
-    onSubmit({ fullName, address, shippingEstimate });
+    onSubmit({ fullName, address });
   };
 
   modal.classList.add('active');
@@ -604,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const buildWhatsappMessage = ({ buttonLabel, fullName, address, shippingEstimate }) => {
+  const buildWhatsappMessage = ({ buttonLabel, fullName, address }) => {
     const orderCode = buildOrderCode();
     const lines = [
       `Halo Admin Jenang Gemi, saya ingin order ${productMeta.label}.`,
@@ -618,7 +445,6 @@ document.addEventListener('DOMContentLoaded', () => {
       `Harga: ${formatCurrency(packageState.price)}`,
       `Nama penerima: ${fullName}`,
       `Alamat pengiriman: ${address}`,
-      `Estimasi ongkir: ${formatCheckoutShippingEstimate(shippingEstimate)}`,
       `Tombol checkout: ${buttonLabel}`
     ];
 
@@ -629,9 +455,8 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', () => {
       const buttonLabel = button.dataset.buttonLabel || button.textContent?.trim() || 'Checkout';
       openCheckoutAddressModal({
-        getShippingUnits: () => Math.max(1, Math.ceil(getPackQuantity(packageState.label) / 30)),
-        onSubmit: ({ fullName, address, shippingEstimate }) => {
-          const message = buildWhatsappMessage({ buttonLabel, fullName, address, shippingEstimate });
+        onSubmit: ({ fullName, address }) => {
+          const message = buildWhatsappMessage({ buttonLabel, fullName, address });
           const orderCode = buildOrderCode();
           trackEvent('checkout_click', {
             cta_location: button.dataset.ctaLocation || 'unknown',

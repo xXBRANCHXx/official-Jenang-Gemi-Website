@@ -88,7 +88,8 @@ const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
     ? `<span class="price-compare">${formatCurrency(comparisonPrice)}</span><span class="price-current">${formatCurrency(price)}</span>`
     : `<span class="price-current">${formatCurrency(price)}</span>`
 );
-const CHECKOUT_ADDRESS_STORAGE_KEY = 'gemi_checkout_address';
+const CHECKOUT_ADDRESS_STORAGE_KEY = 'gemi_checkout_address_v2';
+const LEGACY_CHECKOUT_ADDRESS_STORAGE_KEYS = ['gemi_checkout_address'];
 const CHECKOUT_LOCATION_TARGET_ACCURACY_METERS = 35;
 const CHECKOUT_LOCATION_MAX_WAIT_MS = 25000;
 
@@ -187,6 +188,9 @@ const getHighAccuracyCheckoutLocation = ({ onUpdate, onSuccess, onError }) => {
 
 const readSavedCheckoutAddress = () => {
   try {
+    LEGACY_CHECKOUT_ADDRESS_STORAGE_KEYS.forEach((key) => {
+      window.localStorage.removeItem(key);
+    });
     return window.localStorage.getItem(CHECKOUT_ADDRESS_STORAGE_KEY) || '';
   } catch (_) {
     return '';

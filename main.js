@@ -17,26 +17,11 @@ const buildPriceMarkup = ({ price = 0, comparisonPrice = null }) => (
     : `<span class="price-current">${formatIdr(price)}</span>`
 );
 const CHECKOUT_STORED_ADDRESS_KEYS = ['gemi_checkout_address_v2', 'gemi_checkout_address'];
-const CHECKOUT_LOCATION_TARGET_ACCURACY_METERS = 10;
-const CHECKOUT_LOCATION_MAX_WAIT_MS = 45000;
-const CHECKOUT_REVERSE_GEOCODE_ENDPOINT = 'https://nominatim.openstreetmap.org/reverse';
-const CHECKOUT_REVERSE_GEOCODE_TIMEOUT_MS = 10000;
-
-const getPositionAccuracy = (position) => (
-  Number.isFinite(position?.coords?.accuracy) ? position.coords.accuracy : Number.POSITIVE_INFINITY
-);
-
-const formatLocationAccuracy = (accuracy) => {
-  if (!Number.isFinite(accuracy)) return '';
-  return accuracy >= 1000
-    ? `${(accuracy / 1000).toFixed(1)} km`
-    : `${Math.round(accuracy)} m`;
-};
-
-const buildCheckoutAccuracyError = (position) => ({
-  code: 'LOW_ACCURACY',
-  accuracy: getPositionAccuracy(position)
-});
+const CHECKOUT_ORIGIN_COORDS = { latitude: -7.7486369, longitude: 110.3634612 };
+const CHECKOUT_GEOCODE_ENDPOINT = 'https://nominatim.openstreetmap.org/search';
+const CHECKOUT_FALLBACK_GEOCODE_ENDPOINT = 'https://photon.komoot.io/api/';
+const CHECKOUT_ROUTE_ENDPOINT = 'https://router.project-osrm.org/route/v1/driving';
+const CHECKOUT_ONLINE_LOOKUP_TIMEOUT_MS = 10000;
 
 const clearSavedCheckoutAddress = () => {
   try {
@@ -46,126 +31,141 @@ const clearSavedCheckoutAddress = () => {
   } catch (_) {}
 };
 
-const formatReverseGeocodeAddress = (result) => {
-  const displayName = typeof result?.display_name === 'string' ? result.display_name.trim() : '';
-  if (displayName) return displayName;
-
-  const address = result?.address || {};
-  const street = [
-    address.road || address.pedestrian || address.footway || address.residential || address.path,
-    address.house_number
-  ].filter(Boolean).join(' ');
-  const area = [
-    address.neighbourhood || address.suburb || address.village || address.town_district,
-    address.city || address.town || address.municipality || address.county,
-    address.state,
-    address.postcode
-  ].filter(Boolean);
-
-  return [street, ...area].filter(Boolean).join(', ');
-};
-
-const reverseGeocodeCheckoutLocation = async ({ latitude, longitude }) => {
+const fetchCheckoutJson = async (url) => {
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), CHECKOUT_REVERSE_GEOCODE_TIMEOUT_MS);
+  const timeoutId = window.setTimeout(() => controller.abort(), CHECKOUT_ONLINE_LOOKUP_TIMEOUT_MS);
 
   try {
-    const url = new URL(CHECKOUT_REVERSE_GEOCODE_ENDPOINT);
-    url.searchParams.set('format', 'jsonv2');
-    url.searchParams.set('lat', latitude);
-    url.searchParams.set('lon', longitude);
-    url.searchParams.set('zoom', '18');
-    url.searchParams.set('addressdetails', '1');
-    url.searchParams.set('accept-language', 'id');
-
     const response = await fetch(url.toString(), {
       signal: controller.signal,
       headers: { Accept: 'application/json' }
     });
-    if (!response.ok) throw new Error('Reverse geocode failed');
-
-    const result = await response.json();
-    const address = formatReverseGeocodeAddress(result);
-    if (!address) throw new Error('No address returned');
-    return address;
+    if (!response.ok) throw new Error('Checkout lookup failed');
+    return response.json();
   } finally {
     window.clearTimeout(timeoutId);
   }
 };
 
-const buildCheckoutAddressValue = ({ address, accuracy }) => {
-  const lines = [
-    address
-  ];
+const geocodeCheckoutAddressWithNominatim = async (address) => {
+  const url = new URL(CHECKOUT_GEOCODE_ENDPOINT);
+  url.searchParams.set('format', 'jsonv2');
+  url.searchParams.set('q', `${address}, Indonesia`);
+  url.searchParams.set('limit', '1');
+  url.searchParams.set('countrycodes', 'id');
+  url.searchParams.set('addressdetails', '1');
+  url.searchParams.set('accept-language', 'id');
 
-  if (Number.isFinite(accuracy)) {
-    lines.push(`Akurasi perangkat: sekitar ${formatLocationAccuracy(accuracy)}`);
+  const results = await fetchCheckoutJson(url);
+  const match = Array.isArray(results) ? results[0] : null;
+  const latitude = Number(match?.lat);
+  const longitude = Number(match?.lon);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    throw new Error('Address could not be found');
   }
 
-  lines.push('Nomor rumah / patokan: ');
-  return lines.join('\n');
+  return {
+    latitude,
+    longitude,
+    matchedAddress: match.display_name || ''
+  };
 };
 
-const getHighAccuracyCheckoutLocation = ({ onUpdate, onSuccess, onError }) => {
-  let bestPosition = null;
-  let watchId = null;
-  let timeoutId = null;
-  let finished = false;
+const geocodeCheckoutAddressWithPhoton = async (address) => {
+  const url = new URL(CHECKOUT_FALLBACK_GEOCODE_ENDPOINT);
+  url.searchParams.set('q', `${address}, Indonesia`);
+  url.searchParams.set('limit', '1');
 
-  const cleanup = () => {
-    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-    if (timeoutId !== null) window.clearTimeout(timeoutId);
-    watchId = null;
-    timeoutId = null;
-  };
-
-  const finish = (callback, value) => {
-    if (finished) return;
-    finished = true;
-    cleanup();
-    callback(value);
-  };
-
-  const handlePosition = (position) => {
-    const accuracy = getPositionAccuracy(position);
-    if (!bestPosition || accuracy < getPositionAccuracy(bestPosition)) {
-      bestPosition = position;
-    }
-
-    onUpdate?.(accuracy);
-
-    if (accuracy <= CHECKOUT_LOCATION_TARGET_ACCURACY_METERS) {
-      finish(onSuccess, position);
-    }
-  };
-
-  const handleError = (error) => {
-    if (bestPosition && getPositionAccuracy(bestPosition) <= CHECKOUT_LOCATION_TARGET_ACCURACY_METERS) {
-      finish(onSuccess, bestPosition);
-      return;
-    }
-    finish(onError, error);
-  };
-
-  try {
-    watchId = navigator.geolocation.watchPosition(handlePosition, handleError, {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: CHECKOUT_LOCATION_MAX_WAIT_MS
-    });
-  } catch (error) {
-    handleError(error);
+  const results = await fetchCheckoutJson(url);
+  const feature = Array.isArray(results?.features) ? results.features[0] : null;
+  const coordinates = feature?.geometry?.coordinates || [];
+  const longitude = Number(coordinates[0]);
+  const latitude = Number(coordinates[1]);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    throw new Error('Address could not be found');
   }
 
-  timeoutId = window.setTimeout(() => {
-    if (bestPosition && getPositionAccuracy(bestPosition) <= CHECKOUT_LOCATION_TARGET_ACCURACY_METERS) {
-      finish(onSuccess, bestPosition);
-      return;
-    }
-    finish(onError, bestPosition ? buildCheckoutAccuracyError(bestPosition) : new Error('Location lookup timed out'));
-  }, CHECKOUT_LOCATION_MAX_WAIT_MS);
+  return {
+    latitude,
+    longitude,
+    matchedAddress: [
+      feature?.properties?.name,
+      feature?.properties?.street,
+      feature?.properties?.city,
+      feature?.properties?.state,
+      feature?.properties?.postcode,
+      feature?.properties?.country
+    ].filter(Boolean).join(', ')
+  };
+};
 
-  return cleanup;
+const geocodeCheckoutAddress = async (address) => {
+  try {
+    return await geocodeCheckoutAddressWithNominatim(address);
+  } catch (_) {
+    return geocodeCheckoutAddressWithPhoton(address);
+  }
+};
+
+const getCheckoutStraightDistanceKm = (from, to) => {
+  const radiusKm = 6371;
+  const toRadians = (value) => value * Math.PI / 180;
+  const latDistance = toRadians(to.latitude - from.latitude);
+  const lonDistance = toRadians(to.longitude - from.longitude);
+  const fromLat = toRadians(from.latitude);
+  const toLat = toRadians(to.latitude);
+  const angle = Math.sin(latDistance / 2) ** 2
+    + Math.cos(fromLat) * Math.cos(toLat) * Math.sin(lonDistance / 2) ** 2;
+
+  return radiusKm * 2 * Math.atan2(Math.sqrt(angle), Math.sqrt(1 - angle));
+};
+
+const getCheckoutRouteDistanceKm = async (destination) => {
+  const routeUrl = `${CHECKOUT_ROUTE_ENDPOINT}/${CHECKOUT_ORIGIN_COORDS.longitude},${CHECKOUT_ORIGIN_COORDS.latitude};${destination.longitude},${destination.latitude}?overview=false`;
+
+  try {
+    const route = await fetchCheckoutJson(routeUrl);
+    const distanceMeters = Number(route?.routes?.[0]?.distance);
+    if (Number.isFinite(distanceMeters) && distanceMeters > 0) {
+      return distanceMeters / 1000;
+    }
+  } catch (_) {}
+
+  return getCheckoutStraightDistanceKm(CHECKOUT_ORIGIN_COORDS, destination) * 1.25;
+};
+
+const estimateCheckoutCostFromDistance = ({ distanceKm, shippingUnits = 1 }) => {
+  const safeDistance = Math.max(0, Number(distanceKm) || 0);
+  const units = Math.max(1, Math.ceil(Number(shippingUnits) || 1));
+  let baseCost = 12000;
+
+  if (safeDistance > 30) baseCost = 18000;
+  if (safeDistance > 100) baseCost = 24000;
+  if (safeDistance > 300) baseCost = 34000;
+  if (safeDistance > 600) baseCost = 45000;
+  if (safeDistance > 1000) baseCost = 65000 + Math.ceil((safeDistance - 1000) / 500) * 12000;
+
+  const extraUnitCost = Math.max(0, units - 1) * Math.round(baseCost * 0.45);
+  return Math.ceil((baseCost + extraUnitCost) / 1000) * 1000;
+};
+
+const estimateCheckoutShipping = async ({ address, shippingUnits = 1 }) => {
+  const destination = await geocodeCheckoutAddress(address);
+  const distanceKm = await getCheckoutRouteDistanceKm(destination);
+
+  return {
+    cost: estimateCheckoutCostFromDistance({ distanceKm, shippingUnits }),
+    distanceKm,
+    matchedAddress: destination.matchedAddress
+  };
+};
+
+const formatCheckoutShippingEstimate = (estimate) => {
+  if (!estimate?.cost) return 'Belum bisa dihitung otomatis - konfirmasi admin';
+  const distanceText = Number.isFinite(estimate.distanceKm)
+    ? `, estimasi jarak ${Math.round(estimate.distanceKm)} km`
+    : '';
+  return `${formatIdr(estimate.cost)}${distanceText}`;
 };
 
 const ensureCheckoutAddressModal = () => {
@@ -181,23 +181,22 @@ const ensureCheckoutAddressModal = () => {
       <button class="checkout-address-close" type="button" aria-label="Tutup" data-close-address-modal>x</button>
       <span class="eyebrow">Alamat Pengiriman</span>
       <h2 id="checkout-address-title">Mau dikirim ke mana?</h2>
-      <p>Tulis nama penerima dan alamat lengkap, atau pakai lokasi saat ini.</p>
+      <p>Tulis nama penerima dan alamat lengkap. Ongkir akan diestimasi otomatis sebelum masuk WhatsApp.</p>
       <label class="checkout-address-field" for="checkout-full-name-input">
         <span>Nama lengkap penerima</span>
         <input id="checkout-full-name-input" type="text" autocomplete="name" placeholder="Nama lengkap penerima paket">
       </label>
       <label class="checkout-address-field" for="checkout-address-input">
         <span>Alamat lengkap</span>
-        <textarea id="checkout-address-input" rows="4" autocomplete="off" placeholder="Nama jalan, nomor rumah, patokan, kecamatan, kota"></textarea>
+        <textarea id="checkout-address-input" rows="4" autocomplete="off" placeholder="Nama jalan, nomor rumah, patokan, kecamatan, kota, kode pos"></textarea>
       </label>
       <div class="checkout-address-actions">
-        <button class="btn btn-outline" type="button" data-use-current-location>
-          <span class="checkout-location-spinner" aria-hidden="true"></span>
-          <span data-location-button-label>Pakai lokasi saya</span>
+        <button class="btn btn-primary" type="button" data-submit-address disabled>
+          <span class="checkout-submit-spinner" aria-hidden="true"></span>
+          <span data-submit-address-label>Lanjut ke WhatsApp</span>
         </button>
-        <button class="btn btn-primary" type="button" data-submit-address disabled>Lanjut ke WhatsApp</button>
       </div>
-      <small data-address-status></small>
+      <small data-address-status>Estimasi ongkir memakai pencarian alamat online dan akan dikonfirmasi admin.</small>
     </div>
   `;
 
@@ -219,9 +218,9 @@ const ensureCheckoutAddressModal = () => {
     .checkout-address-actions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
     .checkout-address-actions .btn { flex: 1 1 180px; justify-content: center; }
     .checkout-address-actions .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .checkout-location-spinner { display: none; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: checkout-location-spin 0.8s linear infinite; }
-    .checkout-address-actions .btn.is-loading .checkout-location-spinner { display: inline-block; }
-    @keyframes checkout-location-spin { to { transform: rotate(360deg); } }
+    .checkout-submit-spinner { display: none; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: checkout-submit-spin 0.8s linear infinite; }
+    .checkout-address-actions .btn.is-loading .checkout-submit-spinner { display: inline-block; }
+    @keyframes checkout-submit-spin { to { transform: rotate(360deg); } }
     .checkout-address-close { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 999px; border: 1px solid rgba(69, 55, 39, 0.14); background: #fff; color: inherit; font-weight: 800; cursor: pointer; }
     .checkout-address-card small { display: block; min-height: 18px; margin-top: 12px; color: var(--muted, #6f6255); }
     @media (max-width: 560px) {
@@ -235,25 +234,17 @@ const ensureCheckoutAddressModal = () => {
   return modal;
 };
 
-const openCheckoutAddressModal = ({ onSubmit }) => {
+const openCheckoutAddressModal = ({ onSubmit, getShippingUnits = () => 1 }) => {
   const modal = ensureCheckoutAddressModal();
   const nameInput = modal.querySelector('#checkout-full-name-input');
   const addressInput = modal.querySelector('#checkout-address-input');
   const submitBtn = modal.querySelector('[data-submit-address]');
-  const locationBtn = modal.querySelector('[data-use-current-location]');
-  const locationButtonLabel = modal.querySelector('[data-location-button-label]');
+  const submitLabel = modal.querySelector('[data-submit-address-label]');
   const status = modal.querySelector('[data-address-status]');
   const closers = modal.querySelectorAll('[data-close-address-modal]');
-  let cancelLocationLookup = null;
-  let locationLookupRun = 0;
 
   const closeModal = () => {
-    locationLookupRun += 1;
-    if (cancelLocationLookup) {
-      cancelLocationLookup();
-      cancelLocationLookup = null;
-    }
-    setLocationLoading(false);
+    setCheckoutSubmitting(false);
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
@@ -263,19 +254,19 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
     submitBtn.disabled = !(nameInput.value || '').trim() || !(addressInput.value || '').trim();
   };
 
-  const setLocationLoading = (isLoading) => {
-    locationBtn.disabled = isLoading;
-    locationBtn.classList.toggle('is-loading', isLoading);
-    if (locationButtonLabel) {
-      locationButtonLabel.textContent = isLoading ? 'Mencari alamat...' : 'Pakai lokasi saya';
+  const setCheckoutSubmitting = (isSubmitting) => {
+    submitBtn.disabled = isSubmitting || !(nameInput.value || '').trim() || !(addressInput.value || '').trim();
+    submitBtn.classList.toggle('is-loading', isSubmitting);
+    if (submitLabel) {
+      submitLabel.textContent = isSubmitting ? 'Menghitung ongkir...' : 'Lanjut ke WhatsApp';
     }
   };
 
   clearSavedCheckoutAddress();
   nameInput.value = '';
   addressInput.value = '';
-  if (status) status.textContent = '';
-  setLocationLoading(false);
+  if (status) status.textContent = 'Estimasi ongkir memakai pencarian alamat online dan akan dikonfirmasi admin.';
+  setCheckoutSubmitting(false);
   syncSubmit();
 
   nameInput.oninput = syncSubmit;
@@ -284,63 +275,7 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
     closer.onclick = closeModal;
   });
 
-  locationBtn.onclick = () => {
-    if (!navigator.geolocation) {
-      if (status) status.textContent = 'Browser ini belum mendukung lokasi otomatis. Paste alamat atau link Google Maps saja.';
-      return;
-    }
-
-    if (cancelLocationLookup) cancelLocationLookup();
-    const runId = locationLookupRun + 1;
-    locationLookupRun = runId;
-    if (status) status.textContent = 'Mengambil GPS akurat dalam 10 m. Pastikan izin lokasi aktif dan tunggu beberapa detik...';
-    setLocationLoading(true);
-    cancelLocationLookup = getHighAccuracyCheckoutLocation({
-      onUpdate: (accuracy) => {
-        if (runId !== locationLookupRun) return;
-        if (!status) return;
-        const accuracyText = formatLocationAccuracy(accuracy);
-        status.textContent = accuracyText
-          ? `Mencari titik rumah dalam 10 m... sementara sekitar ${accuracyText}.`
-          : 'Mencari titik rumah dalam 10 m...';
-      },
-      onSuccess: async (position) => {
-        cancelLocationLookup = null;
-        const accuracy = getPositionAccuracy(position);
-        if (status) status.textContent = 'Mencari alamat lengkap dari lokasi Anda...';
-
-        try {
-          const address = await reverseGeocodeCheckoutLocation(position.coords);
-          if (runId !== locationLookupRun) return;
-          addressInput.value = buildCheckoutAddressValue({ address, accuracy });
-          if (status) {
-            status.textContent = 'Alamat dari lokasi sudah masuk. Cek kembali nomor rumah dan patokan.';
-          }
-          syncSubmit();
-          addressInput.focus();
-        } catch (_) {
-          if (runId !== locationLookupRun) return;
-          if (status) status.textContent = 'Alamat dari lokasi tidak bisa ditemukan. Tulis alamat lengkap manual.';
-        } finally {
-          if (runId === locationLookupRun) {
-            setLocationLoading(false);
-          }
-        }
-      },
-      onError: (error) => {
-        if (runId !== locationLookupRun) return;
-        cancelLocationLookup = null;
-        setLocationLoading(false);
-        if (status) {
-          status.textContent = Number.isFinite(error?.accuracy)
-            ? `GPS hanya akurat sekitar ${formatLocationAccuracy(error.accuracy)}, jadi belum cukup untuk alamat pengiriman. Tulis alamat lengkap manual.`
-            : 'Lokasi tidak bisa diambil dengan akurasi 10 m. Aktifkan izin lokasi/GPS, atau tulis alamat lengkap manual.';
-        }
-      }
-    });
-  };
-
-  submitBtn.onclick = () => {
+  submitBtn.onclick = async () => {
     const fullName = (nameInput.value || '').trim();
     const address = (addressInput.value || '').trim();
     if (!fullName || !address) {
@@ -348,8 +283,22 @@ const openCheckoutAddressModal = ({ onSubmit }) => {
       (fullName ? addressInput : nameInput).focus();
       return;
     }
+
+    let shippingEstimate = null;
+    setCheckoutSubmitting(true);
+    if (status) status.textContent = 'Mencari alamat online dan menghitung estimasi ongkir...';
+
+    try {
+      shippingEstimate = await estimateCheckoutShipping({
+        address,
+        shippingUnits: getShippingUnits()
+      });
+    } catch (_) {
+      if (status) status.textContent = 'Ongkir belum bisa dihitung otomatis. Admin akan konfirmasi di WhatsApp.';
+    }
+
     closeModal();
-    onSubmit({ fullName, address });
+    onSubmit({ fullName, address, shippingEstimate });
   };
 
   modal.classList.add('active');
@@ -594,7 +543,11 @@ document.addEventListener('DOMContentLoaded', () => {
     checkoutButton.addEventListener('click', () => {
       if (cart.length === 0) return;
       openCheckoutAddressModal({
-        onSubmit: ({ fullName, address }) => {
+        getShippingUnits: () => cart.reduce((total, item) => {
+          const packUnits = Math.max(1, Math.ceil(getPackQuantity(item.qtyLabel) / 30));
+          return total + packUnits * item.quantity;
+        }, 0),
+        onSubmit: ({ fullName, address, shippingEstimate }) => {
           let msg = 'Halo Admin Jenang Gemi, pemesanan baru saya:\n\n';
           let subtotal = 0;
           cart.forEach((it, i) => {
@@ -603,6 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           msg += `*Nama penerima:*\n${fullName}\n\n`;
           msg += `*Alamat pengiriman:*\n${address}\n\n`;
+          msg += `*Estimasi ongkir:*\n${formatCheckoutShippingEstimate(shippingEstimate)}\n\n`;
           msg += `*Total Keseluruhan: Rp ${subtotal.toLocaleString('id-ID')}*`;
           window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`, '_blank');
         }

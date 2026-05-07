@@ -485,9 +485,37 @@ $adminJsVersion = (string) @filemtime(dirname(__DIR__) . '/admin.js');
                     <article class="admin-panel admin-settings-card">
                         <div class="admin-panel-head">
                             <div><span class="admin-panel-kicker">Appearance</span><h3>Theme</h3></div>
+                            <span class="admin-panel-meta">Active: <span data-theme-label>Default</span></span>
                         </div>
-                        <p class="admin-settings-copy">Switch the dashboard between dark and light mode without leaving the page.</p>
-                        <button type="button" class="admin-primary-btn" data-theme-toggle>Toggle Theme</button>
+                        <p class="admin-settings-copy">Saved on this device and applied immediately.</p>
+                        <div class="admin-theme-grid" aria-label="Dashboard themes">
+                            <button type="button" class="admin-theme-option" data-theme-option="dark" aria-pressed="false">
+                                <span class="admin-theme-swatch admin-theme-swatch-default"></span>
+                                <strong>Default</strong>
+                                <small>Original</small>
+                            </button>
+                            <button type="button" class="admin-theme-option" data-theme-option="light" aria-pressed="false">
+                                <span class="admin-theme-swatch admin-theme-swatch-studio"></span>
+                                <strong>Studio</strong>
+                                <small>Studio</small>
+                            </button>
+                            <button type="button" class="admin-theme-option" data-theme-option="graphite" aria-pressed="false">
+                                <span class="admin-theme-swatch admin-theme-swatch-graphite"></span>
+                                <strong>Graphite</strong>
+                                <small>Boardroom</small>
+                            </button>
+                            <button type="button" class="admin-theme-option" data-theme-option="glass" aria-pressed="false">
+                                <span class="admin-theme-swatch admin-theme-swatch-glass"></span>
+                                <strong>Glass</strong>
+                                <small>Frost</small>
+                            </button>
+                            <button type="button" class="admin-theme-option" data-theme-option="ivory" aria-pressed="false">
+                                <span class="admin-theme-swatch admin-theme-swatch-ivory"></span>
+                                <strong>Ivory</strong>
+                                <small>Editorial</small>
+                            </button>
+                        </div>
+                        <button type="button" class="admin-primary-btn" data-theme-toggle>Cycle Theme</button>
                     </article>
 
                     <article class="admin-panel admin-settings-card">

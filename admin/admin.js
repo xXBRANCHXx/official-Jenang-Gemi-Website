@@ -43,6 +43,14 @@ const WEBSITE_METRIC_UNITS = {
 };
 
 const DASHBOARD_TIMEZONE = 'Asia/Jakarta';
+const ADMIN_THEMES = ['dark', 'light', 'graphite', 'glass', 'ivory'];
+const ADMIN_THEME_LABELS = {
+  dark: 'Default',
+  light: 'Studio',
+  graphite: 'Graphite',
+  glass: 'Glass',
+  ivory: 'Ivory'
+};
 
 const formatSeconds = (seconds) => {
   if (!Number.isFinite(seconds) || seconds <= 0) return '0s';
@@ -357,8 +365,20 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const applyTheme = (theme) => {
-    document.documentElement.dataset.adminTheme = theme;
-    window.localStorage.setItem(themeStorageKey, theme);
+    const nextTheme = ADMIN_THEMES.includes(theme) ? theme : 'dark';
+    document.documentElement.dataset.adminTheme = nextTheme;
+    window.localStorage.setItem(themeStorageKey, nextTheme);
+    document.querySelectorAll('[data-theme-option]').forEach((button) => {
+      const isActive = button.dataset.themeOption === nextTheme;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+    document.querySelectorAll('[data-theme-label]').forEach((target) => {
+      target.textContent = ADMIN_THEME_LABELS[nextTheme] || ADMIN_THEME_LABELS.dark;
+    });
+    document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+      button.setAttribute('title', `Current theme: ${ADMIN_THEME_LABELS[nextTheme] || ADMIN_THEME_LABELS.dark}`);
+    });
     renderCachedCharts();
   };
 
@@ -791,7 +811,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
-      applyTheme(document.documentElement.dataset.adminTheme === 'dark' ? 'light' : 'dark');
+      const currentTheme = document.documentElement.dataset.adminTheme || 'dark';
+      const currentIndex = ADMIN_THEMES.indexOf(currentTheme);
+      const nextTheme = ADMIN_THEMES[(Math.max(currentIndex, 0) + 1) % ADMIN_THEMES.length];
+      applyTheme(nextTheme);
+    });
+  });
+
+  document.querySelectorAll('[data-theme-option]').forEach((button) => {
+    button.addEventListener('click', () => {
+      applyTheme(button.dataset.themeOption || 'dark');
     });
   });
 

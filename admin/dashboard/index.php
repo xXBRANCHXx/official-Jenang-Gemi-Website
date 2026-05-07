@@ -514,6 +514,11 @@ $adminJsVersion = (string) @filemtime(dirname(__DIR__) . '/admin.js');
                                 <strong>Ivory</strong>
                                 <small>Editorial</small>
                             </button>
+                            <button type="button" class="admin-theme-option" data-theme-option="prism" aria-pressed="false">
+                                <span class="admin-theme-swatch admin-theme-swatch-prism"></span>
+                                <strong>Prism</strong>
+                                <small>Signal</small>
+                            </button>
                         </div>
                         <button type="button" class="admin-primary-btn" data-theme-toggle>Cycle Theme</button>
                     </article>

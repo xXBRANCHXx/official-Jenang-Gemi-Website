@@ -43,13 +43,14 @@ const WEBSITE_METRIC_UNITS = {
 };
 
 const DASHBOARD_TIMEZONE = 'Asia/Jakarta';
-const ADMIN_THEMES = ['dark', 'light', 'graphite', 'glass', 'ivory'];
+const ADMIN_THEMES = ['dark', 'light', 'graphite', 'glass', 'ivory', 'prism'];
 const ADMIN_THEME_LABELS = {
   dark: 'Default',
   light: 'Studio',
   graphite: 'Graphite',
   glass: 'Glass',
-  ivory: 'Ivory'
+  ivory: 'Ivory',
+  prism: 'Prism'
 };
 
 const formatSeconds = (seconds) => {

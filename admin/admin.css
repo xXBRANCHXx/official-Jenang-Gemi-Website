@@ -73,6 +73,21 @@
   --admin-accent-quaternary: #2f7d9b;
 }
 
+:root[data-admin-theme='prism'] {
+  --admin-bg: #0b0714;
+  --admin-surface: rgba(23, 18, 37, 0.92);
+  --admin-surface-strong: rgba(34, 25, 52, 0.96);
+  --admin-surface-soft: rgba(255, 255, 255, 0.07);
+  --admin-border: rgba(239, 221, 255, 0.15);
+  --admin-text: #fff8ff;
+  --admin-muted: rgba(238, 226, 246, 0.66);
+  --admin-shadow: 0 26px 64px rgba(13, 8, 28, 0.42);
+  --admin-accent-primary: #ff4ecd;
+  --admin-accent-secondary: #7c5cff;
+  --admin-accent-tertiary: #ff8f70;
+  --admin-accent-quaternary: #37d7ff;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -121,6 +136,14 @@ body {
     radial-gradient(circle at 16% -8%, rgba(15, 140, 104, 0.11), transparent 26rem),
     radial-gradient(circle at 92% 6%, rgba(47, 125, 155, 0.12), transparent 25rem),
     linear-gradient(145deg, #fbfaf6 0%, #f2f3ec 46%, #edf2f3 100%);
+}
+
+:root[data-admin-theme='prism'] body {
+  background:
+    radial-gradient(circle at 10% 8%, rgba(255, 78, 205, 0.24), transparent 24rem),
+    radial-gradient(circle at 78% -6%, rgba(55, 215, 255, 0.2), transparent 25rem),
+    radial-gradient(circle at 88% 78%, rgba(124, 92, 255, 0.22), transparent 30rem),
+    linear-gradient(145deg, #090611 0%, #161024 45%, #0a0d1a 100%);
 }
 
 a {
@@ -209,6 +232,24 @@ button, input {
 :root[data-admin-theme='graphite'] .admin-control-strip {
   background: linear-gradient(180deg, rgba(28, 30, 34, 0.96), rgba(16, 18, 21, 0.94));
   box-shadow: var(--admin-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+:root[data-admin-theme='prism'] .admin-loader-panel,
+:root[data-admin-theme='prism'] .admin-login-card,
+:root[data-admin-theme='prism'] .admin-hero-panel,
+:root[data-admin-theme='prism'] .admin-metric-card,
+:root[data-admin-theme='prism'] .admin-panel,
+:root[data-admin-theme='prism'] .admin-control-strip {
+  background:
+    linear-gradient(180deg, rgba(34, 25, 52, 0.94), rgba(15, 13, 28, 0.9)),
+    radial-gradient(circle at 0% 0%, rgba(255, 78, 205, 0.18), transparent 18rem);
+  box-shadow: var(--admin-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+:root[data-admin-theme='prism'] .admin-hero-panel {
+  background:
+    linear-gradient(135deg, rgba(255, 78, 205, 0.22), rgba(124, 92, 255, 0.12) 42%, rgba(55, 215, 255, 0.16)),
+    linear-gradient(180deg, rgba(34, 25, 52, 0.94), rgba(15, 13, 28, 0.9));
 }
 
 :root[data-admin-theme='glass'] .admin-loader-panel,
@@ -310,7 +351,8 @@ button, input {
 :root[data-admin-theme='light'] .admin-chip-accent,
 :root[data-admin-theme='graphite'] .admin-chip-accent,
 :root[data-admin-theme='glass'] .admin-chip-accent,
-:root[data-admin-theme='ivory'] .admin-chip-accent {
+:root[data-admin-theme='ivory'] .admin-chip-accent,
+:root[data-admin-theme='prism'] .admin-chip-accent {
   background: color-mix(in srgb, var(--admin-accent-primary) 14%, transparent);
   border-color: color-mix(in srgb, var(--admin-accent-primary) 28%, transparent);
 }
@@ -348,7 +390,8 @@ button, input {
 :root[data-admin-theme='light'] .admin-login-form input:focus,
 :root[data-admin-theme='graphite'] .admin-login-form input:focus,
 :root[data-admin-theme='glass'] .admin-login-form input:focus,
-:root[data-admin-theme='ivory'] .admin-login-form input:focus {
+:root[data-admin-theme='ivory'] .admin-login-form input:focus,
+:root[data-admin-theme='prism'] .admin-login-form input:focus {
   border-color: color-mix(in srgb, var(--admin-accent-primary) 48%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--admin-accent-primary) 32%, transparent);
 }
@@ -372,9 +415,19 @@ button, input {
 
 :root[data-admin-theme='light'] .admin-primary-btn,
 :root[data-admin-theme='light'] .admin-toggle-pill.is-active,
+:root[data-admin-theme='glass'] .admin-primary-btn,
+:root[data-admin-theme='glass'] .admin-toggle-pill.is-active,
 :root[data-admin-theme='ivory'] .admin-primary-btn,
-:root[data-admin-theme='ivory'] .admin-toggle-pill.is-active {
+:root[data-admin-theme='ivory'] .admin-toggle-pill.is-active,
+:root[data-admin-theme='prism'] .admin-primary-btn,
+:root[data-admin-theme='prism'] .admin-toggle-pill.is-active {
   color: #ffffff;
+}
+
+:root[data-admin-theme='prism'] .admin-primary-btn,
+:root[data-admin-theme='prism'] .admin-toggle-pill.is-active {
+  background: linear-gradient(135deg, #ff4ecd 0%, #7c5cff 52%, #37d7ff 100%);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .admin-link-btn {
@@ -414,7 +467,14 @@ button, input {
 :root[data-admin-theme='graphite'] .admin-select,
 :root[data-admin-theme='graphite'] .admin-login-form input,
 :root[data-admin-theme='graphite'] .admin-settings-form input[type='text'],
-:root[data-admin-theme='graphite'] .admin-affiliate-form input[type='text'] {
+:root[data-admin-theme='graphite'] .admin-affiliate-form input[type='text'],
+:root[data-admin-theme='prism'] .admin-ghost-btn,
+:root[data-admin-theme='prism'] .admin-soft-btn,
+:root[data-admin-theme='prism'] .admin-toggle-pill,
+:root[data-admin-theme='prism'] .admin-select,
+:root[data-admin-theme='prism'] .admin-login-form input,
+:root[data-admin-theme='prism'] .admin-settings-form input[type='text'],
+:root[data-admin-theme='prism'] .admin-affiliate-form input[type='text'] {
   background: rgba(255, 255, 255, 0.055);
 }
 
@@ -642,7 +702,8 @@ button, input {
 :root[data-admin-theme='light'] .admin-primary-btn:hover,
 :root[data-admin-theme='graphite'] .admin-primary-btn:hover,
 :root[data-admin-theme='glass'] .admin-primary-btn:hover,
-:root[data-admin-theme='ivory'] .admin-primary-btn:hover {
+:root[data-admin-theme='ivory'] .admin-primary-btn:hover,
+:root[data-admin-theme='prism'] .admin-primary-btn:hover {
   box-shadow: 0 10px 24px color-mix(in srgb, var(--admin-accent-primary) 24%, transparent);
 }
 
@@ -663,7 +724,10 @@ button, input {
 :root[data-admin-theme='glass'] .admin-toggle-pill:hover,
 :root[data-admin-theme='ivory'] .admin-ghost-btn:hover,
 :root[data-admin-theme='ivory'] .admin-soft-btn:hover,
-:root[data-admin-theme='ivory'] .admin-toggle-pill:hover {
+:root[data-admin-theme='ivory'] .admin-toggle-pill:hover,
+:root[data-admin-theme='prism'] .admin-ghost-btn:hover,
+:root[data-admin-theme='prism'] .admin-soft-btn:hover,
+:root[data-admin-theme='prism'] .admin-toggle-pill:hover {
   border-color: color-mix(in srgb, var(--admin-accent-primary) 34%, transparent);
 }
 
@@ -679,7 +743,9 @@ button, input {
 :root[data-admin-theme='glass'] .admin-panel:hover,
 :root[data-admin-theme='glass'] .admin-metric-card:hover,
 :root[data-admin-theme='ivory'] .admin-panel:hover,
-:root[data-admin-theme='ivory'] .admin-metric-card:hover {
+:root[data-admin-theme='ivory'] .admin-metric-card:hover,
+:root[data-admin-theme='prism'] .admin-panel:hover,
+:root[data-admin-theme='prism'] .admin-metric-card:hover {
   border-color: color-mix(in srgb, var(--admin-accent-primary) 24%, transparent);
 }
 
@@ -796,6 +862,11 @@ button, input {
   background: rgba(20, 22, 25, 0.9);
 }
 
+:root[data-admin-theme='prism'] .admin-menu-panel {
+  border-color: var(--admin-border);
+  background: rgba(26, 18, 43, 0.9);
+}
+
 :root[data-admin-theme='glass'] .admin-menu-panel {
   border-color: var(--admin-border);
   background: rgba(18, 28, 35, 0.68);
@@ -829,7 +900,8 @@ button, input {
 }
 
 :root[data-admin-theme='graphite'] .admin-menu-item,
-:root[data-admin-theme='glass'] .admin-menu-item {
+:root[data-admin-theme='glass'] .admin-menu-item,
+:root[data-admin-theme='prism'] .admin-menu-item {
   background: rgba(255, 255, 255, 0.065);
   border-color: var(--admin-border);
 }
@@ -841,7 +913,8 @@ button, input {
 :root[data-admin-theme='light'] .admin-menu-item:hover,
 :root[data-admin-theme='graphite'] .admin-menu-item:hover,
 :root[data-admin-theme='glass'] .admin-menu-item:hover,
-:root[data-admin-theme='ivory'] .admin-menu-item:hover {
+:root[data-admin-theme='ivory'] .admin-menu-item:hover,
+:root[data-admin-theme='prism'] .admin-menu-item:hover {
   border-color: color-mix(in srgb, var(--admin-accent-primary) 34%, transparent);
 }
 
@@ -928,7 +1001,8 @@ button, input {
 :root[data-admin-theme='light'] .admin-launchpad-link,
 :root[data-admin-theme='graphite'] .admin-launchpad-link,
 :root[data-admin-theme='glass'] .admin-launchpad-link,
-:root[data-admin-theme='ivory'] .admin-launchpad-link {
+:root[data-admin-theme='ivory'] .admin-launchpad-link,
+:root[data-admin-theme='prism'] .admin-launchpad-link {
   background: color-mix(in srgb, var(--admin-accent-primary) 12%, transparent);
   border-color: color-mix(in srgb, var(--admin-accent-primary) 28%, transparent);
 }
@@ -954,7 +1028,8 @@ button, input {
 :root[data-admin-theme='light'] .admin-launchpad-link:hover,
 :root[data-admin-theme='graphite'] .admin-launchpad-link:hover,
 :root[data-admin-theme='glass'] .admin-launchpad-link:hover,
-:root[data-admin-theme='ivory'] .admin-launchpad-link:hover {
+:root[data-admin-theme='ivory'] .admin-launchpad-link:hover,
+:root[data-admin-theme='prism'] .admin-launchpad-link:hover {
   border-color: color-mix(in srgb, var(--admin-accent-primary) 48%, transparent);
   background: color-mix(in srgb, var(--admin-accent-primary) 18%, transparent);
   box-shadow: 0 10px 24px color-mix(in srgb, var(--admin-accent-primary) 16%, transparent);
@@ -1139,8 +1214,24 @@ button, input {
 :root[data-admin-theme='glass'] .admin-affiliate-url,
 :root[data-admin-theme='glass'] .admin-platform-choice,
 :root[data-admin-theme='glass'] .admin-affiliate-platform-grid label,
-:root[data-admin-theme='glass'] .admin-settings-chip {
+:root[data-admin-theme='glass'] .admin-settings-chip,
+:root[data-admin-theme='prism'] .admin-chart-surface,
+:root[data-admin-theme='prism'] .admin-legend-item,
+:root[data-admin-theme='prism'] .admin-note-card,
+:root[data-admin-theme='prism'] .admin-event-item,
+:root[data-admin-theme='prism'] .admin-affiliate-card,
+:root[data-admin-theme='prism'] .admin-affiliate-url,
+:root[data-admin-theme='prism'] .admin-platform-choice,
+:root[data-admin-theme='prism'] .admin-affiliate-platform-grid label,
+:root[data-admin-theme='prism'] .admin-settings-chip {
   background: rgba(255, 255, 255, 0.065);
+}
+
+:root[data-admin-theme='prism'] .admin-metric-card strong {
+  background: linear-gradient(135deg, #fff8ff 0%, #ffb7eb 42%, #8beaff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .admin-chart-canvas {
@@ -1388,7 +1479,7 @@ button, input {
 
 .admin-theme-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -1454,6 +1545,13 @@ button, input {
 
 .admin-theme-swatch-ivory {
   background: linear-gradient(135deg, #fbfaf6, #edf2f3 54%, #0f8c68);
+}
+
+.admin-theme-swatch-prism {
+  background:
+    radial-gradient(circle at 18% 20%, #ff4ecd, transparent 42%),
+    radial-gradient(circle at 86% 18%, #37d7ff, transparent 38%),
+    linear-gradient(135deg, #0b0714 0%, #7c5cff 56%, #ff8f70 100%);
 }
 
 .admin-settings-form {

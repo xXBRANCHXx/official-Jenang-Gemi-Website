@@ -419,9 +419,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   syncPackageUI();
 
+  const checkoutAnchor = document.querySelector('#checkout') || document.querySelector('#order');
+  const checkoutAnchorHash = checkoutAnchor?.id ? `#${checkoutAnchor.id}` : '#checkout';
+
   document.querySelectorAll('[data-order-scroll]').forEach((button) => {
     button.addEventListener('click', () => {
-      document.querySelector('#order')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (window.location.hash !== checkoutAnchorHash) {
+        window.history.pushState(null, '', checkoutAnchorHash);
+      }
+      checkoutAnchor?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       trackEvent('order_now_click', {
         cta_location: button.dataset.ctaLocation || 'unknown',
         flavor_label: flavorState.label,

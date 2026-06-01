@@ -8,7 +8,8 @@ $localConfig = function_exists('analyticsLoadLocalConfig') ? analyticsLoadLocalC
 $allowedOrigins = [
     'https://admin.jenanggemi.com',
     'https://jenanggemi.com',
-    'https://zero.jenanggemi.com',
+    'https://zerofoods.id',
+    'https://www.zerofoods.id',
     'http://localhost:5555',
     'http://127.0.0.1:5555',
 ];

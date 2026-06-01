@@ -4,12 +4,18 @@ declare(strict_types=1);
 require_once __DIR__ . '/analytics-bootstrap.php';
 
 header('Content-Type: application/json; charset=utf-8');
+$localConfig = function_exists('analyticsLoadLocalConfig') ? analyticsLoadLocalConfig() : [];
 $allowedOrigins = [
     'https://admin.jenanggemi.com',
     'https://jenanggemi.com',
+    'https://zero.jenanggemi.com',
     'http://localhost:5555',
     'http://127.0.0.1:5555',
 ];
+$configuredZeroOrigins = $localConfig['zero_analytics_allowed_origins'] ?? [];
+if (is_array($configuredZeroOrigins)) {
+    $allowedOrigins = array_merge($allowedOrigins, array_filter(array_map('strval', $configuredZeroOrigins)));
+}
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin !== '' && in_array($origin, $allowedOrigins, true)) {
     header('Access-Control-Allow-Origin: ' . $origin);
@@ -42,6 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'device_id' => substr((string) ($payload['device_id'] ?? ''), 0, 120),
         'source' => substr((string) ($payload['source'] ?? 'unknown'), 0, 50),
         'traffic_kind' => substr((string) ($payload['traffic_kind'] ?? 'landing'), 0, 20),
+        'site_key' => substr((string) ($payload['site_key'] ?? 'jenang_gemi'), 0, 40),
+        'site_label' => substr((string) ($payload['site_label'] ?? 'Jenang Gemi Website'), 0, 120),
         'affiliate_code' => strtoupper(substr((string) ($payload['affiliate_code'] ?? ''), 0, 16)),
         'affiliate_name' => substr((string) ($payload['affiliate_name'] ?? ''), 0, 120),
         'page_path' => substr((string) ($payload['page_path'] ?? ''), 0, 255),

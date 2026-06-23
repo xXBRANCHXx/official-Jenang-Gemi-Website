@@ -1,3 +1,5 @@
+import { createCheckoutKey, createJenangGemiWebsiteOrder, loadJenangGemiCatalog, matchJenangGemiCatalogItem } from './website-commerce.js';
+
 const LANDING_DEFAULTS = {
   youtube: { label: 'YouTube', badge: 'Pengunjung YouTube', accent: '#ff0033' },
   facebook: { label: 'Facebook', badge: 'Pengunjung Facebook', accent: '#1877f2' },
@@ -236,6 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const productMeta = resolveProductMeta();
+  let commerceCatalog = [];
+  let checkoutIdempotencyKey = '';
 
   document.documentElement.style.setProperty('--landing-accent', sourceConfig.accent);
 
@@ -325,6 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const packagePriceNode = document.querySelector('[data-selected-price]');
   const flavorNameNode = document.querySelector('[data-selected-flavor]');
   const checkoutButtons = document.querySelectorAll('[data-checkout-button]');
+  checkoutButtons.forEach((button) => { button.disabled = true; });
 
   const packageState = {
     label: packageCards[0]?.dataset.packageLabel || '15 Sachet',
@@ -355,6 +360,22 @@ document.addEventListener('DOMContentLoaded', () => {
       card.classList.toggle('active', isActive);
 
       const priceNode = card.querySelector('.pack-val');
+      const catalogItem = matchJenangGemiCatalogItem(commerceCatalog, {
+        name: productMeta.label,
+        flavor: flavorState.label,
+        qtyLabel: card.dataset.packageLabel || ''
+      });
+      card.disabled = !catalogItem;
+      card.classList.toggle('is-unavailable', !catalogItem);
+      if (catalogItem) {
+        card.dataset.itemKey = catalogItem.item_key;
+        card.dataset.sku = catalogItem.sku;
+        card.dataset.packagePrice = String(catalogItem.sale_price);
+        if (card.dataset.packageLabel === packageState.label) packageState.price = String(catalogItem.sale_price);
+      } else {
+        delete card.dataset.itemKey;
+        delete card.dataset.sku;
+      }
       const packPrice = parseInt(card.dataset.packagePrice || '0', 10);
       const comparisonPrice = getComparisonPackPrice({
         label: card.dataset.packageLabel || '',
@@ -390,6 +411,16 @@ document.addEventListener('DOMContentLoaded', () => {
       button.dataset.packageLabel = packageState.label;
       button.dataset.packagePrice = packageState.price;
       button.dataset.flavorLabel = flavorState.label;
+      const activeCatalogItem = matchJenangGemiCatalogItem(commerceCatalog, {
+        name: productMeta.label,
+        flavor: flavorState.label,
+        qtyLabel: packageState.label
+      });
+      button.disabled = !activeCatalogItem;
+      if (activeCatalogItem) {
+        button.dataset.itemKey = activeCatalogItem.item_key;
+        button.dataset.sku = activeCatalogItem.sku;
+      }
     });
   };
 
@@ -418,6 +449,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   syncPackageUI();
+  loadJenangGemiCatalog()
+    .then((catalog) => {
+      commerceCatalog = catalog;
+      syncPackageUI();
+    })
+    .catch((error) => {
+      checkoutButtons.forEach((button) => { button.disabled = true; button.title = error.message; });
+    });
 
   const checkoutAnchor = document.querySelector('#checkout') || document.querySelector('#order');
   const checkoutAnchorHash = checkoutAnchor?.id ? `#${checkoutAnchor.id}` : '#checkout';
@@ -437,12 +476,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const buildWhatsappMessage = ({ buttonLabel, fullName, address }) => {
+  const buildWhatsappMessage = ({ buttonLabel, fullName, address, websiteOrderId }) => {
     const orderCode = buildOrderCode();
     const lines = [
       `Halo Admin Jenang Gemi, saya ingin order ${productMeta.label}.`,
       '',
       ...(affiliateCode ? [`Kode affiliate: ${affiliateCode}${affiliateName ? ` (${affiliateName})` : ''}`] : []),
+      `Website order ID: ${websiteOrderId}`,
       `Kode order: ${orderCode}`,
       `Sumber traffic: ${sourceConfig.label}`,
       `Landing page: ${window.location.pathname}`,
@@ -461,9 +501,19 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', () => {
       const buttonLabel = button.dataset.buttonLabel || button.textContent?.trim() || 'Checkout';
       openCheckoutAddressModal({
-        onSubmit: ({ fullName, address }) => {
-          const message = buildWhatsappMessage({ buttonLabel, fullName, address });
-          const orderCode = buildOrderCode();
+        onSubmit: async ({ fullName, address }) => {
+          const popup = window.open('', '_blank');
+          checkoutIdempotencyKey ||= createCheckoutKey();
+          try {
+            const catalogItem = matchJenangGemiCatalogItem(commerceCatalog, { name: productMeta.label, flavor: flavorState.label, qtyLabel: packageState.label });
+            const order = await createJenangGemiWebsiteOrder({
+              catalog: commerceCatalog,
+              items: [{ name: productMeta.label, flavor: flavorState.label, qtyLabel: packageState.label, quantity: 1, catalogItem }],
+              customer: { fullName, address },
+              idempotencyKey: checkoutIdempotencyKey
+            });
+            const message = buildWhatsappMessage({ buttonLabel, fullName, address, websiteOrderId: order.order_id });
+            const orderCode = order.order_id;
           trackEvent('checkout_click', {
             cta_location: button.dataset.ctaLocation || 'unknown',
             product_code: productMeta.code,
@@ -475,11 +525,18 @@ document.addEventListener('DOMContentLoaded', () => {
             package_price: packageState.price,
             order_code: orderCode
           });
-          window.open(
-            `https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(message)}`,
-            '_blank',
-            'noopener'
-          );
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(message)}`;
+            checkoutIdempotencyKey = '';
+            if (popup) {
+              popup.opener = null;
+              popup.location.href = whatsappUrl;
+            } else {
+              window.location.href = whatsappUrl;
+            }
+          } catch (error) {
+            popup?.close();
+            window.alert(error instanceof Error ? error.message : 'Unable to create the website order.');
+          }
         }
       });
     });

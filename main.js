@@ -1,3 +1,5 @@
+import { createCheckoutKey, createJenangGemiWebsiteOrder, loadJenangGemiCatalog, matchJenangGemiCatalogItem } from './website-commerce.js';
+
 const buburQuizImage = new URL('./Media/Reseller Jenang Gemi Images (3).png', import.meta.url).href;
 const jamuQuizImage = new URL('./Media/Reseller Jenang Gemi Images (4).png', import.meta.url).href;
 const formatIdr = (value) => `Rp ${Number(value).toLocaleString('id-ID')}`;
@@ -278,6 +280,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initWebsiteAnalytics();
   // --- Cart System ---
   let cart = JSON.parse(localStorage.getItem('gemi_cart_v10')) || [];
+  let commerceCatalog = [];
+  let checkoutIdempotencyKey = '';
   const sidebar = document.getElementById('sidebar-v9');
   const overlay = document.getElementById('global-overlay');
   const cartBtn = document.querySelector('.cart-v9-btn');
@@ -370,8 +374,18 @@ document.addEventListener('DOMContentLoaded', () => {
     checkoutButton.addEventListener('click', () => {
       if (cart.length === 0) return;
       openCheckoutAddressModal({
-        onSubmit: ({ fullName, address }) => {
+        onSubmit: async ({ fullName, address }) => {
+          const popup = window.open('', '_blank');
+          checkoutIdempotencyKey ||= createCheckoutKey();
+          try {
+            const order = await createJenangGemiWebsiteOrder({
+              catalog: commerceCatalog,
+              items: cart,
+              customer: { fullName, address },
+              idempotencyKey: checkoutIdempotencyKey
+            });
           let msg = 'Halo Admin Jenang Gemi, pemesanan baru saya:\n\n';
+          msg += `*Order ID:* ${order.order_id}\n\n`;
           let subtotal = 0;
           cart.forEach((it, i) => {
             subtotal += it.price * it.quantity;
@@ -380,7 +394,18 @@ document.addEventListener('DOMContentLoaded', () => {
           msg += `*Nama penerima:*\n${fullName}\n\n`;
           msg += `*Alamat pengiriman:*\n${address}\n\n`;
           msg += `*Total Keseluruhan: Rp ${subtotal.toLocaleString('id-ID')}*`;
-          window.open(`https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`, '_blank');
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`;
+            checkoutIdempotencyKey = '';
+            if (popup) {
+              popup.opener = null;
+              popup.location.href = whatsappUrl;
+            } else {
+              window.location.href = whatsappUrl;
+            }
+          } catch (error) {
+            popup?.close();
+            window.alert(error instanceof Error ? error.message : 'Unable to create the website order.');
+          }
         }
       });
     });
@@ -1352,10 +1377,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Flavor & Pack Selection (Product Pages) ---
   const flavorOpts = document.querySelectorAll('.opt-chip');
+  const productAddButton = document.querySelector('.p-add-v9');
+  if (productAddButton) productAddButton.disabled = true;
+  const syncMainProductCatalog = () => {
+    const productName = document.querySelector('h1')?.innerText || '';
+    const flavor = document.querySelector('.opt-chip.active')?.innerText || '';
+    packRows.forEach((row) => {
+      const qtyLabel = row.querySelector('div:first-child')?.innerText || '';
+      const match = matchJenangGemiCatalogItem(commerceCatalog, { name: productName, flavor, qtyLabel });
+      row.classList.toggle('is-unavailable', !match);
+      row.setAttribute('aria-disabled', match ? 'false' : 'true');
+      if (match) {
+        row.dataset.itemKey = match.item_key;
+        row.dataset.sku = match.sku;
+        row.dataset.price = String(match.sale_price);
+        const priceNode = row.querySelector('.pack-val');
+        if (priceNode) priceNode.innerHTML = buildPriceMarkup({ price: Number(match.sale_price), comparisonPrice: Number(match.price) > Number(match.sale_price) ? Number(match.price) : null });
+      } else {
+        delete row.dataset.itemKey;
+        delete row.dataset.sku;
+      }
+    });
+    const activePack = document.querySelector('.pack-row.active');
+    if (productAddButton) productAddButton.disabled = !activePack?.dataset.itemKey;
+  };
   flavorOpts.forEach(opt => {
     opt.addEventListener('click', () => {
       flavorOpts.forEach(o => o.classList.remove('active'));
       opt.classList.add('active');
+      syncMainProductCatalog();
     });
   });
 
@@ -1379,21 +1429,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   packRows.forEach(row => {
     row.addEventListener('click', () => {
+      if (row.getAttribute('aria-disabled') === 'true') return;
       packRows.forEach(r => r.classList.remove('active'));
       row.classList.add('active');
+      syncMainProductCatalog();
     });
   });
 
-  document.querySelector('.p-add-v9')?.addEventListener('click', () => {
+  productAddButton?.addEventListener('click', () => {
     const activePack = document.querySelector('.pack-row.active');
     const activeFlavor = document.querySelector('.opt-chip.active');
     const pName = document.querySelector('h1').innerText;
     
+    if (!activePack?.dataset.itemKey || !activePack?.dataset.sku) return;
     const item = {
       name: pName,
       flavor: activeFlavor ? activeFlavor.innerText : '',
       qtyLabel: activePack.querySelector('div:first-child').innerText,
       price: parseInt(activePack.getAttribute('data-price')),
+      itemKey: activePack.dataset.itemKey,
+      sku: activePack.dataset.sku,
       quantity: 1
     };
 
@@ -1408,6 +1463,17 @@ document.addEventListener('DOMContentLoaded', () => {
     updateV9Count();
     toggleSidebar(true);
   });
+
+  loadJenangGemiCatalog()
+    .then((catalog) => {
+      commerceCatalog = catalog;
+      syncMainProductCatalog();
+      document.querySelectorAll('.checkout-v9').forEach((button) => { button.disabled = false; });
+    })
+    .catch((error) => {
+      if (productAddButton) productAddButton.title = error.message;
+      document.querySelectorAll('.checkout-v9').forEach((button) => { button.disabled = true; button.title = error.message; });
+    });
 
   // --- Navigation Scroll Effect ---
   window.addEventListener('scroll', () => {

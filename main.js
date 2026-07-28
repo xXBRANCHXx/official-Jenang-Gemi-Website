@@ -1,4 +1,4 @@
-import { createCheckoutKey, createJenangGemiWebsiteOrder, loadJenangGemiCatalog, matchJenangGemiCatalogItem } from './website-commerce.js';
+import { createCheckoutKey, createJenangGemiWebsiteOrder, loadJenangGemiCatalog, matchJenangGemiCatalogItem } from './website-commerce.js?v=2';
 
 const buburQuizImage = new URL('./Media/Reseller Jenang Gemi Images (3).png', import.meta.url).href;
 const jamuQuizImage = new URL('./Media/Reseller Jenang Gemi Images (4).png', import.meta.url).href;
@@ -376,16 +376,26 @@ document.addEventListener('DOMContentLoaded', () => {
       openCheckoutAddressModal({
         onSubmit: async ({ fullName, address }) => {
           const popup = window.open('', '_blank');
-          checkoutIdempotencyKey ||= createCheckoutKey();
+          let websiteOrderId = '';
           try {
-            const order = await createJenangGemiWebsiteOrder({
-              catalog: commerceCatalog,
-              items: cart,
-              customer: { fullName, address },
-              idempotencyKey: checkoutIdempotencyKey
-            });
+            const canCreateWebsiteOrder = cart.every((item) => (
+              matchJenangGemiCatalogItem(commerceCatalog, item)
+            ));
+            if (canCreateWebsiteOrder) {
+              checkoutIdempotencyKey ||= createCheckoutKey();
+              const order = await createJenangGemiWebsiteOrder({
+                catalog: commerceCatalog,
+                items: cart,
+                customer: { fullName, address },
+                idempotencyKey: checkoutIdempotencyKey
+              });
+              websiteOrderId = order.order_id;
+            }
+          } catch (_) {
+            // Keep WhatsApp checkout available when the order service or its price setup is unavailable.
+          }
           let msg = 'Halo Admin Jenang Gemi, pemesanan baru saya:\n\n';
-          msg += `*Order ID:* ${order.order_id}\n\n`;
+          if (websiteOrderId) msg += `*Order ID:* ${websiteOrderId}\n\n`;
           let subtotal = 0;
           cart.forEach((it, i) => {
             subtotal += it.price * it.quantity;
@@ -394,17 +404,13 @@ document.addEventListener('DOMContentLoaded', () => {
           msg += `*Nama penerima:*\n${fullName}\n\n`;
           msg += `*Alamat pengiriman:*\n${address}\n\n`;
           msg += `*Total Keseluruhan: Rp ${subtotal.toLocaleString('id-ID')}*`;
-            const whatsappUrl = `https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`;
-            checkoutIdempotencyKey = '';
-            if (popup) {
-              popup.opener = null;
-              popup.location.href = whatsappUrl;
-            } else {
-              window.location.href = whatsappUrl;
-            }
-          } catch (error) {
-            popup?.close();
-            window.alert(error instanceof Error ? error.message : 'Unable to create the website order.');
+          const whatsappUrl = `https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(msg)}`;
+          checkoutIdempotencyKey = '';
+          if (popup) {
+            popup.opener = null;
+            popup.location.href = whatsappUrl;
+          } else {
+            window.location.href = whatsappUrl;
           }
         }
       });
@@ -1378,21 +1384,38 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Flavor & Pack Selection (Product Pages) ---
   const flavorOpts = document.querySelectorAll('.opt-chip');
   const productAddButton = document.querySelector('.p-add-v9');
-  if (productAddButton) productAddButton.disabled = true;
   const syncMainProductCatalog = () => {
+    if (commerceCatalog.length === 0) {
+      packRows.forEach((row) => {
+        row.classList.remove('is-unavailable');
+        row.setAttribute('aria-disabled', 'false');
+      });
+      if (productAddButton) productAddButton.disabled = false;
+      return;
+    }
     const productName = document.querySelector('h1')?.innerText || '';
     const flavor = document.querySelector('.opt-chip.active')?.innerText || '';
     packRows.forEach((row) => {
       const qtyLabel = row.querySelector('div:first-child')?.innerText || '';
-      const match = matchJenangGemiCatalogItem(commerceCatalog, { name: productName, flavor, qtyLabel });
+      const match = matchJenangGemiCatalogItem(
+        commerceCatalog,
+        { name: productName, flavor, qtyLabel },
+        { requireWebsitePrice: false }
+      );
       row.classList.toggle('is-unavailable', !match);
       row.setAttribute('aria-disabled', match ? 'false' : 'true');
       if (match) {
         row.dataset.itemKey = match.item_key;
         row.dataset.sku = match.sku;
-        row.dataset.price = String(match.sale_price);
+        const catalogPrice = Number(match.sale_price || match.site_price || 0);
+        if (catalogPrice > 0) row.dataset.price = String(catalogPrice);
         const priceNode = row.querySelector('.pack-val');
-        if (priceNode) priceNode.innerHTML = buildPriceMarkup({ price: Number(match.sale_price), comparisonPrice: Number(match.price) > Number(match.sale_price) ? Number(match.price) : null });
+        if (priceNode && catalogPrice > 0) {
+          priceNode.innerHTML = buildPriceMarkup({
+            price: catalogPrice,
+            comparisonPrice: Number(match.price) > catalogPrice ? Number(match.price) : null
+          });
+        }
       } else {
         delete row.dataset.itemKey;
         delete row.dataset.sku;
@@ -1441,14 +1464,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeFlavor = document.querySelector('.opt-chip.active');
     const pName = document.querySelector('h1').innerText;
     
-    if (!activePack?.dataset.itemKey || !activePack?.dataset.sku) return;
     const item = {
       name: pName,
       flavor: activeFlavor ? activeFlavor.innerText : '',
       qtyLabel: activePack.querySelector('div:first-child').innerText,
       price: parseInt(activePack.getAttribute('data-price')),
-      itemKey: activePack.dataset.itemKey,
-      sku: activePack.dataset.sku,
+      ...(activePack.dataset.itemKey ? { itemKey: activePack.dataset.itemKey } : {}),
+      ...(activePack.dataset.sku ? { sku: activePack.dataset.sku } : {}),
       quantity: 1
     };
 
@@ -1472,7 +1494,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch((error) => {
       if (productAddButton) productAddButton.title = error.message;
-      document.querySelectorAll('.checkout-v9').forEach((button) => { button.disabled = true; button.title = error.message; });
+      syncMainProductCatalog();
     });
 
   // --- Navigation Scroll Effect ---

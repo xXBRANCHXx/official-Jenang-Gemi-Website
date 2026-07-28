@@ -21,18 +21,35 @@ export const loadJenangGemiCatalog = () => {
   return catalogPromise;
 };
 
-export const matchJenangGemiCatalogItem = (catalog, selection) => {
+export const isJenangGemiCatalogItemSelectable = (item) => Boolean(item) && (
+  item.available === true || (
+    Number(item.is_active) === 1 &&
+    Boolean(item.sku_linked) &&
+    String(item.sku || '').trim() !== '' &&
+    Number(item.stock || 0) > 0
+  )
+);
+
+export const isJenangGemiCatalogItemCheckoutReady = (item) => (
+  isJenangGemiCatalogItemSelectable(item) &&
+  Number(item.sale_price || item.site_price || 0) > 0
+);
+
+export const matchJenangGemiCatalogItem = (catalog, selection, { requireWebsitePrice = true } = {}) => {
   const product = compact(selection.name || selection.productName);
   const flavor = compact(selection.flavor || selection.optionName);
   const packageLabel = compact(selection.qtyLabel || selection.packageLabel || selection.sizeLabel);
   const packageQuantity = String(selection.qtyLabel || selection.packageLabel || '').match(/\d+/)?.[0] || '';
   return (Array.isArray(catalog) ? catalog : []).find((item) => {
-    if (!item.available) return false;
+    if (requireWebsitePrice
+      ? !isJenangGemiCatalogItemCheckoutReady(item)
+      : !isJenangGemiCatalogItemSelectable(item)) return false;
     const itemProduct = compact(`${item.product_slug} ${item.product_name}`);
     const itemFlavor = compact(`${item.option_id} ${item.option_name}`);
     const itemSize = compact(`${item.size_id} ${item.size_label}`);
     const productMatches = product && (itemProduct.includes(product) || product.includes(itemProduct) || (product.includes('bubur') && itemProduct.includes('bubur')) || (product.includes('jamu') && itemProduct.includes('jamu')));
-    const flavorMatches = !flavor || itemFlavor.includes(flavor) || flavor.includes(itemFlavor);
+    const flavorMatches = !flavor || itemFlavor.includes(flavor) || flavor.includes(itemFlavor)
+      || (product.includes('jamu') && itemFlavor.includes('unflavored'));
     const sizeMatches = !packageLabel || itemSize.includes(packageLabel) || packageLabel.includes(itemSize) || (packageQuantity !== '' && itemSize.includes(packageQuantity));
     return productMatches && flavorMatches && sizeMatches;
   }) || null;

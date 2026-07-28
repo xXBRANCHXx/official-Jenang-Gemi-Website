@@ -1,4 +1,4 @@
-import { createCheckoutKey, createJenangGemiWebsiteOrder, loadJenangGemiCatalog, matchJenangGemiCatalogItem } from './website-commerce.js';
+import { createCheckoutKey, createJenangGemiWebsiteOrder, loadJenangGemiCatalog, matchJenangGemiCatalogItem } from './website-commerce.js?v=2';
 
 const LANDING_DEFAULTS = {
   youtube: { label: 'YouTube', badge: 'Pengunjung YouTube', accent: '#ff0033' },
@@ -329,7 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const packagePriceNode = document.querySelector('[data-selected-price]');
   const flavorNameNode = document.querySelector('[data-selected-flavor]');
   const checkoutButtons = document.querySelectorAll('[data-checkout-button]');
-  checkoutButtons.forEach((button) => { button.disabled = true; });
 
   const packageState = {
     label: packageCards[0]?.dataset.packageLabel || '15 Sachet',
@@ -360,18 +359,26 @@ document.addEventListener('DOMContentLoaded', () => {
       card.classList.toggle('active', isActive);
 
       const priceNode = card.querySelector('.pack-val');
-      const catalogItem = matchJenangGemiCatalogItem(commerceCatalog, {
-        name: productMeta.label,
-        flavor: flavorState.label,
-        qtyLabel: card.dataset.packageLabel || ''
-      });
-      card.disabled = !catalogItem;
-      card.classList.toggle('is-unavailable', !catalogItem);
+      const catalogItem = commerceCatalog.length === 0 ? null : matchJenangGemiCatalogItem(
+        commerceCatalog,
+        {
+          name: productMeta.label,
+          flavor: flavorState.label,
+          qtyLabel: card.dataset.packageLabel || ''
+        },
+        { requireWebsitePrice: false }
+      );
+      const isSelectable = commerceCatalog.length === 0 || Boolean(catalogItem);
+      card.disabled = !isSelectable;
+      card.classList.toggle('is-unavailable', !isSelectable);
       if (catalogItem) {
         card.dataset.itemKey = catalogItem.item_key;
         card.dataset.sku = catalogItem.sku;
-        card.dataset.packagePrice = String(catalogItem.sale_price);
-        if (card.dataset.packageLabel === packageState.label) packageState.price = String(catalogItem.sale_price);
+        const catalogPrice = Number(catalogItem.sale_price || catalogItem.site_price || 0);
+        if (catalogPrice > 0) {
+          card.dataset.packagePrice = String(catalogPrice);
+          if (card.dataset.packageLabel === packageState.label) packageState.price = String(catalogPrice);
+        }
       } else {
         delete card.dataset.itemKey;
         delete card.dataset.sku;
@@ -411,12 +418,12 @@ document.addEventListener('DOMContentLoaded', () => {
       button.dataset.packageLabel = packageState.label;
       button.dataset.packagePrice = packageState.price;
       button.dataset.flavorLabel = flavorState.label;
-      const activeCatalogItem = matchJenangGemiCatalogItem(commerceCatalog, {
-        name: productMeta.label,
-        flavor: flavorState.label,
-        qtyLabel: packageState.label
-      });
-      button.disabled = !activeCatalogItem;
+      const activeCatalogItem = commerceCatalog.length === 0 ? null : matchJenangGemiCatalogItem(
+        commerceCatalog,
+        { name: productMeta.label, flavor: flavorState.label, qtyLabel: packageState.label },
+        { requireWebsitePrice: false }
+      );
+      button.disabled = commerceCatalog.length > 0 && !activeCatalogItem;
       if (activeCatalogItem) {
         button.dataset.itemKey = activeCatalogItem.item_key;
         button.dataset.sku = activeCatalogItem.sku;
@@ -455,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
       syncPackageUI();
     })
     .catch((error) => {
-      checkoutButtons.forEach((button) => { button.disabled = true; button.title = error.message; });
+      checkoutButtons.forEach((button) => { button.disabled = false; button.title = error.message; });
     });
 
   const checkoutAnchor = document.querySelector('#checkout') || document.querySelector('#order');
@@ -482,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `Halo Admin Jenang Gemi, saya ingin order ${productMeta.label}.`,
       '',
       ...(affiliateCode ? [`Kode affiliate: ${affiliateCode}${affiliateName ? ` (${affiliateName})` : ''}`] : []),
-      `Website order ID: ${websiteOrderId}`,
+      ...(websiteOrderId ? [`Website order ID: ${websiteOrderId}`] : []),
       `Kode order: ${orderCode}`,
       `Sumber traffic: ${sourceConfig.label}`,
       `Landing page: ${window.location.pathname}`,
@@ -503,17 +510,24 @@ document.addEventListener('DOMContentLoaded', () => {
       openCheckoutAddressModal({
         onSubmit: async ({ fullName, address }) => {
           const popup = window.open('', '_blank');
-          checkoutIdempotencyKey ||= createCheckoutKey();
+          let websiteOrderId = '';
           try {
             const catalogItem = matchJenangGemiCatalogItem(commerceCatalog, { name: productMeta.label, flavor: flavorState.label, qtyLabel: packageState.label });
-            const order = await createJenangGemiWebsiteOrder({
-              catalog: commerceCatalog,
-              items: [{ name: productMeta.label, flavor: flavorState.label, qtyLabel: packageState.label, quantity: 1, catalogItem }],
-              customer: { fullName, address },
-              idempotencyKey: checkoutIdempotencyKey
-            });
-            const message = buildWhatsappMessage({ buttonLabel, fullName, address, websiteOrderId: order.order_id });
-            const orderCode = order.order_id;
+            if (catalogItem) {
+              checkoutIdempotencyKey ||= createCheckoutKey();
+              const order = await createJenangGemiWebsiteOrder({
+                catalog: commerceCatalog,
+                items: [{ name: productMeta.label, flavor: flavorState.label, qtyLabel: packageState.label, quantity: 1, catalogItem }],
+                customer: { fullName, address },
+                idempotencyKey: checkoutIdempotencyKey
+              });
+              websiteOrderId = order.order_id;
+            }
+          } catch (_) {
+            // Fall back to the existing WhatsApp checkout when the order API is unavailable.
+          }
+          const message = buildWhatsappMessage({ buttonLabel, fullName, address, websiteOrderId });
+          const orderCode = websiteOrderId || buildOrderCode();
           trackEvent('checkout_click', {
             cta_location: button.dataset.ctaLocation || 'unknown',
             product_code: productMeta.code,
@@ -525,17 +539,13 @@ document.addEventListener('DOMContentLoaded', () => {
             package_price: packageState.price,
             order_code: orderCode
           });
-            const whatsappUrl = `https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(message)}`;
-            checkoutIdempotencyKey = '';
-            if (popup) {
-              popup.opener = null;
-              popup.location.href = whatsappUrl;
-            } else {
-              window.location.href = whatsappUrl;
-            }
-          } catch (error) {
-            popup?.close();
-            window.alert(error instanceof Error ? error.message : 'Unable to create the website order.');
+          const whatsappUrl = `https://api.whatsapp.com/send?phone=6285842833973&text=${encodeURIComponent(message)}`;
+          checkoutIdempotencyKey = '';
+          if (popup) {
+            popup.opener = null;
+            popup.location.href = whatsappUrl;
+          } else {
+            window.location.href = whatsappUrl;
           }
         }
       });
